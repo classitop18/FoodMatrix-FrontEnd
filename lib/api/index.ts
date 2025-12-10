@@ -71,9 +71,16 @@ class ApiClient {
     this.client.interceptors.response.use(
       (response) => response,
       async (error: AxiosError) => {
+        const isTokenAvailable = localStorage.getItem("accessToken")
         const originalRequest = error.config as RetriableRequestConfig;
 
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        if (
+          error.response?.status === 401 &&
+          error.response?.data?.errorCode === "TOKEN_EXPIRED" &&
+          !originalRequest._retry
+        ) {
+
+
           originalRequest._retry = true;
 
           if (this.refreshing) {

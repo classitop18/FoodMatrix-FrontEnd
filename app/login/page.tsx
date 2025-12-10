@@ -10,6 +10,9 @@ import { Label } from "@/components/ui/label";
 import { Mail, Lock, Eye, EyeOff, LogIn } from "lucide-react";
 import { useLogin } from "@/services/auth/auth.mutation";
 import { toast } from "@/hooks/use-toast";
+import { useDispatch } from "react-redux";
+import { loginSuccess } from "@/redux/features/auth/auth.slice";
+import { useRouter } from "next/navigation";
 
 type LoginFormData = {
   emailOrUsername: string;
@@ -18,6 +21,12 @@ type LoginFormData = {
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+
+  // Hookes
+
+  const dispatch = useDispatch()
+  const router = useRouter();
+
   const loginMutation = useLogin();
 
   const {
@@ -31,12 +40,26 @@ export default function LoginPage() {
     },
   });
 
-  console.log(loginMutation, "loginMutation");
+
 
   const onSubmit = async (data: LoginFormData) => {
     console.log("Form Data:", data);
     try {
       const response = await loginMutation.mutateAsync(data);
+      const user = response.data;
+      dispatch(
+        loginSuccess({
+          user,
+          accessToken: user.accessToken,
+        })
+      );
+
+      toast({
+        title: "Login Successful",
+        description: "Welcome back!",
+      });
+      router.push("/dashboard")
+
     } catch (error: any) {
       console.error("Login error:", error);
 
@@ -155,13 +178,14 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <Button
+          {/* <Button
             variant="outline"
             className="w-full h-11 rounded-xl"
             disabled={loginMutation?.isPending}
+            asChild
           >
             <Link href="/register">Create Account</Link>
-          </Button>
+          </Button> */}
         </CardContent>
       </Card>
     </div>

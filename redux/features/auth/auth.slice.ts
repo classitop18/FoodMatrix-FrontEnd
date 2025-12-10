@@ -1,13 +1,35 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-interface User {
+export interface User {
   id: string;
-  fullName: string;
   email: string;
-  role?: string;
-  isVerified?: boolean;
-  isMfaEnabled?: boolean;
+  username: string;
+  isVerified: boolean;
+  avatar: string | null;
+  isMfaEnabled: boolean;
+  otpExpiresAt: string | null;
+
+  firstName: string | null;
+  lastName: string | null;
+  phone: string | null;
+
+  addressLine1: string | null;
+  addressLine2: string | null;
+  city: string | null;
+  state: string | null;
+  country: string | null;
+  zipCode: string | null;
+  formattedAddress: string | null;
+
+  latitude: number | null;
+  longitude: number | null;
+  placeId: string | null;
+
+  createdAt: string;
+  updatedAt: string;
+  lastLoginAt: string | null;
 }
+
 
 interface AuthState {
   user: User | null;
@@ -38,7 +60,6 @@ export const authSlice = createSlice({
       action: PayloadAction<{
         user: User;
         accessToken: string;
-        refreshToken: string;
       }>,
     ) => {
       state.loading = false;

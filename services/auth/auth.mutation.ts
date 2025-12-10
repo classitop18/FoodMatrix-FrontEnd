@@ -13,13 +13,8 @@ export const useLogin = () => {
       authService.login(loginPayload),
 
     onSuccess: (data) => {
-      if (data.token) {
-        localStorage.setItem("accessToken", data.token);
-      }
-      if (data.user) {
-        localStorage.setItem("user", JSON.stringify(data.user));
-      }
-      queryClient.invalidateQueries({ queryKey: ["auth", "user"] });
+      const user = data.data;
+      localStorage.setItem("accessToken", user.accessToken);
     },
 
     onError: (error: any) => {
@@ -75,3 +70,9 @@ export const useCheckEmailUsernameExist = () => {
     },
   });
 };
+
+
+
+
+
+

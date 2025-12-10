@@ -12,6 +12,8 @@ export class AuthService {
       API_ENDPOINTS.AUTH.LOGIN,
       loginPayload,
     );
+
+    console.log(response,"kkkresponse")
     return response.data;
   }
   async logout() {
@@ -31,6 +33,11 @@ export class AuthService {
     const response = await apiClient.post(API_ENDPOINTS.AUTH.CHECK_IS_EXIST, {
       ...payload,
     });
+    return response.data;
+  }
+
+  async getCurrentSession() {
+    const response = await apiClient.get(API_ENDPOINTS.AUTH.GET_CURRENT_SESSION);
     return response.data;
   }
 }
