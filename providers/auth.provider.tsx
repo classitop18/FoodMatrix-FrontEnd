@@ -6,6 +6,7 @@ import { useAuthMe } from "@/services/auth/auth.query";
 import { useDispatch } from "react-redux";
 import { loginSuccess, logout } from "@/redux/features/auth/auth.slice";
 
+
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const dispatch = useDispatch();
@@ -17,7 +18,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         if (isLoading) return;
 
         // If session not found → logout + redirect
-        if (isError || !data?.user) {
+        if (isError || !data?.data) {
             dispatch(logout());
             router.replace("/login");
             return;
@@ -25,7 +26,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
         dispatch(
             loginSuccess({
-                user: data.user,                 // Correct shape
+                user: data.data,                 // Correct shape
                 accessToken: data.accessToken,   // Real token from backend
             })
         );

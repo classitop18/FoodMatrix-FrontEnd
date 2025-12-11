@@ -77,39 +77,45 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen bg-background flex items-center justify-center px-4">
-      <Card className="w-full max-w-md rounded-2xl border border-border/50 shadow-xl bg-card">
-        <CardContent className="p-8">
+    <div className="relative min-h-screen bg-gradient-to-br from-[var(--primary-bg)] via-white to-[var(--primary-bg)] flex items-center justify-center px-4 py-12 overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-30">
+        <div className="absolute top-0 left-0 w-96 h-96 bg-[var(--primary)] rounded-full blur-3xl opacity-20 -translate-x-1/2 -translate-y-1/2"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-[var(--green)] rounded-full blur-3xl opacity-20 translate-x-1/2 translate-y-1/2"></div>
+      </div>
+
+      <Card className="relative z-10 w-full max-w-md rounded-3xl border-2 border-[var(--primary)]/10 shadow-2xl bg-white/90 backdrop-blur-xl animate-scale-in">
+        <CardContent className="p-8 md:p-10">
           {/* icon + heading */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-primary/15 text-primary shadow-inner">
-              <LogIn className="w-8 h-8" />
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-[var(--primary)] to-[var(--primary-light)] text-white shadow-lg shadow-[var(--primary)]/30 mb-4">
+              <LogIn className="w-10 h-10" />
             </div>
-            <h1 className="text-3xl font-semibold mt-4">Welcome Back</h1>
-            <p className="text-muted-foreground text-sm">
-              Sign in to continue your journey
+            <h1 className="text-4xl font-extrabold text-[var(--primary)] mb-2">Welcome Back</h1>
+            <p className="text-gray-600 text-base">
+              Sign in to continue your meal planning journey
             </p>
           </div>
 
           {/* form */}
-          <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             {/* email/username */}
             <div className="space-y-2">
-              <Label htmlFor="emailOrUsername">Email or Username</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted w-5 h-5" />
+              <Label htmlFor="emailOrUsername" className="text-[var(--primary)] font-semibold">Email or Username</Label>
+              <div className="relative group">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--primary)]/60 w-5 h-5 group-focus-within:text-[var(--primary)] transition-colors" />
                 <Input
                   id="emailOrUsername"
                   placeholder="your.email@example.com"
-                  className="pl-11 h-12"
+                  className="pl-12 h-14 rounded-xl border-2 border-[var(--primary)]/20 focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 transition-all"
                   {...register("emailOrUsername", {
                     required: "Email or Username is required",
                   })}
                 />
               </div>
               {errors.emailOrUsername && (
-                <p className="text-red-500 text-sm">
-                  {errors.emailOrUsername.message}
+                <p className="text-red-500 text-sm flex items-center gap-1">
+                  <span className="text-lg">⚠</span> {errors.emailOrUsername.message}
                 </p>
               )}
             </div>
@@ -117,21 +123,21 @@ export default function LoginPage() {
             {/* password */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="text-[var(--primary)] font-semibold">Password</Label>
                 <Link
                   href="/forgot-password"
-                  className="text-xs text-primary hover:underline"
+                  className="text-sm text-[var(--green)] hover:text-[var(--green-light)] font-medium hover:underline transition-colors"
                 >
                   Forgot password?
                 </Link>
               </div>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
+              <div className="relative group">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--primary)]/60 group-focus-within:text-[var(--primary)] transition-colors" />
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
-                  className="pl-11 pr-11 h-12"
+                  className="pl-12 pr-12 h-14 rounded-xl border-2 border-[var(--primary)]/20 focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 transition-all"
                   {...register("password", {
                     required: "Password is required",
                     minLength: {
@@ -142,7 +148,7 @@ export default function LoginPage() {
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-primary"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--primary)]/60 hover:text-[var(--primary)] transition-colors"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
@@ -153,39 +159,39 @@ export default function LoginPage() {
                 </button>
               </div>
               {errors.password && (
-                <p className="text-red-500 text-sm">
-                  {errors.password.message}
+                <p className="text-red-500 text-sm flex items-center gap-1">
+                  <span className="text-lg">⚠</span> {errors.password.message}
                 </p>
               )}
             </div>
 
             <Button
               type="submit"
-              className="w-full h-12 text-base font-semibold rounded-xl"
+              className="w-full h-14 text-lg font-bold rounded-xl bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] hover:shadow-lg hover:shadow-[var(--primary)]/30 transition-all duration-300 hover:scale-[1.02]"
               disabled={loginMutation?.isPending}
             >
-              Sign In
+              {loginMutation?.isPending ? "Signing In..." : "Sign In"}
             </Button>
           </form>
 
           {/* divider */}
           <div className="relative my-8">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border/40" />
+              <div className="w-full border-t-2 border-[var(--primary)]/10" />
             </div>
-            <div className="relative flex justify-center text-xs text-muted-foreground">
-              <span className="bg-card px-4">Don't have an account?</span>
+            <div className="relative flex justify-center text-sm text-gray-600 font-medium">
+              <span className="bg-white px-4">Don't have an account?</span>
             </div>
           </div>
 
-          {/* <Button
+          <Button
             variant="outline"
-            className="w-full h-11 rounded-xl"
+            className="w-full h-12 rounded-xl border-2 border-[var(--green)] text-[var(--green)] hover:bg-[var(--green)] hover:text-white font-semibold transition-all duration-300"
             disabled={loginMutation?.isPending}
             asChild
           >
             <Link href="/register">Create Account</Link>
-          </Button> */}
+          </Button>
         </CardContent>
       </Card>
     </div>

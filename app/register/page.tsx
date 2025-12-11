@@ -202,167 +202,204 @@ export default function Register() {
   //   }
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-background via-accent/10 to-background overflow-hidden">
-      <div className="relative z-10 flex items-center justify-center min-h-screen px-4 py-24">
-        <Card className="w-full max-w-lg border border-border shadow-xl rounded-2xl backdrop-blur-xl bg-card/90 animate-scale-in">
+    <div className="relative min-h-screen bg-gradient-to-br from-[var(--primary-bg)] via-white to-[var(--primary-bg)] overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-30">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[var(--primary)] rounded-full blur-3xl opacity-20 translate-x-1/2 -translate-y-1/2"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-[var(--green)] rounded-full blur-3xl opacity-20 -translate-x-1/2 translate-y-1/2"></div>
+      </div>
+
+      <div className="relative z-10 flex items-center justify-center min-h-screen px-4 py-12">
+        <Card className="w-full max-w-2xl border-2 border-[var(--primary)]/10 shadow-2xl rounded-3xl backdrop-blur-xl bg-white/90 animate-scale-in">
           <CardContent className="p-8 md:p-10">
             <div className="text-center mb-8">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary text-primary-foreground shadow-md shadow-primary/30">
-                <UserPlus className="w-8 h-8" />
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-[var(--primary)] to-[var(--primary-light)] text-white shadow-lg shadow-[var(--primary)]/30 mb-4">
+                <UserPlus className="w-10 h-10" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold mt-4">
+              <h1 className="text-4xl md:text-5xl font-extrabold text-[var(--primary)] mb-2">
                 Create Account
               </h1>
-              <p className="text-muted-foreground mt-1">
+              <p className="text-gray-600 text-base">
                 Join FoodMatrix — Smarter Food, Smarter Budget
               </p>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-              {/* First Name */}
-              <div className="space-y-2">
-                <Label>First Name</Label>
-                <Input
-                  placeholder="John"
-                  {...register("firstName", {
-                    required: "First name is required",
-                  })}
-                />
-                {errors.firstName && (
-                  <p className="text-red-600 text-xs">
-                    {errors.firstName.message}
-                  </p>
-                )}
-              </div>
+              {/* First Name & Last Name - Grid */}
+              <div className="grid md:grid-cols-2 gap-4">
+                {/* First Name */}
+                <div className="space-y-2">
+                  <Label className="text-[var(--primary)] font-semibold">First Name</Label>
+                  <Input
+                    placeholder="John"
+                    className="h-12 rounded-xl border-2 border-[var(--primary)]/20 focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 transition-all"
+                    {...register("firstName", {
+                      required: "First name is required",
+                    })}
+                  />
+                  {errors.firstName && (
+                    <p className="text-red-600 text-sm flex items-center gap-1">
+                      <span className="text-lg">⚠</span> {errors.firstName.message}
+                    </p>
+                  )}
+                </div>
 
-              {/* Last Name */}
-              <div className="space-y-2">
-                <Label>Last Name</Label>
-                <Input
-                  placeholder="Doe"
-                  {...register("lastName", {
-                    required: "Last name is required",
-                  })}
-                />
-                {errors.lastName && (
-                  <p className="text-red-600 text-xs">
-                    {errors.lastName.message}
-                  </p>
-                )}
+                {/* Last Name */}
+                <div className="space-y-2">
+                  <Label className="text-[var(--primary)] font-semibold">Last Name</Label>
+                  <Input
+                    placeholder="Doe"
+                    className="h-12 rounded-xl border-2 border-[var(--primary)]/20 focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 transition-all"
+                    {...register("lastName", {
+                      required: "Last name is required",
+                    })}
+                  />
+                  {errors.lastName && (
+                    <p className="text-red-600 text-sm flex items-center gap-1">
+                      <span className="text-lg">⚠</span> {errors.lastName.message}
+                    </p>
+                  )}
+                </div>
               </div>
 
               {/* Username */}
               <div className="space-y-2">
-                <Label>Username</Label>
+                <Label className="text-[var(--primary)] font-semibold">Username</Label>
                 <Input
                   placeholder="john_doe"
+                  className="h-12 rounded-xl border-2 border-[var(--primary)]/20 focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 transition-all"
                   {...register("username", { required: "Username required" })}
                 />
                 {username && !validation.usernameFormat && (
-                  <p className="text-xs text-red-600">
-                    ✗ Username must start with a letter, 3-20 characters, only
-                    A-Z, a-z, 0-9, or _
+                  <p className="text-sm text-red-600 flex items-center gap-1">
+                    <XCircle className="w-4 h-4" /> Username must start with a letter, 3-20 characters, only A-Z, a-z, 0-9, or _
                   </p>
                 )}
                 {username &&
                   validation.usernameFormat &&
                   validation.username.checked && (
                     <p
-                      className={`text-xs ${validation.username.available ? "text-green-600" : "text-red-600"}`}
+                      className={`text-sm flex items-center gap-1 ${validation.username.available ? "text-green-600" : "text-red-600"}`}
                     >
-                      {validation.username.available
-                        ? "✓ Username available"
-                        : "✗ Username already taken"}
+                      {validation.username.available ? (
+                        <>
+                          <CheckCircle2 className="w-4 h-4" /> Username available
+                        </>
+                      ) : (
+                        <>
+                          <XCircle className="w-4 h-4" /> Username already taken
+                        </>
+                      )}
                     </p>
                   )}
               </div>
 
               {/* Email */}
               <div className="space-y-2">
-                <Label>Email</Label>
-                <Input
-                  type="email"
-                  placeholder="you@example.com"
-                  {...register("email", { required: "Email required" })}
-                />
+                <Label className="text-[var(--primary)] font-semibold">Email</Label>
+                <div className="relative group">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--primary)]/60 w-5 h-5 group-focus-within:text-[var(--primary)] transition-colors" />
+                  <Input
+                    type="email"
+                    placeholder="you@example.com"
+                    className="pl-12 h-12 rounded-xl border-2 border-[var(--primary)]/20 focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 transition-all"
+                    {...register("email", { required: "Email required" })}
+                  />
+                </div>
                 {validation.email.checked && (
                   <p
-                    className={`text-xs ${validation.email.available ? "text-green-600" : "text-red-600"}`}
+                    className={`text-sm flex items-center gap-1 ${validation.email.available ? "text-green-600" : "text-red-600"}`}
                   >
-                    {validation.email.available
-                      ? "✓ Email available"
-                      : "✗ Email already registered"}
+                    {validation.email.available ? (
+                      <>
+                        <CheckCircle2 className="w-4 h-4" /> Email available
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="w-4 h-4" /> Email already registered
+                      </>
+                    )}
                   </p>
                 )}
               </div>
 
-              {/* Password */}
-              <div className="space-y-2 relative">
-                <Label>Password</Label>
-                <Input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  {...register("password", {
-                    required: "Password required",
-                    minLength: 8,
-                  })}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-9"
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
-                </button>
-              </div>
+              {/* Password & Confirm Password - Grid */}
+              <div className="grid md:grid-cols-2 gap-4">
+                {/* Password */}
+                <div className="space-y-2 relative">
+                  <Label className="text-[var(--primary)] font-semibold">Password</Label>
+                  <div className="relative group">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--primary)]/60 w-5 h-5 group-focus-within:text-[var(--primary)] transition-colors" />
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      className="pl-12 pr-12 h-12 rounded-xl border-2 border-[var(--primary)]/20 focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 transition-all"
+                      {...register("password", {
+                        required: "Password required",
+                        minLength: 8,
+                      })}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--primary)]/60 hover:text-[var(--primary)] transition-colors"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
 
-              {/* Confirm Password */}
-              <div className="space-y-2 relative">
-                <Label>Confirm Password</Label>
-                <Input
-                  type={showConfirmPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  {...register("confirmPassword", {
-                    required: "Confirm password required",
-                  })}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-9"
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
-                </button>
+                {/* Confirm Password */}
+                <div className="space-y-2 relative">
+                  <Label className="text-[var(--primary)] font-semibold">Confirm Password</Label>
+                  <div className="relative group">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--primary)]/60 w-5 h-5 group-focus-within:text-[var(--primary)] transition-colors" />
+                    <Input
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      className="pl-12 pr-12 h-12 rounded-xl border-2 border-[var(--primary)]/20 focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 transition-all"
+                      {...register("confirmPassword", {
+                        required: "Confirm password required",
+                      })}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--primary)]/60 hover:text-[var(--primary)] transition-colors"
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
               </div>
 
               <Button
                 type="submit"
-                className="w-full h-12 mt-6 flex items-center justify-center gap-2 bg-primary text-primary-foreground"
-
+                className="w-full h-14 mt-6 flex items-center justify-center gap-2 bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white text-lg font-bold rounded-xl hover:shadow-lg hover:shadow-[var(--primary)]/30 transition-all duration-300 hover:scale-[1.02]"
               >
-                Create Account <ArrowRight />
+                Create Account <ArrowRight className="w-5 h-5" />
               </Button>
             </form>
 
             <div className="flex items-center my-8">
-              <div className="flex-1 border-t border-border"></div>
-              <span className="px-3 text-xs text-muted-foreground">
+              <div className="flex-1 border-t-2 border-[var(--primary)]/10"></div>
+              <span className="px-4 text-sm text-gray-600 font-medium">
                 Already have an account?
               </span>
-              <div className="flex-1 border-t border-border"></div>
+              <div className="flex-1 border-t-2 border-[var(--primary)]/10"></div>
             </div>
 
             <Button
               variant="outline"
-              className="w-full h-11 border border-border"
+              className="w-full h-12 border-2 border-[var(--green)] text-[var(--green)] hover:bg-[var(--green)] hover:text-white font-semibold rounded-xl transition-all duration-300"
               asChild
             >
               <Link href="/login">Sign In Instead</Link>
@@ -370,7 +407,7 @@ export default function Register() {
           </CardContent>
         </Card>
 
-        <p className="absolute bottom-6 text-center text-muted-foreground text-xs">
+        <p className="absolute bottom-6 text-center text-gray-600 text-sm font-medium">
           © 2025 FoodMatrix. Smart Budget Intelligence Platform.
         </p>
       </div>
