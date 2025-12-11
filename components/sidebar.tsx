@@ -33,6 +33,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { useLogout } from "@/services/auth/auth.mutation";
 
 interface SidebarProps {
     className?: string;
@@ -76,6 +77,10 @@ const navigationItems = [
 ];
 
 export function Sidebar({ className, onNavigate }: SidebarProps) {
+
+
+    // HOOKS
+    const logoutMutation = useLogout();
     const pathname = usePathname();
     const router = useRouter();
     const { toast } = useToast();
@@ -96,11 +101,15 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
 
     const handleLogout = async () => {
         // TODO: Integrate logout API
+        await logoutMutation.mutateAsync();
+        localStorage.clear();
+        sessionStorage.clear();
+
         toast({
             title: "Logged Out",
             description: "You have been successfully logged out.",
         });
-        router.push("/login");
+        router.push("/");
     };
 
     const isActive = (path: string) => {
@@ -161,8 +170,6 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
     };
 
     return (
-
-
 
         <>
             <aside
@@ -245,6 +252,7 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
                                             variant="ghost"
                                             size="icon"
                                             className="w-full h-10 text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors"
+                                            disabled={logoutMutation.isPending}
                                             onClick={handleLogout}
                                         >
                                             <LogOut className="w-5 h-5" />
@@ -257,6 +265,7 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
                                     variant="ghost"
                                     className="w-full justify-start gap-3 text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors h-12 rounded-xl"
                                     onClick={handleLogout}
+                                    disabled={logoutMutation.isPending}
                                 >
                                     <LogOut className="w-5 h-5" />
                                     <span className="font-semibold">Logout</span>

@@ -9,6 +9,8 @@ export const API_ENDPOINTS = {
     LOGOUT: "/auth/logout",
     PROFILE: "/auth/profile",
     CHECK_IS_EXIST: "/auth/check",
-    GET_CURRENT_SESSION:"/auth/me"
+    GET_CURRENT_SESSION:"/auth/me",
+    FORGOT_PASSWORD:"/auth/forgot-password",
+    RESET_PASSWORD:"/auth/reset-password"
   },
 };

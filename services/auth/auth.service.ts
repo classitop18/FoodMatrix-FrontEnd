@@ -11,9 +11,10 @@ export class AuthService {
     const response = await apiClient.post(
       API_ENDPOINTS.AUTH.LOGIN,
       loginPayload,
+
     );
 
-    console.log(response,"kkkresponse")
+    console.log(response, "kkkresponse")
     return response.data;
   }
   async logout() {
@@ -37,7 +38,26 @@ export class AuthService {
   }
 
   async getCurrentSession() {
-    const response = await apiClient.get(API_ENDPOINTS.AUTH.GET_CURRENT_SESSION);
+    const response = await apiClient.get(API_ENDPOINTS.AUTH.GET_CURRENT_SESSION, {
+      headers: {
+        "Authorization": `Bearer ${localStorage.getItem("accessToken")}`
+      }
+
+    });
     return response.data;
   }
+
+  async forgetPassword(email: string) {
+    const response = await apiClient.post(API_ENDPOINTS.AUTH.FORGOT_PASSWORD, { email });
+    return response.data;
+  }
+
+
+  async resetPassword(payload: { newPassword: string }) {
+    const response = await apiClient.put(API_ENDPOINTS.AUTH.RESET_PASSWORD, payload);
+    return response.data;
+  }
+
+
+
 }

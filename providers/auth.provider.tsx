@@ -3,13 +3,15 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useAuthMe } from "@/services/auth/auth.query";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { loginSuccess, logout } from "@/redux/features/auth/auth.slice";
+import { RootState } from "@/redux/store.redux";
 
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const dispatch = useDispatch();
+    const user = useSelector((state: RootState) => state.auth.user)
 
     const { data, isLoading, isError } = useAuthMe();
 
@@ -36,5 +38,10 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         return <div>Loading...</div>;
     }
 
-    return <>{children}</>;
+    return <>
+
+        {
+            children
+        }
+    </>;
 }

@@ -7,6 +7,7 @@ import Image from "next/image";
 import mealBoul from "@/public/meal-boul.svg";
 
 export default function FeatureSection() {
+
     return (
 
         <section className="py-14 lg:py-20 w-full bg-white relative">
@@ -35,6 +36,7 @@ export default function FeatureSection() {
                         height={130}
                         alt="Logo Here"
                     />
+
                 </div>
             </div>
         </section>

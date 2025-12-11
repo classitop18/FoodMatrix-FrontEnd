@@ -58,9 +58,13 @@ class ApiClient {
     // Request interceptor
     this.client.interceptors.request.use(
       (config) => {
-        if (this.accessToken) {
-          config.headers = config.headers || {};
-          config.headers.Authorization = `Bearer ${this.accessToken}`;
+
+        if (typeof window !== "undefined") {
+          const token = localStorage.getItem("accessToken");
+          if (token) {
+            config.headers = config.headers || {};
+            config.headers.Authorization = `Bearer ${token}`;
+          }
         }
         return config;
       },

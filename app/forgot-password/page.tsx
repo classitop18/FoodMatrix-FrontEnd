@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, ArrowLeft, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useForgetPassword } from "@/services/auth/auth.mutation";
 
 type ForgotPasswordFormData = {
     email: string;
@@ -29,16 +30,18 @@ export default function ForgotPasswordPage() {
         },
     });
 
+
+    const forgetPasswordMutation = useForgetPassword();
+
     const email = watch("email");
 
     const onSubmit = async (data: ForgotPasswordFormData) => {
         try {
             // TODO: Integrate forgot password API
             console.log("Forgot password request:", data);
+            const response = await forgetPasswordMutation.mutateAsync(data?.email)
 
-            // Simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 1500));
-
+            console.log(response, "myforgotresponse");
             setIsSubmitted(true);
             toast({
                 title: "Email Sent!",
@@ -89,7 +92,8 @@ export default function ForgotPasswordPage() {
                             </Button>
                             <Button
                                 asChild
-                                className="w-full h-12 rounded-xl bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] hover:shadow-lg hover:shadow-[var(--primary)]/30 transition-all duration-300"
+                               className="w-full justify-center text-white bg-(--primary) hover:bg-(--primary) font-medium ps-6! pe-6! py-1 h-12 rounded-lg text-base transition-all duration-300 cursor-pointer group relative flex items-center
+            inset-shadow-[5px_5px_5px_rgba(0,0,0,0.30)] hover:inset-shadow-[-5px_-5px_5px_rgba(0,0,0,0.50)]"
                             >
                                 <Link href="/login">Back to Login</Link>
                             </Button>
@@ -121,8 +125,8 @@ export default function ForgotPasswordPage() {
 
                     {/* Header */}
                     <div className="text-center mb-8">
-                        <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-[var(--primary)] to-[var(--primary-light)] text-white shadow-lg shadow-[var(--primary)]/30 mb-4">
-                            <Mail className="w-10 h-10" />
+                        <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-[var(--primary)] to-[var(--primary-light)] text-white shadow-lg shadow-[var(--primary)]/30 mb-4">
+                            <Mail className="w-5 h-5" />
                         </div>
                         <h1 className="text-4xl font-extrabold text-[var(--primary)] mb-2">
                             Forgot Password?
@@ -163,7 +167,8 @@ export default function ForgotPasswordPage() {
 
                         <Button
                             type="submit"
-                            className="w-full h-14 text-lg font-bold rounded-xl bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] hover:shadow-lg hover:shadow-[var(--primary)]/30 transition-all duration-300 hover:scale-[1.02] flex items-center justify-center gap-2"
+                            className="w-full justify-center text-white bg-(--primary) hover:bg-(--primary) font-medium ps-6! pe-6! py-1 h-12 rounded-lg text-base transition-all duration-300 cursor-pointer group relative flex items-center
+            inset-shadow-[5px_5px_5px_rgba(0,0,0,0.30)] hover:inset-shadow-[-5px_-5px_5px_rgba(0,0,0,0.50)]"
                         >
                             Send Reset Link <Send className="w-5 h-5" />
                         </Button>

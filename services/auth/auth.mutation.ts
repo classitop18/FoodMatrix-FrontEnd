@@ -72,7 +72,26 @@ export const useCheckEmailUsernameExist = () => {
 };
 
 
+export const useForgetPassword = () => {
+
+  return useMutation({
+    mutationFn: (email: string) => authService.forgetPassword(email),
+    onSuccess: () => {
+    },
+    onError: (error: any) => {
+      console.error("Logout error:", error);
+    },
+  })
+
+}
 
 
 
+export const useResetPassword = () => {
 
+  return useMutation({
+    mutationFn: (payload: {
+      newPassword: string
+    }) => authService.resetPassword(payload),
+  })
+}

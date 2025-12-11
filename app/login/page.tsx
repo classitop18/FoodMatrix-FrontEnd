@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, Lock, Eye, EyeOff, LogIn } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, LogIn, UserCheck } from "lucide-react";
 import { useLogin } from "@/services/auth/auth.mutation";
 import { toast } from "@/hooks/use-toast";
 import { useDispatch } from "react-redux";
@@ -88,9 +88,13 @@ export default function LoginPage() {
         <CardContent className="p-8 md:p-10">
           {/* icon + heading */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-[var(--primary)] to-[var(--primary-light)] text-white shadow-lg shadow-[var(--primary)]/30 mb-4">
-              <LogIn className="w-10 h-10" />
+            <div className="relative inline-flex items-center justify-center w-12 h-12">
+              <div className="absolute inset-0 bg-[var(--primary)] opacity-20 blur-2xl rounded-full animate-pulse"></div>
+              <div className="relative flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-[var(--primary)] to-[var(--primary-light)] text-white shadow-lg shadow-[var(--primary)]/30">
+                <UserCheck className="w-5 h-5" />
+              </div>
             </div>
+
             <h1 className="text-4xl font-extrabold text-[var(--primary)] mb-2">Welcome Back</h1>
             <p className="text-gray-600 text-base">
               Sign in to continue your meal planning journey
@@ -167,7 +171,8 @@ export default function LoginPage() {
 
             <Button
               type="submit"
-              className="w-full h-14 text-lg font-bold rounded-xl bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] hover:shadow-lg hover:shadow-[var(--primary)]/30 transition-all duration-300 hover:scale-[1.02]"
+              className="w-full justify-center text-white bg-(--primary) hover:bg-(--primary) font-medium ps-6! pe-6! py-1 h-12 rounded-lg text-base transition-all duration-300 cursor-pointer group relative flex items-center
+            inset-shadow-[5px_5px_5px_rgba(0,0,0,0.30)] hover:inset-shadow-[-5px_-5px_5px_rgba(0,0,0,0.50)]"
               disabled={loginMutation?.isPending}
             >
               {loginMutation?.isPending ? "Signing In..." : "Sign In"}
@@ -186,12 +191,13 @@ export default function LoginPage() {
 
           <Button
             variant="outline"
-            className="w-full h-12 rounded-xl border-2 border-[var(--green)] text-[var(--green)] hover:bg-[var(--green)] hover:text-white font-semibold transition-all duration-300"
+            className="w-full justify-center bg-white  hover:text-white hover:bg-(--primary) border-(--primary) border text-(--primary) font-medium ps-6! pe-6! py-1 h-10 rounded-lg text-base transition-all duration-300 cursor-pointer group relative flex items-center hover:inset-shadow-[-5px_-5px_5px_rgba(0,0,0,0.30)]"
             disabled={loginMutation?.isPending}
             asChild
           >
             <Link href="/register">Create Account</Link>
           </Button>
+
         </CardContent>
       </Card>
     </div>
