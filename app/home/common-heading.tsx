@@ -1,6 +1,6 @@
 'use client';
 
-import ThemeButton from "@/components/common/buttons/theme-button-arrow";
+import ThemeButton from "@/components/common/buttons/theme-button";
 import type { ReactNode } from "react";
 
 type CommonHeadingProps = {
@@ -8,7 +8,7 @@ type CommonHeadingProps = {
   title?: ReactNode;
   description?: ReactNode;
   className?: string;
-  headingName?: string;
+  buttonComp?: string;
 };
 
 export default function CommonHeading({
@@ -16,11 +16,17 @@ export default function CommonHeading({
   title,
   description,
   className = "",
-  headingName,
+  buttonComp,
 }: CommonHeadingProps) {
 
-
-
+  const buttonMetaData: any = {
+    "BUTTON_CHECK_PLAN": <>
+      <ThemeButton label="Check Our Plan" />
+    </>,
+    "GET_ENROLL": <>
+      <ThemeButton label="Get Enroll" />
+    </>
+  }
 
   return (
     <section className={`text-center lg:mb-10 mb-6 max-w-[680px] mx-auto ${className}`}>
@@ -32,13 +38,7 @@ export default function CommonHeading({
       {/* <ThemeButton >{label}</ThemeButton> */}
 
       {
-        headingName=="CLIENT_HEAD" && <div>ClientHeading</div>
-      }
-      {
-        headingName=="DASHBOARD_HEAD" && <div>DashboardHeading</div>
-      }
-      {
-        headingName=="FOOD_HEAD" && <div>FoodHeading</div>
+        buttonComp && buttonMetaData[buttonComp]
       }
 
     </section>
