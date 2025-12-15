@@ -35,7 +35,7 @@ export default function Step4LifestyleHabits({ form }: Step4Props) {
                             Cooking Skill Level <span className="text-[#7dab4f]">*</span>
                         </Label>
                         <Select onValueChange={(value) => form.setValue("cookingSkill", value as any)}>
-                            <SelectTrigger data-testid="select-cooking-skill" className="h-12 border-2 border-[#7661d3]/30 focus:border-[#7661d3] rounded-xl">
+                            <SelectTrigger data-testid="select-cooking-skill" className="h-12 border-2 border-[#7661d3]/30 focus:border-[#7661d3] rounded-xl bg-white">
                                 <SelectValue placeholder="Select skill level" />
                             </SelectTrigger>
                             <SelectContent>
@@ -54,7 +54,7 @@ export default function Step4LifestyleHabits({ form }: Step4Props) {
                             Cooking Frequency <span className="text-[#7dab4f]">*</span>
                         </Label>
                         <Select onValueChange={(value) => form.setValue("cookingFrequency", value as any)}>
-                            <SelectTrigger data-testid="select-cooking-frequency" className="h-12 border-2 border-[#7661d3]/30 focus:border-[#7661d3] rounded-xl">
+                            <SelectTrigger data-testid="select-cooking-frequency" className="h-12 border-2 border-[#7661d3]/30 focus:border-[#7661d3] rounded-xl bg-white">
                                 <SelectValue placeholder="How often do you cook?" />
                             </SelectTrigger>
                             <SelectContent>
@@ -74,7 +74,7 @@ export default function Step4LifestyleHabits({ form }: Step4Props) {
                         Budget Flexibility <span className="text-[#7dab4f]">*</span>
                     </Label>
                     <Select onValueChange={(value) => form.setValue("budgetFlexibility", value as any)}>
-                        <SelectTrigger data-testid="select-budget-flexibility" className="h-12 border-2 border-[#7661d3]/30 focus:border-[#7661d3] rounded-xl">
+                        <SelectTrigger data-testid="select-budget-flexibility" className="h-12 border-2 border-[#7661d3]/30 focus:border-[#7661d3] rounded-xl bg-white">
                             <SelectValue placeholder="How flexible is your budget?" />
                         </SelectTrigger>
                         <SelectContent>

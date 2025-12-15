@@ -53,19 +53,19 @@ export default function Step1ProfileBudget({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                     <div className="sm:col-span-2">
                         <Label htmlFor="name" className="text-[#3d326d] font-semibold mb-2 block text-sm sm:text-base">
-                            Full Name <span className="text-[#7dab4f]">*</span>
+                            Account Name <span className="text-[#7dab4f]">*</span>
                         </Label>
                         <Input
-                            id="name"
-                            placeholder="Enter your full name"
-                            {...form.register("adminName")}
+                            id="accountName"
+                            placeholder="Enter your account name"
+                            {...form.register("accountName")}
                             data-testid="input-admin-name"
                             className="h-11 sm:h-12 border-2 border-[#7661d3]/30 focus:border-[#7661d3] rounded-lg sm:rounded-xl transition-all duration-300 hover:border-[#7661d3]/50 text-sm sm:text-base"
                         />
-                        {form.formState.errors.adminName && (
+                        {form.formState.errors.accountName && (
                             <p className="text-xs sm:text-sm text-red-500 mt-1 flex items-center">
                                 <span className="mr-1">⚠️</span>
-                                {String(form.formState.errors.adminName.message)}
+                                {String(form.formState.errors.accountName.message)}
                             </p>
                         )}
                     </div>

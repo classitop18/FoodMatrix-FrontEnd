@@ -25,7 +25,6 @@ const setupSchema = z.object({
     // Account & Personal Info (Only name and budget are required)
     accountType: z.enum(['individual', 'family', 'group']).default('family'),
     accountName: z.string().optional(),
-    adminName: z.string().min(1, "Name is required"),
     adminAge: z.coerce.number().min(13).max(120).default(25),
     adminSex: z.enum(['male', 'female', 'other']).default('male'),
 
@@ -369,7 +368,7 @@ export default function SetupPage() {
 
 
                 <motion.div
-                    className="bg-white/80 backdrop-blur-xl border-2 border-[#7661d3]/20 shadow-2xl rounded-3xl overflow-hidden"
+                    className="bg-white border-2 border-[#7661d3]/20 shadow-2xl rounded-2xl sm:rounded-3xl overflow-hidden"
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
@@ -398,7 +397,7 @@ export default function SetupPage() {
                     )}
 
                     {/* Form Content */}
-                    <form onSubmit={form.handleSubmit((data: SetupData) => onSubmit(data))} className="p-8">
+                    <form onSubmit={form.handleSubmit((data: SetupData) => onSubmit(data))} className="p-8 setup-form-container">
                         <AnimatePresence mode="wait">
                             {currentStep === 1 && (
                                 <Step1ProfileBudget

@@ -103,7 +103,7 @@ export default function Step2HealthActivity({ form, handleArrayToggle }: Step2Pr
                             Activity Level <span className="text-[#7dab4f]">*</span>
                         </Label>
                         <Select onValueChange={(value) => form.setValue("activityLevel", value as any)}>
-                            <SelectTrigger data-testid="select-activity-level" className="h-12 border-2 border-[#7661d3]/30 focus:border-[#7661d3] rounded-xl">
+                            <SelectTrigger data-testid="select-activity-level" className="h-12 border-2 border-[#7661d3]/30 focus:border-[#7661d3] rounded-xl bg-white">
                                 <SelectValue placeholder="Select activity level" />
                             </SelectTrigger>
                             <SelectContent>

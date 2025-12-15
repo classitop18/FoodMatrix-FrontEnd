@@ -133,6 +133,7 @@ body {
   .foodBanner {
     max-width: 550px;
   }
+
   .foodBannerItem1 {
     top: 50px;
     left: 70px;
@@ -154,6 +155,7 @@ body {
   .foodBanner {
     max-width: 350px;
   }
+
   .foodBannerItem1 {
     top: 20px;
     left: 10px;
@@ -192,4 +194,134 @@ body {
   break-inside: avoid;
   -webkit-column-break-inside: avoid;
   margin-bottom: 1rem;
+}
+
+
+/* Setup Form Select Boxes - Theme Styling */
+[data-radix-select-viewport] {
+  background: white !important;
+  max-height: 300px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+[data-radix-select-content] {
+  background: white !important;
+  border: 2px solid rgba(118, 97, 211, 0.2) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px rgba(118, 97, 211, 0.15) !important;
+  overflow: hidden !important;
+  z-index: 9999 !important;
+  transform: translateZ(0) !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+}
+
+[data-radix-select-item] {
+  background: white !important;
+  padding: 12px 16px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  color: #3d326d !important;
+  font-weight: 500 !important;
+}
+
+[data-radix-select-item]:hover,
+[data-radix-select-item][data-highlighted] {
+  background: linear-gradient(135deg, #F3F0FD 0%, #E8F5E0 100%) !important;
+  color: #3d326d !important;
+  outline: none !important;
+}
+
+[data-radix-select-item][data-state="checked"] {
+  background: linear-gradient(135deg, #7661d3 0%, #7dab4f 100%) !important;
+  color: white !important;
+  font-weight: 600 !important;
+}
+
+/* Select Trigger Styling */
+button[role="combobox"] {
+  background: white !important;
+  border: 2px solid rgba(118, 97, 211, 0.3) !important;
+  transition: all 0.3s ease !important;
+  transform: translateZ(0) !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+}
+
+button[role="combobox"]:hover {
+  border-color: rgba(118, 97, 211, 0.5) !important;
+  box-shadow: 0 2px 8px rgba(118, 97, 211, 0.1) !important;
+}
+
+button[role="combobox"]:focus,
+button[role="combobox"][data-state="open"] {
+  border-color: #7661d3 !important;
+  box-shadow: 0 0 0 3px rgba(118, 97, 211, 0.1) !important;
+  outline: none !important;
+}
+
+/* Prevent Layout Shift on Select Open */
+[data-radix-popper-content-wrapper] {
+  z-index: 9999 !important;
+  will-change: transform !important;
+  transform: translateZ(0) !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+}
+
+/* Checkbox Styling */
+button[role="checkbox"] {
+  border: 2px solid rgba(118, 97, 211, 0.4) !important;
+  transition: all 0.2s ease !important;
+}
+
+button[role="checkbox"]:hover {
+  border-color: #7661d3 !important;
+}
+
+button[role="checkbox"][data-state="checked"] {
+  background: linear-gradient(135deg, #7661d3 0%, #7dab4f 100%) !important;
+  border-color: transparent !important;
+}
+
+/* Input Focus States */
+input:focus,
+textarea:focus {
+  outline: none !important;
+  border-color: #7661d3 !important;
+  box-shadow: 0 0 0 3px rgba(118, 97, 211, 0.1) !important;
+}
+
+/* Smooth Transitions for Form Elements */
+input,
+textarea,
+select,
+button {
+  transition: all 0.3s ease !important;
+}
+
+/* Prevent Flickering - Hardware Acceleration */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+[data-radix-portal] {
+  position: fixed !important;
+  z-index: 9999 !important;
+  transform: translateZ(0) !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+}
+
+/* Additional Anti-Flickering for Setup Form */
+body {
+  overflow-x: hidden !important;
+}
+
+.setup-form-container {
+  transform: translateZ(0) !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
 }
