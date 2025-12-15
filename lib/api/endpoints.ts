@@ -14,4 +14,9 @@ export const API_ENDPOINTS = {
     RESET_PASSWORD: "/auth/reset-password",
     OTP_VERIFICATION: "/auth/verify-mfa",
   },
+  ACCOUNT: {
+    CREATE_ACCOUNT: "/account",
+    GET_ACCOUNT: (id: string) => `/account/${id}`,
+    GET_MY_ACCOUNT: "/account"
+  }
 };

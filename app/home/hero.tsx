@@ -48,8 +48,7 @@ export default function HeroSection() {
               and lifestyle
             </p>
             <div className="flex gap-4 lg:gap-6 flex-wrap justify-center xl:justify-start">
-
-              <Link href={'/subscription-plan'}>
+              <Link href={"/subscription-plan"}>
                 <CheckPlanButton label="Check Our Plan" />
               </Link>
 

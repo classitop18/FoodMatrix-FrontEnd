@@ -196,13 +196,10 @@ body {
   margin-bottom: 1rem;
 }
 
-
 /* Setup Form Select Boxes - Theme Styling */
 [data-radix-select-viewport] {
   background: white !important;
   max-height: 300px !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
 }
 
 [data-radix-select-content] {
@@ -212,9 +209,6 @@ body {
   box-shadow: 0 10px 25px rgba(118, 97, 211, 0.15) !important;
   overflow: hidden !important;
   z-index: 9999 !important;
-  transform: translateZ(0) !important;
-  backface-visibility: hidden !important;
-  -webkit-backface-visibility: hidden !important;
 }
 
 [data-radix-select-item] {
@@ -228,7 +222,7 @@ body {
 
 [data-radix-select-item]:hover,
 [data-radix-select-item][data-highlighted] {
-  background: linear-gradient(135deg, #F3F0FD 0%, #E8F5E0 100%) !important;
+  background: linear-gradient(135deg, #f3f0fd 0%, #e8f5e0 100%) !important;
   color: #3d326d !important;
   outline: none !important;
 }
@@ -244,9 +238,6 @@ button[role="combobox"] {
   background: white !important;
   border: 2px solid rgba(118, 97, 211, 0.3) !important;
   transition: all 0.3s ease !important;
-  transform: translateZ(0) !important;
-  backface-visibility: hidden !important;
-  -webkit-backface-visibility: hidden !important;
 }
 
 button[role="combobox"]:hover {
@@ -265,9 +256,6 @@ button[role="combobox"][data-state="open"] {
 [data-radix-popper-content-wrapper] {
   z-index: 9999 !important;
   will-change: transform !important;
-  transform: translateZ(0) !important;
-  backface-visibility: hidden !important;
-  -webkit-backface-visibility: hidden !important;
 }
 
 /* Checkbox Styling */
@@ -301,7 +289,7 @@ button {
   transition: all 0.3s ease !important;
 }
 
-/* Prevent Flickering - Hardware Acceleration */
+/* Prevent Flickering */
 * {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -310,18 +298,4 @@ button {
 [data-radix-portal] {
   position: fixed !important;
   z-index: 9999 !important;
-  transform: translateZ(0) !important;
-  backface-visibility: hidden !important;
-  -webkit-backface-visibility: hidden !important;
-}
-
-/* Additional Anti-Flickering for Setup Form */
-body {
-  overflow-x: hidden !important;
-}
-
-.setup-form-container {
-  transform: translateZ(0) !important;
-  backface-visibility: hidden !important;
-  -webkit-backface-visibility: hidden !important;
 }

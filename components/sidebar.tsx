@@ -25,6 +25,7 @@ import {
   Copy,
   Activity,
   MessageCircle,
+  Wrench,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -75,7 +76,8 @@ const navigationItems = [
   {
     section: "Settings",
     items: [
-      { path: "/account", icon: Users, label: "Account" },
+      { path: "/profile", icon: Users, label: "Profile" },
+      { path: "/account", icon: Wrench, label: "Account" },
       { path: "/notifications", icon: MessageCircle, label: "Notifications" },
       { path: "/audit", icon: Copy, label: "Audit" },
       { path: "/activity", icon: Activity, label: "Activity" },
@@ -190,23 +192,21 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
     return button;
   };
 
-
-
-  if(logoutMutation?.isPending){
-    return <Loader/>
+  if (logoutMutation?.isPending) {
+    return <Loader />;
   }
 
   return (
     <>
       <aside
         className={cn(
-          "hidden md:fixed md:inset-y-0 md:left-0 md:z-50 md:block transition-all duration-300",
-          collapsed ? "md:w-20" : "md:w-64",
+          "h-screen bg-white border-r flex-shrink-0 transition-all duration-300",
+          collapsed ? "w-20" : "w-64",
         )}
       >
         <div
           className={cn(
-            "flex flex-col h-full bg-white border-r border-[#EBE7F6] transition-all duration-300 scrollbar-hide",
+            "flex flex-col h-full bg-white  border-[#EBE7F6] transition-all duration-300 scrollbar-hide",
             className,
           )}
         >

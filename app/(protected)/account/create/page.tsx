@@ -21,6 +21,7 @@ import pattern2 from "@/public/hero-pattern-2.svg";
 import Image from "next/image";
 import { setupSchema } from "@/schema/account/account.schema";
 import { useCreateAccount } from "@/services/account/account.mutation";
+import { useRouter } from "next/navigation";
 
 type SetupData = z.infer<typeof setupSchema>;
 
@@ -31,6 +32,10 @@ export default function SetupPage() {
         "individual" | "family" | "group"
     >("family");
     const [isPreparing, setIsPreparing] = useState(false);
+
+
+    const router = useRouter();
+
 
     const form = useForm<SetupData>({
         resolver: zodResolver(setupSchema),
@@ -284,7 +289,7 @@ export default function SetupPage() {
     const handlePrevious = (e: any) => {
         e.preventDefault();
         if (currentStep > 1) setCurrentStep(currentStep - 1);
-        // else setLocation("/");
+        else router.push("/account");
     };
 
     const handleArrayToggle = (field: keyof SetupData, value: string) => {
@@ -447,7 +452,7 @@ export default function SetupPage() {
                                 data-testid="button-previous"
                             >
                                 <ArrowLeft className="mr-2 h-5 w-5" />
-                                {currentStep === 1 ? "Back to Welcome" : "Previous"}
+                                {currentStep === 1 ? "Back to Account" : "Previous"}
                             </Button>
 
                             {isLastStep ? (
