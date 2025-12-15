@@ -7,21 +7,32 @@ import { Toaster } from "@/components/ui/toaster";
 
 import { store } from "./store.redux";
 import { Provider } from "react-redux";
-import { useCurrentSession } from "@/hooks/use-current-session";
+import { usePathname } from "next/navigation";
+import Navbar from "@/components/common/Navbar";
+import Footer from "@/components/common/Footer";
+
+
+
 
 export function Providers({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
 
- 
+  // All routes where Navbar + Footer should be hidden
+  const hiddenRoutes = ["/login", "/register", "/reset-password", "/", "/subscription-plan"];
+
+  const hideLayout = hiddenRoutes.includes(pathname);
+
   return (
-    <>
-      <Provider store={store} >
-        <QueryClientProvider client={queryClient}>
-          <TooltipProvider>
-            <Toaster />
-            {children}
-          </TooltipProvider>
-        </QueryClientProvider>
-      </Provider>
-    </>
+    <Provider store={store}>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          {hideLayout && <Navbar />}
+
+          <Toaster />
+          {children}
+          {hideLayout && <Footer />}
+        </TooltipProvider>
+      </QueryClientProvider>
+    </Provider>
   );
 }

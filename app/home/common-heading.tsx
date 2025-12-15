@@ -1,6 +1,7 @@
-'use client';
+"use client";
 
-import ThemeButton from "@/components/common/buttons/theme-button-arrow";
+import ThemeButton from "@/components/common/buttons/theme-button";
+import Link from "next/link";
 import type { ReactNode } from "react";
 
 type CommonHeadingProps = {
@@ -8,7 +9,7 @@ type CommonHeadingProps = {
   title?: ReactNode;
   description?: ReactNode;
   className?: string;
-  headingName?: string;
+  buttonComp?: string;
 };
 
 export default function CommonHeading({
@@ -16,31 +17,37 @@ export default function CommonHeading({
   title,
   description,
   className = "",
-  headingName,
+  buttonComp,
 }: CommonHeadingProps) {
-
-
-
+  const buttonMetaData: any = {
+    BUTTON_CHECK_PLAN: (
+      <>
+        <Link href={"/subscription-plan"}>
+          <ThemeButton label="Check Our Plan" />
+        </Link>
+      </>
+    ),
+    GET_ENROLL: (
+      <>
+        <ThemeButton label="Get Enroll" />
+      </>
+    ),
+  };
 
   return (
-    <section className={`text-center lg:mb-10 mb-6 max-w-[680px] mx-auto ${className}`}>
+    <section
+      className={`text-center lg:mb-10 mb-6 max-w-[680px] mx-auto ${className}`}
+    >
       <span className="bg-[var(--green)] font-bold text-white h-8 inline-flex items-center justify-center px-3.5 rounded-full gap-1 text-sm lg:text-base">
         {badgeText}
       </span>
-      <div className="text-2xl lg:text-[40px] font-extrabold leading-9 lg:leading-12 lg:my-4 my-2">{title}</div>
+      <div className="text-2xl lg:text-[40px] font-extrabold leading-9 lg:leading-12 lg:my-4 my-2">
+        {title}
+      </div>
       <p className="text-base lg:text-lg mb-8">{description}</p>
       {/* <ThemeButton >{label}</ThemeButton> */}
 
-      {
-        headingName=="CLIENT_HEAD" && <div>ClientHeading</div>
-      }
-      {
-        headingName=="DASHBOARD_HEAD" && <div>DashboardHeading</div>
-      }
-      {
-        headingName=="FOOD_HEAD" && <div>FoodHeading</div>
-      }
-
+      {buttonComp && buttonMetaData[buttonComp]}
     </section>
   );
 }

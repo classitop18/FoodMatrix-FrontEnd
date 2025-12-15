@@ -30,7 +30,6 @@ export interface User {
   lastLoginAt: string | null;
 }
 
-
 interface AuthState {
   user: User | null;
   accessToken: string | null;

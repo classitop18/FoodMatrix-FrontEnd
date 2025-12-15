@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
 import Navbar from "@/components/common/Navbar";
-import HeroSection from "./home/hero";
+
+import HomePage from "./home/page";
+import Footer from "@/components/common/Footer";
 
 export default function Home() {
   return (
-
     <>
-      <Navbar />
-      <HeroSection />
-    </>
 
+      <HomePage />
+    </>
   );
 }

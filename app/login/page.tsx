@@ -14,6 +14,11 @@ import { useDispatch } from "react-redux";
 import { loginSuccess } from "@/redux/features/auth/auth.slice";
 import { useRouter } from "next/navigation";
 
+import Image from "next/image";
+import pattern1 from "@/public/hero-pattern-1.svg";
+import pattern2 from "@/public/hero-pattern-2.svg";
+import foodBanner from "@/public/food-banner.svg";
+
 type LoginFormData = {
   emailOrUsername: string;
   password: string;
@@ -24,7 +29,7 @@ export default function LoginPage() {
 
   // Hookes
 
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const router = useRouter();
 
   const loginMutation = useLogin();
@@ -40,26 +45,29 @@ export default function LoginPage() {
     },
   });
 
-
-
   const onSubmit = async (data: LoginFormData) => {
     console.log("Form Data:", data);
     try {
       const response = await loginMutation.mutateAsync(data);
+
+      if (response?.data?.mfaRequired) {
+        router.push("/otp-verification");
+        return;
+      }
+
       const user = response.data;
       dispatch(
         loginSuccess({
           user,
           accessToken: user.accessToken,
-        })
+        }),
       );
 
       toast({
         title: "Login Successful",
         description: "Welcome back!",
       });
-      router.push("/dashboard")
-
+      router.push("/dashboard");
     } catch (error: any) {
       console.error("Login error:", error);
 
@@ -77,8 +85,35 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-[var(--primary-bg)] via-white to-[var(--primary-bg)] flex items-center justify-center px-4 py-12 overflow-hidden">
-      {/* Background Pattern */}
+    <div className="relative min-h-screen bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] flex items-center justify-center px-4 py-12 overflow-hidden">
+      {/* Background Patterns */}
+      <Image
+        src={pattern1}
+        className="absolute -top-64 -left-32 opacity-20 pointer-events-none"
+        width={818}
+        height={818}
+        alt="Pattern-1"
+      />
+      <Image
+        src={pattern2}
+        className="absolute right-0 -top-48 opacity-20 pointer-events-none"
+        width={818}
+        height={600}
+        alt="Pattern-2"
+      />
+
+      {/* Food Banner - Decorative */}
+      {/* <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-10 pointer-events-none hidden lg:block">
+        <Image
+          src={foodBanner}
+          className="animate-spin [animation-duration:30s]"
+          width={500}
+          height={500}
+          alt="Food Banner"
+        />
+      </div> */}
+
+      {/* Gradient Overlay */}
       <div className="absolute inset-0 opacity-30">
         <div className="absolute top-0 left-0 w-96 h-96 bg-[var(--primary)] rounded-full blur-3xl opacity-20 -translate-x-1/2 -translate-y-1/2"></div>
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-[var(--green)] rounded-full blur-3xl opacity-20 translate-x-1/2 translate-y-1/2"></div>
@@ -95,7 +130,9 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <h1 className="text-4xl font-extrabold text-[var(--primary)] mb-2">Welcome Back</h1>
+            <h1 className="text-4xl font-extrabold text-[var(--primary)] mb-2">
+              Welcome Back
+            </h1>
             <p className="text-gray-600 text-base">
               Sign in to continue your meal planning journey
             </p>
@@ -105,7 +142,12 @@ export default function LoginPage() {
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             {/* email/username */}
             <div className="space-y-2">
-              <Label htmlFor="emailOrUsername" className="text-[var(--primary)] font-semibold">Email or Username</Label>
+              <Label
+                htmlFor="emailOrUsername"
+                className="text-[var(--primary)] font-semibold"
+              >
+                Email or Username
+              </Label>
               <div className="relative group">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--primary)]/60 w-5 h-5 group-focus-within:text-[var(--primary)] transition-colors" />
                 <Input
@@ -119,7 +161,8 @@ export default function LoginPage() {
               </div>
               {errors.emailOrUsername && (
                 <p className="text-red-500 text-sm flex items-center gap-1">
-                  <span className="text-lg">⚠</span> {errors.emailOrUsername.message}
+                  <span className="text-lg">⚠</span>{" "}
+                  {errors.emailOrUsername.message}
                 </p>
               )}
             </div>
@@ -127,7 +170,12 @@ export default function LoginPage() {
             {/* password */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-[var(--primary)] font-semibold">Password</Label>
+                <Label
+                  htmlFor="password"
+                  className="text-[var(--primary)] font-semibold"
+                >
+                  Password
+                </Label>
                 <Link
                   href="/forgot-password"
                   className="text-sm text-[var(--green)] hover:text-[var(--green-light)] font-medium hover:underline transition-colors"
@@ -197,7 +245,6 @@ export default function LoginPage() {
           >
             <Link href="/register">Create Account</Link>
           </Button>
-
         </CardContent>
       </Card>
     </div>

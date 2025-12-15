@@ -24,6 +24,10 @@ import {
   useRegister,
 } from "@/services/auth/auth.mutation";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import pattern1 from "@/public/hero-pattern-1.svg";
+import pattern2 from "@/public/hero-pattern-2.svg";
+import foodBanner from "@/public/food-banner.svg";
 
 export const usernameRegex = /^[A-Za-z][A-Za-z0-9_]{2,19}$/;
 
@@ -42,8 +46,8 @@ export default function Register() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [registeredUser, setRegisteredUser] = useState<any>(null);
 
-  // Hooks 
-  const router = useRouter()
+  // Hooks
+  const router = useRouter();
 
   const checkIsExistMutation = useCheckEmailUsernameExist();
   const registerMutation = useRegister();
@@ -202,8 +206,35 @@ export default function Register() {
   //   }
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-[var(--primary-bg)] via-white to-[var(--primary-bg)] overflow-hidden">
-      {/* Background Pattern */}
+    <div className="relative min-h-screen bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] overflow-hidden">
+      {/* Background Patterns */}
+      <Image
+        src={pattern1}
+        className="absolute -top-64 -left-32 opacity-20 pointer-events-none"
+        width={818}
+        height={818}
+        alt="Pattern-1"
+      />
+      <Image
+        src={pattern2}
+        className="absolute right-0 top-0 opacity-20 pointer-events-none"
+        width={818}
+        height={600}
+        alt="Pattern-2"
+      />
+
+      {/* Food Banner - Decorative */}
+      {/* <div className="absolute left-0 top-1/2 -translate-y-1/2 opacity-10 pointer-events-none hidden lg:block">
+        <Image
+          src={foodBanner}
+          className="animate-spin [animation-duration:30s]"
+          width={500}
+          height={500}
+          alt="Food Banner"
+        />
+      </div> */}
+
+      {/* Gradient Overlay */}
       <div className="absolute inset-0 opacity-30">
         <div className="absolute top-0 right-0 w-96 h-96 bg-[var(--primary)] rounded-full blur-3xl opacity-20 translate-x-1/2 -translate-y-1/2"></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-[var(--green)] rounded-full blur-3xl opacity-20 -translate-x-1/2 translate-y-1/2"></div>
@@ -213,8 +244,8 @@ export default function Register() {
         <Card className="w-full max-w-2xl border-2 border-[var(--primary)]/10 shadow-2xl rounded-3xl backdrop-blur-xl bg-white/90 animate-scale-in">
           <CardContent className="p-8 md:p-10">
             <div className="text-center mb-8">
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-[var(--primary)] to-[var(--primary-light)] text-white shadow-lg shadow-[var(--primary)]/30 mb-4">
-                <UserPlus className="w-10 h-10" />
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-[var(--primary)] to-[var(--primary-light)] text-white shadow-lg shadow-[var(--primary)]/30 mb-4">
+                <UserPlus className="w-5 h-5" />
               </div>
               <h1 className="text-4xl md:text-5xl font-extrabold text-[var(--primary)] mb-2">
                 Create Account
@@ -229,7 +260,9 @@ export default function Register() {
               <div className="grid md:grid-cols-2 gap-4">
                 {/* First Name */}
                 <div className="space-y-2">
-                  <Label className="text-[var(--primary)] font-semibold">First Name</Label>
+                  <Label className="text-[var(--primary)] font-semibold">
+                    First Name
+                  </Label>
                   <Input
                     placeholder="John"
                     className="h-12 rounded-xl border-2 border-[var(--primary)]/20 focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 transition-all"
@@ -239,14 +272,17 @@ export default function Register() {
                   />
                   {errors.firstName && (
                     <p className="text-red-600 text-sm flex items-center gap-1">
-                      <span className="text-lg">⚠</span> {errors.firstName.message}
+                      <span className="text-lg">⚠</span>{" "}
+                      {errors.firstName.message}
                     </p>
                   )}
                 </div>
 
                 {/* Last Name */}
                 <div className="space-y-2">
-                  <Label className="text-[var(--primary)] font-semibold">Last Name</Label>
+                  <Label className="text-[var(--primary)] font-semibold">
+                    Last Name
+                  </Label>
                   <Input
                     placeholder="Doe"
                     className="h-12 rounded-xl border-2 border-[var(--primary)]/20 focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 transition-all"
@@ -256,7 +292,8 @@ export default function Register() {
                   />
                   {errors.lastName && (
                     <p className="text-red-600 text-sm flex items-center gap-1">
-                      <span className="text-lg">⚠</span> {errors.lastName.message}
+                      <span className="text-lg">⚠</span>{" "}
+                      {errors.lastName.message}
                     </p>
                   )}
                 </div>
@@ -264,7 +301,9 @@ export default function Register() {
 
               {/* Username */}
               <div className="space-y-2">
-                <Label className="text-[var(--primary)] font-semibold">Username</Label>
+                <Label className="text-[var(--primary)] font-semibold">
+                  Username
+                </Label>
                 <Input
                   placeholder="john_doe"
                   className="h-12 rounded-xl border-2 border-[var(--primary)]/20 focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 transition-all"
@@ -272,7 +311,8 @@ export default function Register() {
                 />
                 {username && !validation.usernameFormat && (
                   <p className="text-sm text-red-600 flex items-center gap-1">
-                    <XCircle className="w-4 h-4" /> Username must start with a letter, 3-20 characters, only A-Z, a-z, 0-9, or _
+                    <XCircle className="w-4 h-4" /> Username must start with a
+                    letter, 3-20 characters, only A-Z, a-z, 0-9, or _
                   </p>
                 )}
                 {username &&
@@ -283,7 +323,8 @@ export default function Register() {
                     >
                       {validation.username.available ? (
                         <>
-                          <CheckCircle2 className="w-4 h-4" /> Username available
+                          <CheckCircle2 className="w-4 h-4" /> Username
+                          available
                         </>
                       ) : (
                         <>
@@ -296,7 +337,9 @@ export default function Register() {
 
               {/* Email */}
               <div className="space-y-2">
-                <Label className="text-[var(--primary)] font-semibold">Email</Label>
+                <Label className="text-[var(--primary)] font-semibold">
+                  Email
+                </Label>
                 <div className="relative group">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--primary)]/60 w-5 h-5 group-focus-within:text-[var(--primary)] transition-colors" />
                   <Input
@@ -327,7 +370,9 @@ export default function Register() {
               <div className="grid md:grid-cols-2 gap-4">
                 {/* Password */}
                 <div className="space-y-2 relative">
-                  <Label className="text-[var(--primary)] font-semibold">Password</Label>
+                  <Label className="text-[var(--primary)] font-semibold">
+                    Password
+                  </Label>
                   <div className="relative group">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--primary)]/60 w-5 h-5 group-focus-within:text-[var(--primary)] transition-colors" />
                     <Input
@@ -355,7 +400,9 @@ export default function Register() {
 
                 {/* Confirm Password */}
                 <div className="space-y-2 relative">
-                  <Label className="text-[var(--primary)] font-semibold">Confirm Password</Label>
+                  <Label className="text-[var(--primary)] font-semibold">
+                    Confirm Password
+                  </Label>
                   <div className="relative group">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--primary)]/60 w-5 h-5 group-focus-within:text-[var(--primary)] transition-colors" />
                     <Input
@@ -368,7 +415,9 @@ export default function Register() {
                     />
                     <button
                       type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--primary)]/60 hover:text-[var(--primary)] transition-colors"
                     >
                       {showConfirmPassword ? (

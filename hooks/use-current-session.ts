@@ -6,19 +6,11 @@ import { loginSuccess, logout } from "@/redux/features/auth/auth.slice";
 import { useAuthMe } from "@/services/auth/auth.query";
 
 export function useCurrentSession() {
-   
-    const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
 
-    
+  const response = useAuthMe();
 
-    const response = useAuthMe();
+  console.log(response);
 
-    console.log(response)
-
-   
-
-    return { loading, reloadSession: response };
+  return { loading, reloadSession: response };
 }
-
-
-

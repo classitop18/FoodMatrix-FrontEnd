@@ -7,14 +7,9 @@ const publicRoutes = [
   "/home",
   "/register",
   "/forgot-password",
-  "/verify-email"
+  "/verify-email",
 ];
-const authRoutes = [
-  "/login",
-  "/register",
-  "/forgot-password",
-  "/verify-email"
-]; // routes not allowed for logged-in users
+const authRoutes = ["/login", "/register", "/forgot-password", "/verify-email"]; // routes not allowed for logged-in users
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -26,11 +21,10 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-    // ----- If route is public, always allow -----
+  // ----- If route is public, always allow -----
   if (publicRoutes.includes(pathname)) {
     return NextResponse.next();
   }
-
 
   // ----- Protected route: requires token -----
   if (!token) {

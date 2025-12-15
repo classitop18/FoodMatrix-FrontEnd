@@ -71,27 +71,34 @@ export const useCheckEmailUsernameExist = () => {
   });
 };
 
-
 export const useForgetPassword = () => {
-
   return useMutation({
     mutationFn: (email: string) => authService.forgetPassword(email),
-    onSuccess: () => {
-    },
+    onSuccess: () => {},
     onError: (error: any) => {
       console.error("Logout error:", error);
     },
-  })
-
-}
-
-
+  });
+};
 
 export const useResetPassword = () => {
-
   return useMutation({
-    mutationFn: (payload: {
-      newPassword: string
-    }) => authService.resetPassword(payload),
-  })
-}
+    mutationFn: (payload: { newPassword: string }) =>
+      authService.resetPassword(payload),
+  });
+};
+
+export const useMFAVerify = () => {
+  return useMutation({
+    mutationFn: (payload: { otp: string }) =>
+      authService.otpVerification(payload),
+    onSuccess: (data) => {
+      const user = data.data;
+      localStorage.setItem("accessToken", user.accessToken);
+    },
+
+    onError: (error: any) => {
+      console.error("Login error:", error);
+    },
+  });
+};
