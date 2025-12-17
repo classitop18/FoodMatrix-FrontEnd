@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -27,111 +26,368 @@ import {
   Bell,
   CreditCard,
   LogOut,
-  ChevronRight,
+  AlertCircle,
+  Loader2,
+  XCircle,
+  CheckCircle2
 } from "lucide-react";
+
 import Image from "next/image";
 import pattern1 from "@/public/hero-pattern-1.svg";
 import pattern2 from "@/public/hero-pattern-2.svg";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store.redux";
+import { AddressAutocomplete } from "@/components/profile/address-autocomplete";
+import Loader from "@/components/common/Loader";
+import { useChangePassword, useCheckProperty, useUpdateUserProfile } from "@/services/auth/auth.mutation";
 
-// Static data for demonstration
-const staticAccountData = {
-  name: "Vishal Sharma",
-  username: "vishal_sharma",
-  email: "vishal.sharma@foodmatrix.com",
-  isMfaEnabled: true,
-  phone: "+91 98765 43210",
-  addressLine1: "123 MG Road",
-  addressLine2: "Apartment 4B",
-  city: "Bangalore",
-  state: "Karnataka",
-  country: "India",
-  zipCode: "560001",
-  formattedAddress:
-    "123 MG Road, Apartment 4B, Bangalore, Karnataka 560001, India",
-  accountNumber: "FM-2024-001234",
-  weeklyBudget: "5000.00",
-  createdAt: "2024-01-15T10:30:00Z",
-  lastLoginAt: "2024-12-12T08:15:00Z",
-  isVerified: true,
-  isPremium: true,
-  memberSince: "Jan 2024",
-};
+import ChangePasswordModal from "@/components/profile/change-password-modal";
+import { toast } from "@/hooks/use-toast";
 
-const staticMembers = [
-  {
-    id: "1",
-    name: "Priya Sharma",
-    age: 28,
-    sex: "female",
-    relation: "Spouse",
-    healthGoals: ["Weight Loss", "Heart Health"],
-    dietaryPreferences: ["Vegetarian"],
-    allergies: ["Peanuts"],
-    isAdmin: false,
-  },
-  {
-    id: "2",
-    name: "Aarav Sharma",
-    age: 5,
-    sex: "male",
-    relation: "Son",
-    healthGoals: ["Growth & Development"],
-    dietaryPreferences: [],
-    allergies: [],
-    isAdmin: false,
-  },
-  {
-    id: "3",
-    name: "Anita Sharma",
-    age: 58,
-    sex: "female",
-    relation: "Mother",
-    healthGoals: ["Diabetes Management", "Blood Pressure"],
-    dietaryPreferences: ["Low Sugar", "Low Salt"],
-    allergies: [],
-    isAdmin: false,
-  },
-];
-
-const staticInvitations = [
-  {
-    id: "1",
-    email: "rahul.sharma@example.com",
-    role: "Member",
-    status: "Pending",
-    sentAt: "2024-12-10T14:30:00Z",
-  },
-  {
-    id: "2",
-    email: "neha.patel@example.com",
-    role: "Admin",
-    status: "Pending",
-    sentAt: "2024-12-11T09:15:00Z",
-  },
-];
+export const usernameRegex = /^[A-Za-z][A-Za-z0-9_]{2,19}$/;
 
 const AccountPage = () => {
   const [activeTab, setActiveTab] = useState("account");
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState({ ...staticAccountData });
-  const [accountData] = useState(staticAccountData);
-  const [members] = useState(staticMembers);
-  const [invitations] = useState(staticInvitations);
+  const [editData, setEditData] = useState(null);
+  const [isChangePasswordEnable, setIsChangePasswordEnable] = useState(false);
+  const { user } = useSelector((state: RootState) => state.auth);
+  const { account, activeBudget } = useSelector((state: RootState) => state.account);
+  const [isMfaUpdating, setIsMfaUpdating] = useState(false);
+
+  const checkIsExistMutation = useCheckProperty();
+  const profileUpdateMutation = useUpdateUserProfile();
+  const changePasswordMutation = useChangePassword();
+  // Validation states
+  const [validation, setValidation] = useState({
+    username: {
+      checking: false,
+      isValid: true,
+      exists: false,
+      message: "",
+    },
+    email: {
+      checking: false,
+      isValid: true,
+      exists: false,
+      message: "",
+    },
+  });
+
+  const accountData = useMemo(() => {
+    if (!user) return null;
+
+    return {
+      name: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
+      firstName: user.firstName?.trim() ?? "",
+      lastName: user?.lastName?.trim() ?? "",
+      username: user.username,
+      email: user.email,
+      phone: user.phone ?? "—",
+
+      isVerified: user.isVerified,
+      isMfaEnabled: user.isMfaEnabled,
+
+      city: user.city ?? "",
+      state: user.state ?? "",
+      country: user.country ?? "",
+      zipCode: user.zipCode ?? "",
+
+      formattedAddress:
+        user.formattedAddress ??
+        [
+          user.addressLine1,
+          user.addressLine2,
+          user.city,
+          user.state,
+          user.country,
+          user.zipCode,
+        ]
+          .filter(Boolean)
+          .join(", "),
+
+      createdAt: user.createdAt,
+      lastLoginAt: user.lastLoginAt,
+
+      accountNumber: "FM-XXXX-XXXX",
+      weeklyBudget: "—",
+      memberSince: new Date(user.createdAt).toLocaleDateString("en-US", {
+        month: "short",
+        year: "numeric",
+      }),
+      isPremium: false,
+    };
+  }, [user]);
 
   const handleEdit = () => {
     setIsEditing(true);
     setEditData({ ...accountData });
+    // Reset validation when starting edit
+    setValidation({
+      username: { checking: false, isValid: true, exists: false, message: "" },
+      email: { checking: false, isValid: true, exists: false, message: "" },
+    });
   };
 
-  const handleSave = () => {
-    // Save logic would go here
-    setIsEditing(false);
+  const handleChangePassword = async (payload: any) => {
+    try {
+      await changePasswordMutation.mutateAsync(payload);
+      toast({
+        title: "Password Updated Successfully 🎉",
+        description: "Your password has been changed.",
+      });
+      setIsChangePasswordEnable(false);  // close modal after success
+    } catch (error: any) {
+      console.error("Change password error:", error);
+      toast({
+        title: "Failed to Update Password ❌",
+        description: error?.response?.data?.message || "Something went wrong, please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Debounced validation check
+  useEffect(() => {
+    if (!isEditing || !editData) return;
+
+    const timer = setTimeout(() => {
+      validateFields();
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [editData?.username, editData?.email, isEditing]);
+
+  const validateFields = async () => {
+    // Validate Username
+    if (editData?.username && editData.username !== accountData.username) {
+      // Check format first
+      const isValidFormat = usernameRegex.test(editData.username);
+
+      if (!isValidFormat) {
+        setValidation((prev) => ({
+          ...prev,
+          username: {
+            checking: false,
+            isValid: false,
+            exists: false,
+            message: "Username must start with a letter and be 3-20 characters (letters, numbers, underscore)",
+          },
+        }));
+        return;
+      }
+
+      // Check if exists
+      setValidation((prev) => ({
+        ...prev,
+        username: { ...prev.username, checking: true },
+      }));
+
+      try {
+        const response = await checkIsExistMutation.mutateAsync({
+          field: "username",
+          value: editData.username,
+        });
+
+        const exists = response?.data?.exists;
+        setValidation((prev) => ({
+          ...prev,
+          username: {
+            checking: false,
+            isValid: !exists,
+            exists: exists,
+            message: exists ? "This username is already taken" : "Username is available",
+          },
+        }));
+      } catch (error) {
+        setValidation((prev) => ({
+          ...prev,
+          username: {
+            checking: false,
+            isValid: false,
+            exists: false,
+            message: "Failed to check username availability",
+          },
+        }));
+      }
+    } else if (editData?.username === accountData.username) {
+      // Same as original, no validation needed
+      setValidation((prev) => ({
+        ...prev,
+        username: {
+          checking: false,
+          isValid: true,
+          exists: false,
+          message: "",
+        },
+      }));
+    }
+
+    // Validate Email (if you allow email changes)
+    if (editData?.email && editData.email !== accountData.email) {
+      setValidation((prev) => ({
+        ...prev,
+        email: { ...prev.email, checking: true },
+      }));
+
+      try {
+        const response = await checkIsExistMutation.mutateAsync({
+          field: "email",
+          value: editData.email,
+        });
+
+        const exists = response?.data?.exists;
+        setValidation((prev) => ({
+          ...prev,
+          email: {
+            checking: false,
+            isValid: !exists,
+            exists: exists,
+            message: exists ? "This email is already registered" : "Email is available",
+          },
+        }));
+      } catch (error) {
+        setValidation((prev) => ({
+          ...prev,
+          email: {
+            checking: false,
+            isValid: false,
+            exists: false,
+            message: "Failed to check email availability",
+          },
+        }));
+      }
+    } else if (editData?.email === accountData.email) {
+      setValidation((prev) => ({
+        ...prev,
+        email: {
+          checking: false,
+          isValid: true,
+          exists: false,
+          message: "",
+        },
+      }));
+    }
+  };
+
+
+  const handleMfaToggle = async (checked: boolean) => {
+    if (!user) return;
+
+    setIsMfaUpdating(true);
+
+    try {
+      await profileUpdateMutation.mutateAsync({
+        isMfaEnabled: checked,
+      });
+
+      toast.success(
+        checked ? "MFA Enabled" : "MFA Disabled",
+        {
+          description: checked
+            ? "Two-factor authentication has been enabled."
+            : "Two-factor authentication has been disabled.",
+        }
+      );
+    } catch (error: any) {
+      toast.error("Failed to update MFA", {
+        description:
+          error?.response?.data?.message ||
+          "Something went wrong. Please try again.",
+      });
+    } finally {
+      setIsMfaUpdating(false);
+    }
+  };
+
+
+  const handleSave = async () => {
+    if (!editData) return;
+
+    // Check if all validations pass
+    if (!validation.username.isValid || !validation.email.isValid) {
+      toast.error("Validation Error", {
+        description: "Please fix the validation errors before saving.",
+      });
+      return;
+    }
+
+    // Check if username/email exists
+    if (validation.username.exists || validation.email.exists) {
+      toast.error("Duplicate Entry", {
+        description: "Username or email already exists. Please choose different values.",
+      });
+      return;
+    }
+
+    try {
+      await profileUpdateMutation.mutateAsync(editData);
+
+      toast.success("Profile updated successfully", {
+        description: "Your changes have been saved.",
+      });
+
+      setIsEditing(false);
+    } catch (error: any) {
+      toast.error("Failed to update profile", {
+        description:
+          error?.response?.data?.message ||
+          error?.message ||
+          "Something went wrong. Please try again.",
+      });
+    }
   };
 
   const handleCancel = () => {
     setIsEditing(false);
     setEditData({ ...accountData });
+    setValidation({
+      username: { checking: false, isValid: true, exists: false, message: "" },
+      email: { checking: false, isValid: true, exists: false, message: "" },
+    });
   };
+
+  // Validation indicator component
+  const ValidationIndicator = ({ field }: { field: "username" | "email" }) => {
+    const val = validation[field];
+
+    if (!isEditing) return null;
+    if (editData?.[field] === accountData[field]) return null;
+    if (!editData?.[field]) return null;
+
+    if (val.checking) {
+      return (
+        <div className="flex items-center gap-2 text-blue-600 text-xs mt-1">
+          <Loader2 className="w-3 h-3 animate-spin" />
+          <span>Checking availability...</span>
+        </div>
+      );
+    }
+
+    if (!val.isValid || val.exists) {
+      return (
+        <div className="flex items-center gap-2 text-red-600 text-xs mt-1">
+          <XCircle className="w-3 h-3" />
+          <span>{val.message}</span>
+        </div>
+      );
+    }
+
+    if (val.isValid && !val.exists && val.message) {
+      return (
+        <div className="flex items-center gap-2 text-green-600 text-xs mt-1">
+          <CheckCircle2 className="w-3 h-3" />
+          <span>{val.message}</span>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  if (!accountData) {
+    return <Loader />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] relative overflow-hidden w-full">
@@ -164,7 +420,7 @@ const AccountPage = () => {
               </p>
             </div>
 
-            {accountData.isPremium && (
+            {accountData?.isPremium && (
               <div className="bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white px-5 py-2 rounded-full flex items-center gap-2 shadow-lg">
                 <Crown className="w-4 h-4" />
                 <span className="font-bold text-sm">Premium Member</span>
@@ -184,33 +440,7 @@ const AccountPage = () => {
           >
             <div className="flex items-center gap-2">
               <UserCircle className="w-4 h-4" />
-              My Account
-            </div>
-          </button>
-
-          <button
-            onClick={() => setActiveTab("members")}
-            className={`px-5 py-2 rounded-full font-bold text-sm transition-all duration-300 whitespace-nowrap ${activeTab === "members"
-              ? "bg-[var(--primary)] text-white shadow-lg"
-              : "bg-white text-gray-600 hover:bg-gray-100"
-              }`}
-          >
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              Members ({members.length})
-            </div>
-          </button>
-
-          <button
-            onClick={() => setActiveTab("invitations")}
-            className={`px-5 py-2 rounded-full font-bold text-sm transition-all duration-300 whitespace-nowrap ${activeTab === "invitations"
-              ? "bg-[var(--primary)] text-white shadow-lg"
-              : "bg-white text-gray-600 hover:bg-gray-100"
-              }`}
-          >
-            <div className="flex items-center gap-2">
-              <Mail className="w-4 h-4" />
-              Invitations ({invitations.length})
+              My Profile
             </div>
           </button>
 
@@ -240,10 +470,10 @@ const AccountPage = () => {
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 font-medium">
-                      Account Number
+                      Active Account Number
                     </p>
                     <p className="text-base font-extrabold text-[var(--primary)]">
-                      {accountData.accountNumber}
+                      {account?.accountNumber}
                     </p>
                   </div>
                 </div>
@@ -256,10 +486,10 @@ const AccountPage = () => {
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 font-medium">
-                      Weekly Budget
+                      {activeBudget?.label}
                     </p>
                     <p className="text-base font-extrabold text-[var(--green)]">
-                      ₹{accountData.weeklyBudget}
+                      ${activeBudget?.amount}
                     </p>
                   </div>
                 </div>
@@ -275,7 +505,7 @@ const AccountPage = () => {
                       Member Since
                     </p>
                     <p className="text-base font-extrabold text-[var(--primary-light)]">
-                      {accountData.memberSince}
+                      {accountData?.memberSince}
                     </p>
                   </div>
                 </div>
@@ -302,14 +532,31 @@ const AccountPage = () => {
                   <div className="flex gap-2">
                     <button
                       onClick={handleSave}
-                      className="bg-[var(--green)] text-white px-5 py-2 rounded-full font-bold text-sm flex items-center gap-2 hover:shadow-lg transition-all duration-300 hover:scale-105"
+                      disabled={
+                        profileUpdateMutation.isPending ||
+                        !validation.username.isValid ||
+                        !validation.email.isValid ||
+                        validation.username.exists ||
+                        validation.email.exists
+                      }
+                      className="bg-[var(--green)] text-white px-5 py-2 rounded-full font-bold text-sm flex items-center gap-2 hover:shadow-lg transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                     >
-                      <Save className="h-4 w-4" />
-                      Save
+                      {profileUpdateMutation.isPending ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="h-4 w-4" />
+                          Save
+                        </>
+                      )}
                     </button>
                     <button
                       onClick={handleCancel}
-                      className="bg-white text-gray-700 px-5 py-2 rounded-full font-bold text-sm flex items-center gap-2 hover:shadow-lg transition-all duration-300 hover:scale-105"
+                      disabled={profileUpdateMutation.isPending}
+                      className="bg-white text-gray-700 px-5 py-2 rounded-full font-bold text-sm flex items-center gap-2 hover:shadow-lg transition-all duration-300 hover:scale-105 disabled:opacity-50"
                     >
                       <X className="h-4 w-4" />
                       Cancel
@@ -323,9 +570,9 @@ const AccountPage = () => {
                 <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 pb-6 border-b-2 border-gray-100">
                   <div className="relative">
                     <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--primary-light)] flex items-center justify-center text-white text-4xl font-extrabold shadow-xl ring-4 ring-white">
-                      {accountData.name.charAt(0).toUpperCase()}
+                      {accountData?.name.charAt(0).toUpperCase()}
                     </div>
-                    {accountData.isVerified && (
+                    {accountData?.isVerified && (
                       <div className="absolute -bottom-1 -right-1 bg-[var(--green)] rounded-full p-1.5 border-4 border-white shadow-lg">
                         <Check className="w-5 h-5 text-white" />
                       </div>
@@ -335,9 +582,9 @@ const AccountPage = () => {
                   <div className="flex-1 text-center sm:text-left">
                     <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 mb-2">
                       <h3 className="text-2xl font-extrabold text-gray-800">
-                        {accountData.name}
+                        {accountData?.name}
                       </h3>
-                      {accountData.isVerified && (
+                      {accountData?.isVerified && (
                         <Badge className="bg-[var(--green)] text-white border-0 px-2 py-0.5 text-xs font-bold">
                           <Check className="w-3 h-3 mr-1" />
                           Verified
@@ -345,13 +592,11 @@ const AccountPage = () => {
                       )}
                     </div>
                     <p className="text-base text-gray-600 mb-1">
-                      @{accountData.username}
+                      @{accountData?.username}
                     </p>
                     <p className="text-xs text-gray-500">
                       Last login:{" "}
-                      {new Date(accountData.lastLoginAt).toLocaleString(
-                        "en-GB",
-                      )}
+                      {new Date(accountData?.lastLoginAt).toLocaleString("en-GB")}
                     </p>
                     <button className="mt-3 bg-[var(--primary-bg)] text-[var(--primary)] px-5 py-2 rounded-full font-bold text-sm hover:bg-[var(--primary)] hover:text-white transition-all duration-300">
                       Change Photo
@@ -361,27 +606,56 @@ const AccountPage = () => {
 
                 {/* Form Fields */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Full Name */}
+                  {/* First Name */}
                   <div className="space-y-1.5">
                     <Label
-                      htmlFor="name"
+                      htmlFor="firstName"
                       className="flex items-center gap-2 font-bold text-gray-700 text-sm"
                     >
                       <User className="w-4 h-4 text-[var(--primary)]" />
-                      Full Name
+                      First Name
                     </Label>
                     <Input
-                      id="name"
-                      value={isEditing ? editData.name : accountData.name}
+                      id="firstName"
+                      value={
+                        isEditing
+                          ? editData?.firstName
+                          : accountData?.firstName
+                      }
                       onChange={(e) =>
-                        setEditData({ ...editData, name: e.target.value })
+                        setEditData({ ...editData, firstName: e.target.value })
                       }
                       disabled={!isEditing}
-                      className="h-11 rounded-lg border border-[#E5E5E5] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none"
+                      className="h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none"
                     />
                   </div>
 
-                  {/* Username */}
+                  {/* Last Name */}
+                  <div className="space-y-1.5">
+                    <Label
+                      htmlFor="lastName"
+                      className="flex items-center gap-2 font-bold text-gray-700 text-sm"
+                    >
+                      <User className="w-4 h-4 text-[var(--primary)]" />
+                      Last Name
+                    </Label>
+                    <Input
+                      id="lastName"
+                      value={
+                        isEditing
+                          ? editData?.lastName
+                          : accountData?.lastName
+                      }
+                      onChange={(e) =>
+                        setEditData({ ...editData, lastName: e.target.value })
+                      }
+                      disabled={!isEditing}
+                      className="h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none"
+                    />
+                  </div>
+
+
+                  {/* Username with Validation */}
                   <div className="space-y-1.5">
                     <Label
                       htmlFor="username"
@@ -390,17 +664,36 @@ const AccountPage = () => {
                       <UserCircle className="w-4 h-4 text-[var(--primary)]" />
                       Username
                     </Label>
-                    <Input
-                      id="username"
-                      value={
-                        isEditing ? editData.username : accountData.username
-                      }
-                      onChange={(e) =>
-                        setEditData({ ...editData, username: e.target.value })
-                      }
-                      disabled={!isEditing}
-                      className="h-11 rounded-lg border border-[#E5E5E5] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none"
-                    />
+                    <div className="relative">
+                      <Input
+                        id="username"
+                        value={isEditing ? editData.username : accountData.username}
+                        onChange={(e) =>
+                          setEditData({ ...editData, username: e.target.value })
+                        }
+                        disabled={!isEditing}
+                        className={`h-11 rounded-lg border text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none pr-10 ${isEditing && editData?.username !== accountData.username
+                          ? validation.username.exists || !validation.username.isValid
+                            ? "border-red-500 focus:border-red-500"
+                            : validation.username.isValid && validation.username.message
+                              ? "border-green-500 focus:border-green-500"
+                              : "border-[#BCBCBC]"
+                          : "border-[#BCBCBC]"
+                          }`}
+                      />
+                      {isEditing && editData?.username !== accountData.username && editData?.username && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          {validation.username.checking ? (
+                            <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
+                          ) : validation.username.exists || !validation.username.isValid ? (
+                            <XCircle className="w-4 h-4 text-red-600" />
+                          ) : validation.username.isValid && validation.username.message ? (
+                            <CheckCircle2 className="w-4 h-4 text-green-600" />
+                          ) : null}
+                        </div>
+                      )}
+                    </div>
+                    <ValidationIndicator field="username" />
                   </div>
 
                   {/* Email */}
@@ -417,8 +710,9 @@ const AccountPage = () => {
                       type="email"
                       value={accountData.email}
                       disabled
-                      className="h-11 rounded-lg border border-[#E5E5E5] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none"
+                      className="h-11 rounded-lg border border-[#BCBCBC] text-black bg-gray-50 focus:ring-0 transition-all text-base font-medium shadow-none cursor-not-allowed"
                     />
+                    <p className="text-xs text-gray-500">Email cannot be changed</p>
                   </div>
 
                   {/* Phone */}
@@ -437,43 +731,56 @@ const AccountPage = () => {
                         setEditData({ ...editData, phone: e.target.value })
                       }
                       disabled={!isEditing}
-                      className="h-11 rounded-lg border border-[#E5E5E5] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none"
+                      className="h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none"
                     />
                   </div>
 
-                  {/* Address */}
-                  <div className="space-y-1.5 md:col-span-2">
-                    <Label
-                      htmlFor="address"
-                      className="flex items-center gap-2 font-bold text-gray-700 text-sm"
-                    >
-                      <MapPin className="w-4 h-4 text-[var(--primary)]" />
-                      Full Address
-                    </Label>
-                    <Input
-                      id="address"
-                      value={
-                        isEditing
-                          ? editData.formattedAddress
-                          : accountData.formattedAddress
-                      }
-                      onChange={(e) =>
-                        setEditData({
-                          ...editData,
-                          formattedAddress: e.target.value,
-                        })
-                      }
-                      disabled={!isEditing}
-                      className="h-11 rounded-lg border border-[#E5E5E5] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none"
-                    />
-                  </div>
+                  {/* Address Autocomplete or Display */}
+                  {isEditing ? (
+                    <div className="space-y-1.5 md:col-span-2">
+                      <AddressAutocomplete
+                        initialValue={editData?.formattedAddress || accountData.formattedAddress}
+                        onAddressSelect={(address) => {
+                          setEditData({
+                            ...editData,
+                            addressLine1: address.addressLine1 || "",
+                            addressLine2: address.addressLine2 || "",
+                            city: address.city || "",
+                            state: address.state || "",
+                            country: address.country || "",
+                            zipCode: address.zipCode || "",
+                            formattedAddress: address.formattedAddress || "",
+                            latitude: address.latitude?.toString() || "",
+                            longitude: address.longitude?.toString() || "",
+                            placeId: address.placeId || "",
+                          });
+                        }}
+                        disabled={!isEditing}
+                        label="Address"
+                        placeholder="Start typing your address..."
+                      />
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5 md:col-span-2">
+                      <Label
+                        htmlFor="address"
+                        className="flex items-center gap-2 font-bold text-gray-700 text-sm"
+                      >
+                        <MapPin className="w-4 h-4 text-[var(--primary)]" />
+                        Full Address
+                      </Label>
+                      <Input
+                        id="address"
+                        value={accountData?.formattedAddress || "No address set"}
+                        disabled
+                        className="h-11 rounded-lg border border-[#BCBCBC] text-black bg-gray-50 focus:ring-0 transition-all text-base font-medium shadow-none cursor-not-allowed"
+                      />
+                    </div>
+                  )}
 
-                  {/* City */}
+                  {/* City, State, Zip, Country */}
                   <div className="space-y-1.5">
-                    <Label
-                      htmlFor="city"
-                      className="font-bold text-gray-700 text-sm"
-                    >
+                    <Label htmlFor="city" className="font-bold text-gray-700 text-sm">
                       City
                     </Label>
                     <Input
@@ -483,16 +790,12 @@ const AccountPage = () => {
                         setEditData({ ...editData, city: e.target.value })
                       }
                       disabled={!isEditing}
-                      className="h-11 rounded-lg border border-[#E5E5E5] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none"
+                      className="h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none"
                     />
                   </div>
 
-                  {/* State */}
                   <div className="space-y-1.5">
-                    <Label
-                      htmlFor="state"
-                      className="font-bold text-gray-700 text-sm"
-                    >
+                    <Label htmlFor="state" className="font-bold text-gray-700 text-sm">
                       State
                     </Label>
                     <Input
@@ -502,16 +805,12 @@ const AccountPage = () => {
                         setEditData({ ...editData, state: e.target.value })
                       }
                       disabled={!isEditing}
-                      className="h-11 rounded-lg border border-[#E5E5E5] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none"
+                      className="h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none"
                     />
                   </div>
 
-                  {/* ZIP Code */}
                   <div className="space-y-1.5">
-                    <Label
-                      htmlFor="zipCode"
-                      className="font-bold text-gray-700 text-sm"
-                    >
+                    <Label htmlFor="zipCode" className="font-bold text-gray-700 text-sm">
                       ZIP Code
                     </Label>
                     <Input
@@ -521,16 +820,12 @@ const AccountPage = () => {
                         setEditData({ ...editData, zipCode: e.target.value })
                       }
                       disabled={!isEditing}
-                      className="h-11 rounded-lg border border-[#E5E5E5] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none"
+                      className="h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none"
                     />
                   </div>
 
-                  {/* Country */}
                   <div className="space-y-1.5">
-                    <Label
-                      htmlFor="country"
-                      className="font-bold text-gray-700 text-sm"
-                    >
+                    <Label htmlFor="country" className="font-bold text-gray-700 text-sm">
                       Country
                     </Label>
                     <Input
@@ -540,13 +835,18 @@ const AccountPage = () => {
                         setEditData({ ...editData, country: e.target.value })
                       }
                       disabled={!isEditing}
-                      className="h-11 rounded-lg border border-[#E5E5E5] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none"
+                      className="h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none"
                     />
                   </div>
                 </div>
               </CardContent>
             </Card>
+          </div>
+        )}
 
+        {/* Settings Tab */}
+        {activeTab === "settings" && (
+          <div className="space-y-6 animate-scale-in">
             <Card className="border-0 shadow-xl bg-white gap-0 rounded-xl overflow-hidden">
               <CardHeader className="bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white py-4 flex justify-between items-center">
                 <CardTitle className="flex items-center gap-3 text-xl font-extrabold p-0">
@@ -577,11 +877,30 @@ const AccountPage = () => {
                     </div>
                   </div>
 
-                  <Switch
-                    checked={accountData.isMfaEnabled}
-                    className="data-[state=checked]:bg-[var(--green)]"
-                  />
+                  <div className="flex items-center gap-3">
+                    {isMfaUpdating && (
+                      <Loader2 className="w-4 h-4 animate-spin text-[var(--primary)]" />
+                    )}
+                    <Switch
+                      checked={accountData.isMfaEnabled}
+                      disabled={isMfaUpdating}
+                      onCheckedChange={handleMfaToggle}
+                      className="data-[state=checked]:bg-[var(--green)] border border-gray-600 "
+                    />
+                  </div>
+
+
                 </div>
+
+                {
+                  isChangePasswordEnable && <ChangePasswordModal
+                    open={isChangePasswordEnable}
+                    onSave={handleChangePassword}
+                    onClose={() => setIsChangePasswordEnable(false)
+                    }
+                  />
+
+                }
 
                 <div
                   className="flex items-center justify-between p-5 
@@ -604,6 +923,7 @@ const AccountPage = () => {
                   </div>
 
                   <button
+                    onClick={() => setIsChangePasswordEnable(true)}
                     className="
         bg-[var(--green)] text-white px-5 py-2 rounded-full font-bold text-sm 
         hover:bg-[var(--green-light)] transition-all duration-300 hover:scale-105"
@@ -640,247 +960,6 @@ const AccountPage = () => {
                   >
                     Logout
                   </button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* Members Tab */}
-        {activeTab === "members" && (
-          <div className="space-y-6 animate-scale-in">
-            <Card className="border-0 shadow-xl bg-white gap-0 rounded-xl overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white py-4 flex justify-between items-center">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <CardTitle className="flex items-center gap-3 text-xl font-extrabold p-0">
-                    <Users className="h-6 w-6" />
-                    Family Members ({members.length})
-                  </CardTitle>
-                  <button className="bg-white text-[var(--green)] px-5 py-2 rounded-full font-bold text-sm flex items-center gap-2 hover:shadow-lg transition-all duration-300 hover:scale-105">
-                    <User className="h-4 w-4" />
-                    Add Member
-                  </button>
-                </div>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {members.map((member) => (
-                    <div
-                      key={member.id}
-                      className="bg-white rounded-xl p-5 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-2 border-gray-100 hover:border-[var(--primary)]"
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--primary-light)] flex items-center justify-center text-white text-xl font-extrabold">
-                            {member.name.charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <h4 className="font-extrabold text-base text-gray-800">
-                              {member.name}
-                            </h4>
-                            <p className="text-xs text-gray-500">
-                              {member.relation}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-gray-600 font-medium">
-                            Age:
-                          </span>
-                          <span className="font-bold text-gray-800">
-                            {member.age} years
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-gray-600 font-medium">
-                            Gender:
-                          </span>
-                          <span className="font-bold text-gray-800 capitalize">
-                            {member.sex}
-                          </span>
-                        </div>
-
-                        {member.healthGoals.length > 0 && (
-                          <div className="pt-2 border-t border-gray-100">
-                            <p className="text-xs text-gray-500 font-medium mb-1.5">
-                              Health Goals:
-                            </p>
-                            <div className="flex flex-wrap gap-1.5">
-                              {member.healthGoals.map((goal, idx) => (
-                                <Badge
-                                  key={idx}
-                                  className="bg-[var(--primary-bg)] text-[var(--primary)] border-0 text-xs px-2 py-0.5"
-                                >
-                                  {goal}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {member.allergies.length > 0 && (
-                          <div className="pt-2 border-t border-gray-100">
-                            <p className="text-xs text-gray-500 font-medium mb-1.5">
-                              Allergies:
-                            </p>
-                            <div className="flex flex-wrap gap-1.5">
-                              {member.allergies.map((allergy, idx) => (
-                                <Badge
-                                  key={idx}
-                                  className="bg-red-100 text-red-700 border-0 text-xs px-2 py-0.5"
-                                >
-                                  {allergy}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      <button className="w-full mt-3 bg-[var(--primary-bg)] text-[var(--primary)] py-2 rounded-xl font-bold text-sm hover:bg-[var(--primary)] hover:text-white transition-all duration-300">
-                        View Details
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* Invitations Tab */}
-        {activeTab === "invitations" && (
-          <div className="space-y-6 animate-scale-in">
-            <Card className="border-0 shadow-2xl rounded-3xl overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white p-5">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <CardTitle className="flex items-center gap-3 text-2xl font-extrabold">
-                    <Mail className="h-7 w-7" />
-                    Pending Invitations ({invitations.length})
-                  </CardTitle>
-                  <button className="bg-white text-[var(--primary)] px-6 py-2 rounded-full font-bold flex items-center gap-2 hover:shadow-lg transition-all duration-300 hover:scale-105">
-                    <Mail className="h-4 w-4" />
-                    Send Invitation
-                  </button>
-                </div>
-              </CardHeader>
-              <CardContent className="p-8">
-                <div className="space-y-4">
-                  {invitations.map((invitation) => (
-                    <div
-                      key={invitation.id}
-                      className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-gray-100 hover:border-[var(--primary)]"
-                    >
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                        <div className="flex items-center gap-4 flex-1">
-                          <div className="bg-gradient-to-br from-[var(--primary)] to-[var(--primary-light)] p-3 rounded-xl">
-                            <Mail className="w-6 h-6 text-white" />
-                          </div>
-                          <div className="flex-1">
-                            <h4 className="font-extrabold text-lg text-gray-800">
-                              {invitation.email}
-                            </h4>
-                            <p className="text-sm text-gray-500">
-                              Sent on{" "}
-                              {new Date(invitation.sentAt).toLocaleDateString(
-                                "en-GB",
-                              )}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                          <Badge className="bg-amber-100 text-amber-700 border-0 px-4 py-1 font-bold">
-                            {invitation.status}
-                          </Badge>
-                          <Badge className="bg-[var(--primary-bg)] text-[var(--primary)] border-0 px-4 py-1 font-bold">
-                            {invitation.role}
-                          </Badge>
-                          <button className="bg-red-100 text-red-600 px-4 py-2 rounded-xl font-bold hover:bg-red-600 hover:text-white transition-all duration-300">
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* Settings Tab */}
-        {activeTab === "settings" && (
-          <div className="space-y-6 animate-scale-in">
-            <Card className="border-0 shadow-2xl rounded-3xl overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-gray-700 to-gray-800 text-white p-5">
-                <CardTitle className="flex items-center gap-3 text-2xl font-extrabold">
-                  <Settings className="h-7 w-7" />
-                  Application Settings
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-8 space-y-6">
-                {/* Notifications */}
-                <div className="flex items-center justify-between p-6 bg-gradient-to-r from-purple-50 to-purple-100 rounded-2xl border-2 border-purple-200">
-                  <div className="flex items-center gap-4">
-                    <div className="bg-purple-600 p-3 rounded-xl">
-                      <Bell className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h4 className="font-extrabold text-lg text-gray-800">
-                        Push Notifications
-                      </h4>
-                      <p className="text-sm text-gray-600">
-                        Receive notifications about meal plans and updates
-                      </p>
-                    </div>
-                  </div>
-                  <Switch className="data-[state=checked]:bg-[var(--green)]" />
-                </div>
-
-                {/* Email Notifications */}
-                <div className="flex items-center justify-between p-6 bg-gradient-to-r from-green-50 to-green-100 rounded-2xl border-2 border-green-200">
-                  <div className="flex items-center gap-4">
-                    <div className="bg-green-600 p-3 rounded-xl">
-                      <Mail className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h4 className="font-extrabold text-lg text-gray-800">
-                        Email Notifications
-                      </h4>
-                      <p className="text-sm text-gray-600">
-                        Get weekly meal plan summaries via email
-                      </p>
-                    </div>
-                  </div>
-                  <Switch
-                    defaultChecked
-                    className="data-[state=checked]:bg-[var(--green)]"
-                  />
-                </div>
-
-                {/* Weekly Budget Alert */}
-                <div className="flex items-center justify-between p-6 bg-gradient-to-r from-amber-50 to-amber-100 rounded-2xl border-2 border-amber-200">
-                  <div className="flex items-center gap-4">
-                    <div className="bg-amber-600 p-3 rounded-xl">
-                      <Wallet className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h4 className="font-extrabold text-lg text-gray-800">
-                        Budget Alerts
-                      </h4>
-                      <p className="text-sm text-gray-600">
-                        Get notified when approaching budget limits
-                      </p>
-                    </div>
-                  </div>
-                  <Switch
-                    defaultChecked
-                    className="data-[state=checked]:bg-[var(--green)]"
-                  />
                 </div>
               </CardContent>
             </Card>

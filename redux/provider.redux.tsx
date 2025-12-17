@@ -11,14 +11,17 @@ import { usePathname } from "next/navigation";
 import Navbar from "@/components/common/Navbar";
 import Footer from "@/components/common/Footer";
 
-
-
-
 export function Providers({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   // All routes where Navbar + Footer should be hidden
-  const hiddenRoutes = ["/login", "/register", "/reset-password", "/", "/subscription-plan"];
+  const hiddenRoutes = [
+    "/login",
+    "/register",
+    "/reset-password",
+    "/",
+    "/subscription-plan",
+  ];
 
   const hideLayout = hiddenRoutes.includes(pathname);
 

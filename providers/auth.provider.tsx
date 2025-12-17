@@ -1,30 +1,30 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useAuthMe } from "@/services/auth/auth.query";
-import { useDispatch, useSelector } from "react-redux";
+import { useMyAccounts } from "@/services/account/account.query";
+import { useDispatch } from "react-redux";
 import { loginSuccess, logout } from "@/redux/features/auth/auth.slice";
-import { RootState } from "@/redux/store.redux";
+import { setAccounts, setActiveAccountId } from "@/redux/features/account/account.slice";
 import Loader from "@/components/common/Loader";
+import { AccountSetupRequiredDialog } from "@/components/account/account-setup-required-dialog";
 
-export default function AuthProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const dispatch = useDispatch();
-  const user = useSelector((state: RootState) => state.auth.user);
 
-  const { data, isLoading, isError } = useAuthMe();
+  const { data: authData, isLoading: isAuthLoading, isError: isAuthError } = useAuthMe();
+  const { data: accountsData, isLoading: isAccountsLoading } = useMyAccounts();
 
+  const [showSetupDialog, setShowSetupDialog] = useState(false);
+
+  /* ---------- AUTH ---------- */
   useEffect(() => {
-    // Still fetching → do nothing
-    if (isLoading) return;
+    if (isAuthLoading) return;
 
-    // If session not found → logout + redirect
-    if (isError || !data?.data) {
+    if (isAuthError || !authData?.data) {
       dispatch(logout());
       router.replace("/login");
       return;
@@ -32,14 +32,44 @@ export default function AuthProvider({
 
     dispatch(
       loginSuccess({
-        user: data.data, // Correct shape
-        accessToken: data.accessToken, // Real token from backend
-      }),
+        user: authData.data,
+        accessToken: authData.accessToken,
+      })
     );
-  }, [isLoading, isError, data, dispatch, router]);
+  }, [isAuthLoading, isAuthError, authData, dispatch, router]);
 
-  if (isLoading) {
+  /* ---------- ACCOUNTS ---------- */
+  useEffect(() => {
+    if (isAccountsLoading || !accountsData) return;
+
+    const accounts = accountsData.data || [];
+
+    if (accounts.length > 0) {
+      dispatch(setAccounts(accounts));
+      dispatch(setActiveAccountId(accounts[0].id));
+      setShowSetupDialog(false);
+      return;
+    }
+
+    // No accounts
+    if (!pathname.includes("/account/create")) {
+      setShowSetupDialog(true);
+    } else {
+      setShowSetupDialog(false);
+    }
+  }, [accountsData, isAccountsLoading, dispatch, pathname]);
+
+  /* ---------- LOADER ---------- */
+  if (isAuthLoading || isAccountsLoading) {
     return <Loader />;
+  }
+
+  /* ---------- BLOCK UI ---------- */
+  const shouldBlockUI =
+    showSetupDialog && !pathname.includes("/account/create") && !isAccountsLoading;
+
+  if (shouldBlockUI) {
+    return <AccountSetupRequiredDialog isOpen />;
   }
 
   return <>{children}</>;

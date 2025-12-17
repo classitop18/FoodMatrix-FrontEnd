@@ -34,6 +34,13 @@ export class AuthService {
     return response.data;
   }
 
+  async checkProperty(payload: CheckIsPropertyExist) {
+    const response = await apiClient.post(API_ENDPOINTS.AUTH.CHECK_PROPERTY, {
+      ...payload,
+    });
+    return response.data;
+  }
+
   async getCurrentSession() {
     const response = await apiClient.get(
       API_ENDPOINTS.AUTH.GET_CURRENT_SESSION,
@@ -61,11 +68,24 @@ export class AuthService {
     return response.data;
   }
 
+  async changePassword(payload: { currentPassword: string, newPassword: string, confirmPassword: string }) {
+    const response = await apiClient.put(
+      API_ENDPOINTS.AUTH.CHANGE_PASSWORD,
+      payload,
+    );
+    return response.data;
+  }
+
   async otpVerification(payload: { otp: string }) {
     const response = await apiClient.post(
       API_ENDPOINTS.AUTH.OTP_VERIFICATION,
       payload,
     );
+    return response.data;
+  }
+
+  async updateProfile(payload: any) {
+    const response = await apiClient.patch(API_ENDPOINTS.AUTH.UPDATE_PROFILE, payload);
     return response.data;
   }
 }

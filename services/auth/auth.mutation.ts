@@ -71,10 +71,26 @@ export const useCheckEmailUsernameExist = () => {
   });
 };
 
+
+export const useCheckProperty = () => {
+  return useMutation<any, any, { field: string; value: string }>({
+    mutationFn: async (payload) => authService.checkProperty(payload),
+    onSuccess: (data: any) => {
+      return data;
+    },
+    onError: (error) => {
+      console.error("Check email/username error:", error);
+    },
+  });
+};
+
+
+
+
 export const useForgetPassword = () => {
   return useMutation({
     mutationFn: (email: string) => authService.forgetPassword(email),
-    onSuccess: () => {},
+    onSuccess: () => { },
     onError: (error: any) => {
       console.error("Logout error:", error);
     },
@@ -101,4 +117,39 @@ export const useMFAVerify = () => {
       console.error("Login error:", error);
     },
   });
+};
+
+
+export const useUpdateUserProfile = () => {
+  return useMutation({
+    mutationFn: (payload: any) =>
+      authService.updateProfile(payload),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: ["auth", "me"],
+      })
+    },
+
+    onError: (error: any) => {
+      console.error("Login error:", error);
+    },
+  });
+};
+
+
+export const useChangePassword = () => {
+    return useMutation({
+        mutationFn: async (payload: any) => {
+            return await authService.changePassword(payload);
+        },
+        onError: (error: any) => {
+            // Extract the message safely
+            const errorMessage =
+                error?.response?.data?.message ||
+                error?.message ||
+                "Something went wrong";
+
+            console.error("Change Password error:", errorMessage);
+        },
+    });
 };

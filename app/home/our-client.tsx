@@ -18,7 +18,7 @@ export default function OurClientSection() {
 
         <div className="relative">
           <div className="masonry">
-            <div className="p-6 rounded-2xl border border-[#E5E5E5] bg-gradient-to-r from-white/0 to-[#F5F5F5]/90 masonry-item">
+            <div className="p-6 rounded-2xl border border-[#BCBCBC] bg-gradient-to-r from-white/0 to-[#F5F5F5]/90 masonry-item">
               <div className="flex items-center gap-1 mb-3 text-sm">
                 <Star className="size-5 text-black" />
                 <Star className="size-5 text-black" />
@@ -45,7 +45,7 @@ export default function OurClientSection() {
                 </div>
               </div>
             </div>
-            <div className="p-6 rounded-2xl border border-[#E5E5E5] bg-gradient-to-r from-white/0 to-[#F5F5F5]/90 masonry-item">
+            <div className="p-6 rounded-2xl border border-[#BCBCBC] bg-gradient-to-r from-white/0 to-[#F5F5F5]/90 masonry-item">
               <div className="flex items-center gap-1 mb-3 text-sm">
                 <Star className="size-5 text-black" />
                 <Star className="size-5 text-black" />
@@ -72,7 +72,7 @@ export default function OurClientSection() {
                 </div>
               </div>
             </div>
-            <div className="p-6 rounded-2xl border border-[#E5E5E5] bg-gradient-to-r from-white/0 to-[#F5F5F5]/90 masonry-item">
+            <div className="p-6 rounded-2xl border border-[#BCBCBC] bg-gradient-to-r from-white/0 to-[#F5F5F5]/90 masonry-item">
               <div className="flex items-center gap-1 mb-3 text-sm">
                 <Star className="size-5 text-black" />
                 <Star className="size-5 text-black" />
@@ -101,7 +101,7 @@ export default function OurClientSection() {
                 </div>
               </div>
             </div>
-            <div className="p-6 rounded-2xl border border-[#E5E5E5] bg-gradient-to-r from-white/0 to-[#F5F5F5]/90 masonry-item">
+            <div className="p-6 rounded-2xl border border-[#BCBCBC] bg-gradient-to-r from-white/0 to-[#F5F5F5]/90 masonry-item">
               <div className="flex items-center gap-1 mb-3 text-sm">
                 <Star className="size-5 text-black" />
                 <Star className="size-5 text-black" />
@@ -129,7 +129,7 @@ export default function OurClientSection() {
                 </div>
               </div>
             </div>
-            <div className="p-6 rounded-2xl border border-[#E5E5E5] bg-gradient-to-r from-white/0 to-[#F5F5F5]/90 masonry-item">
+            <div className="p-6 rounded-2xl border border-[#BCBCBC] bg-gradient-to-r from-white/0 to-[#F5F5F5]/90 masonry-item">
               <div className="flex items-center gap-1 mb-3 text-sm">
                 <Star className="size-5 text-black" />
                 <Star className="size-5 text-black" />
@@ -156,7 +156,7 @@ export default function OurClientSection() {
                 </div>
               </div>
             </div>
-            <div className="p-6 rounded-2xl border border-[#E5E5E5] bg-gradient-to-r from-white/0 to-[#F5F5F5]/90 masonry-item">
+            <div className="p-6 rounded-2xl border border-[#BCBCBC] bg-gradient-to-r from-white/0 to-[#F5F5F5]/90 masonry-item">
               <div className="flex items-center gap-1 mb-3 text-sm">
                 <Star className="size-5 text-black" />
                 <Star className="size-5 text-black" />
@@ -183,7 +183,7 @@ export default function OurClientSection() {
                 </div>
               </div>
             </div>
-            <div className="p-6 rounded-2xl border border-[#E5E5E5] bg-gradient-to-r from-white/0 to-[#F5F5F5]/90 masonry-item">
+            <div className="p-6 rounded-2xl border border-[#BCBCBC] bg-gradient-to-r from-white/0 to-[#F5F5F5]/90 masonry-item">
               <div className="flex items-center gap-1 mb-3 text-sm">
                 <Star className="size-5 text-black" />
                 <Star className="size-5 text-black" />
@@ -211,7 +211,7 @@ export default function OurClientSection() {
                 </div>
               </div>
             </div>
-            <div className="p-6 rounded-2xl border border-[#E5E5E5] bg-gradient-to-r from-white/0 to-[#F5F5F5]/90 masonry-item">
+            <div className="p-6 rounded-2xl border border-[#BCBCBC] bg-gradient-to-r from-white/0 to-[#F5F5F5]/90 masonry-item">
               <div className="flex items-center gap-1 mb-3 text-sm">
                 <Star className="size-5 text-black" />
                 <Star className="size-5 text-black" />
@@ -239,7 +239,7 @@ export default function OurClientSection() {
                 </div>
               </div>
             </div>
-            <div className="p-6 rounded-2xl border border-[#E5E5E5] bg-gradient-to-r from-white/0 to-[#F5F5F5]/90 masonry-item">
+            <div className="p-6 rounded-2xl border border-[#BCBCBC] bg-gradient-to-r from-white/0 to-[#F5F5F5]/90 masonry-item">
               <div className="flex items-center gap-1 mb-3 text-sm">
                 <Star className="size-5 text-black" />
                 <Star className="size-5 text-black" />

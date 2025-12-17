@@ -200,7 +200,7 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
     <>
       <aside
         className={cn(
-          "h-screen bg-white border-r flex-shrink-0 transition-all duration-300",
+          "h-screen bg-white  flex-shrink-0 transition-all duration-300",
           collapsed ? "w-20" : "w-64",
         )}
       >

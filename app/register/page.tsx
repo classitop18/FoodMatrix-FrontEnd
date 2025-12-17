@@ -80,8 +80,6 @@ export default function Register() {
     email: { checked: false, available: false },
   });
 
-  console.log(username, "username");
-
   const checkAvailability = async (
     field: "username" | "email",
     value: string,
@@ -136,6 +134,8 @@ export default function Register() {
 
     return () => clearTimeout(timer);
   }, [email, username]);
+
+
 
   const onSubmit = async (data: RegisterFormData) => {
     // Client-side validation

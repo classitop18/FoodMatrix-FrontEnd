@@ -151,6 +151,9 @@ class ApiClient {
     return this.client.put<T>(url, data, config);
   }
 
+  public patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig) {
+    return this.client.patch<T>(url, data, config);
+  }
   public delete<T = any>(url: string, config?: AxiosRequestConfig) {
     return this.client.delete<T>(url, config);
   }
