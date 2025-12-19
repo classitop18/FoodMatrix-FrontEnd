@@ -12,7 +12,7 @@ import { useLogin } from "@/services/auth/auth.mutation";
 import { toast } from "@/hooks/use-toast";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "@/redux/features/auth/auth.slice";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import Image from "next/image";
 import pattern1 from "@/public/hero-pattern-1.svg";
@@ -31,6 +31,8 @@ export default function LoginPage() {
 
   const dispatch = useDispatch();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams.get("returnUrl");
 
   const loginMutation = useLogin();
 
@@ -51,7 +53,8 @@ export default function LoginPage() {
       const response = await loginMutation.mutateAsync(data);
 
       if (response?.data?.mfaRequired) {
-        router.push("/otp-verification");
+        const otpUrl = returnUrl ? `/otp-verification?returnUrl=${encodeURIComponent(returnUrl)}` : "/otp-verification";
+        router.push(otpUrl);
         return;
       }
 
@@ -67,7 +70,7 @@ export default function LoginPage() {
         title: "Login Successful",
         description: "Welcome back!",
       });
-      router.push("/dashboard");
+      router.push(returnUrl || "/dashboard");
     } catch (error: any) {
       console.error("Login error:", error);
 
@@ -244,7 +247,7 @@ export default function LoginPage() {
             disabled={loginMutation?.isPending}
             asChild
           >
-            <Link href="/register">Create Account</Link>
+            <Link href={`/register${returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ""}`}>Create Account</Link>
           </Button>
         </CardContent>
       </Card>

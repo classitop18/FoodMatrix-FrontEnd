@@ -23,7 +23,7 @@ import {
   useCheckEmailUsernameExist,
   useRegister,
 } from "@/services/auth/auth.mutation";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import pattern1 from "@/public/hero-pattern-1.svg";
 import pattern2 from "@/public/hero-pattern-2.svg";
@@ -50,6 +50,8 @@ export default function Register() {
 
   // Hooks
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams.get("returnUrl");
 
   const checkIsExistMutation = useCheckEmailUsernameExist();
   const registerMutation = useRegister();
@@ -190,7 +192,7 @@ export default function Register() {
           response.message || "Your account has been created successfully.",
       });
       setRegisteredUser(response.user);
-      router.push("/");
+      router.push(`/login${returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ""}`);
     } catch (error: any) {
       console.error("Registration error:", error);
       toast({
@@ -458,7 +460,7 @@ export default function Register() {
               disabled={registerMutation?.isPending}
               asChild
             >
-              <Link href="/login">Sign In Instead</Link>
+              <Link href={`/login${returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ""}`}>Sign In Instead</Link>
             </Button>
 
 

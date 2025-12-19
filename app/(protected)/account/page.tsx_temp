@@ -1,0 +1,201 @@
+"use client";
+import React, { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
+import {
+  User,
+  Wallet,
+  Calendar,
+  CreditCard,
+  TrendingUp,
+  Settings,
+  Crown,
+  Users,
+  Edit,
+  MapPin,
+  ArrowRight,
+  ShieldCheck,
+  Bell,
+  LogOut,
+  ChevronDown,
+  Plus,
+  Mail,
+  MailIcon,
+  Check,
+  X,
+  MoreHorizontal,
+  DollarSign,
+  Grid3x3,
+  List,
+  ChevronLeft,
+  ChevronRight,
+  AlertTriangle,
+  Trash2,
+  Send,
+  RefreshCw,
+} from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import ThemeButton from "@/components/common/buttons/theme-button";
+import pattern1 from "@/public/hero-pattern-1.svg";
+import pattern2 from "@/public/hero-pattern-2.svg";
+
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import { useAccount, useMyAccounts } from "@/services/account/account.query";
+import Loader from "@/components/common/Loader";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/redux/store.redux";
+import { setActiveAccountId } from "@/redux/features/account/account.slice";
+import { useMembers } from "@/services/member/member.query";
+import { useGetHealthProfile } from "@/services/health-profile/health-profile.query";
+import { useRouter } from "next/navigation";
+import AddMemberModal from "@/components/account/AddMemberModal";
+import EditMemberModal from "@/components/account/EditMemberModal";
+import DeleteMemberModal from "@/components/account/DeleteMemberModal";
+import DeleteAccountModal from "@/components/account/DeleteAccountModal";
+import EditAccountModal from "@/components/account/EditAccountModal";
+import NavigationMenu from "@/components/common/navigation-menu";
+import { InvitationService } from "@/services/invitation/invitation.service";
+import { toast } from "sonner";
+
+const formatCurrency = (value: string | null) => {
+  if (!value) return "—";
+  return `₹${Number(value).toLocaleString()}`;
+};
+
+const calculateResetInDays = (lastReset?: string) => {
+  if (!lastReset) return 0;
+  const diff = Date.now() - new Date(lastReset).getTime();
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  return Math.max(7 - days, 0);
+};
+
+export default function AccountPage() {
+  const [receivedInvitations, setReceivedInvitations] = useState<any[]>([]);
+  const [sentInvitations, setSentInvitations] = useState<{ data: any[], pagination: any }>({ data: [], pagination: {} });
+  const [isFetchingInv, setIsFetchingInv] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [viewMode, setViewMode] = useState("card"); // 'card' or 'table'
+  const [activeMember, setActiveMember] = useState(null);
+
+  // Modal states
+  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
+  const [isEditMemberModalOpen, setIsEditMemberModalOpen] = useState(false);
+  const [isDeleteMemberModalOpen, setIsDeleteMemberModalOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<any>(null);
+  const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] =
+    useState(false);
+  const [isEditAccountModalOpen, setIsEditAccountModalOpen] = useState(false);
+
+  const dispatch = useDispatch();
+
+  // Redux State
+  const {
+    accountsList,
+    activeAccountId,
+    account,
+    activeBudget,
+    spent,
+    usagePercent,
+    resetInDays,
+    location,
+    loading,
+  } = useSelector((state: RootState) => state.account);
+  const user = useSelector((state: RootState) => state.auth.user);
+
+  // Fetch Invitations Data
+  const fetchInvitations = async () => {
+    if (!activeAccountId) return;
+    setIsFetchingInv(true);
+    try {
+      // 1. Fetch invitations sent TO the user
+      const received = await InvitationService.getMyInvitations();
+      setReceivedInvitations(received.data || []);
+
+      // 2. Fetch invitations sent FROM this account (only for admins/owners)
+      const sent = await InvitationService.getInvitations(activeAccountId);
+      setSentInvitations(sent);
+    } catch (error) {
+      console.error("Error fetching invitations:", error);
+    } finally {
+      setIsFetchingInv(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "invitations") {
+      fetchInvitations();
+    }
+  }, [activeTab, activeAccountId]);
+
+  // Handlers for Invitation Actions
+  const handleAcceptInvitation = async (token: string) => {
+    try {
+      await InvitationService.acceptInvitation(token);
+      toast.success("Invitation accepted! Waiting for admin approval.");
+      fetchInvitations();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to accept invitation");
+    }
+  };
+
+  const handleApproveInvitation = async (invitationId: string, role: string) => {
+    try {
+      await InvitationService.approveInvitation(invitationId, role);
+      toast.success("Invitation approved. User is now a member.");
+      fetchInvitations();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to approve invitation");
+    }
+  };
+
+  const handleRejectInvitation = async (invitationId: string, reason?: string) => {
+    try {
+      await InvitationService.rejectInvitation(invitationId, reason);
+      toast.success("Invitation rejected");
+      fetchInvitations();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to reject invitation");
+    }
+  };
+
+  const handleResendInvitation = async (invitationId: string) => {
+    try {
+      await InvitationService.resendInvitation(invitationId);
+      toast.success("Invitation resent successfully");
+      fetchInvitations();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to resend invitation");
+    }
+  };
+
+  const handleCancelInvitation = async (invitationId: string) => {
+    if (!window.confirm("Are you sure you want to cancel this invitation?")) return;
+    try {
+      await InvitationService.cancelInvitation(invitationId);
+      toast.success("Invitation cancelled");
+      fetchInvitations();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to cancel invitation");
+    }
+  };
+
+  const { data: members, isLoading: isMemberLoading } = useMembers({
+    accountId: activeAccountId!,
+    page: currentPage,
+    limit: 10,
+  });

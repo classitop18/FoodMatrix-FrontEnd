@@ -23,9 +23,37 @@ interface AccountState {
   error: string | null;
 }
 
+// LocalStorage key for persisting active account
+const ACTIVE_ACCOUNT_KEY = "foodmatrix_active_account_id";
+
+// Helper to get active account from localStorage
+const getPersistedAccountId = (): string | null => {
+  if (typeof window === "undefined") return null;
+  try {
+    return localStorage.getItem(ACTIVE_ACCOUNT_KEY);
+  } catch (error) {
+    console.error("Error reading from localStorage:", error);
+    return null;
+  }
+};
+
+// Helper to save active account to localStorage
+const persistAccountId = (accountId: string | null) => {
+  if (typeof window === "undefined") return;
+  try {
+    if (accountId) {
+      localStorage.setItem(ACTIVE_ACCOUNT_KEY, accountId);
+    } else {
+      localStorage.removeItem(ACTIVE_ACCOUNT_KEY);
+    }
+  } catch (error) {
+    console.error("Error writing to localStorage:", error);
+  }
+};
+
 const initialState: AccountState = {
   accountsList: [],
-  activeAccountId: null,
+  activeAccountId: getPersistedAccountId(), // Load from localStorage on init
   account: null,
   activeBudget: null,
   spent: 0,
@@ -55,10 +83,10 @@ const getActiveBudget = (account: any): ActiveBudget | null => {
   const active = budgets.find((b) => b.value !== null);
   return active
     ? {
-        type: active.type as BudgetType,
-        label: active.label,
-        amount: Number(active.value),
-      }
+      type: active.type as BudgetType,
+      label: active.label,
+      amount: Number(active.value),
+    }
     : null;
 };
 
@@ -114,14 +142,19 @@ export const accountSlice = createSlice({
   reducers: {
     setAccounts(state, action: PayloadAction<any[]>) {
       state.accountsList = action.payload;
+      // If no active account is set and we have accounts, set the first one
       if (!state.activeAccountId && action.payload.length > 0) {
-        state.activeAccountId = action.payload[0].id;
+        const firstAccountId = action.payload[0].id;
+        state.activeAccountId = firstAccountId;
+        persistAccountId(firstAccountId); // Persist to localStorage
       }
     },
     setActiveAccountId(state, action: PayloadAction<string>) {
       state.activeAccountId = action.payload;
+      persistAccountId(action.payload); // Persist to localStorage
     },
     clearAccount(state) {
+      persistAccountId(null); // Clear from localStorage on logout
       return initialState;
     },
   },
