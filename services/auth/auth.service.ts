@@ -68,7 +68,11 @@ export class AuthService {
     return response.data;
   }
 
-  async changePassword(payload: { currentPassword: string, newPassword: string, confirmPassword: string }) {
+  async changePassword(payload: {
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+  }) {
     const response = await apiClient.put(
       API_ENDPOINTS.AUTH.CHANGE_PASSWORD,
       payload,
@@ -85,7 +89,10 @@ export class AuthService {
   }
 
   async updateProfile(payload: any) {
-    const response = await apiClient.patch(API_ENDPOINTS.AUTH.UPDATE_PROFILE, payload);
+    const response = await apiClient.patch(
+      API_ENDPOINTS.AUTH.UPDATE_PROFILE,
+      payload,
+    );
     return response.data;
   }
 }

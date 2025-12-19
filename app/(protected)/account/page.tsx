@@ -27,7 +27,9 @@ import {
   Grid3x3,
   List,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  AlertTriangle,
+  Trash2,
 } from "lucide-react";
 import {
   Select,
@@ -58,6 +60,11 @@ import { setActiveAccountId } from "@/redux/features/account/account.slice";
 import { useMembers } from "@/services/member/member.query";
 import { useGetHealthProfile } from "@/services/health-profile/health-profile.query";
 import { useRouter } from "next/navigation";
+import AddMemberModal from "@/components/account/AddMemberModal";
+import EditMemberModal from "@/components/account/EditMemberModal";
+import DeleteMemberModal from "@/components/account/DeleteMemberModal";
+import DeleteAccountModal from "@/components/account/DeleteAccountModal";
+import EditAccountModal from "@/components/account/EditAccountModal";
 
 const mockInvitations = [
   {
@@ -67,7 +74,7 @@ const mockInvitations = [
     role: "Admin",
     date: "2024-12-14",
     status: "Pending",
-    avatar: "R"
+    avatar: "R",
   },
   {
     id: 2,
@@ -76,7 +83,7 @@ const mockInvitations = [
     role: "Member",
     date: "2024-12-12",
     status: "Accepted",
-    avatar: "P"
+    avatar: "P",
   },
   {
     id: 3,
@@ -85,7 +92,7 @@ const mockInvitations = [
     role: "Viewer",
     date: "2024-12-10",
     status: "Rejected",
-    avatar: "A"
+    avatar: "A",
   },
   {
     id: 4,
@@ -94,8 +101,8 @@ const mockInvitations = [
     role: "Member",
     date: "2024-12-08",
     status: "Accepted",
-    avatar: "S"
-  }
+    avatar: "S",
+  },
 ];
 
 const formatCurrency = (value: string | null) => {
@@ -105,19 +112,27 @@ const formatCurrency = (value: string | null) => {
 
 const calculateResetInDays = (lastReset?: string) => {
   if (!lastReset) return 0;
-  const diff =
-    Date.now() - new Date(lastReset).getTime();
+  const diff = Date.now() - new Date(lastReset).getTime();
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   return Math.max(7 - days, 0);
 };
 
 export default function AccountPage() {
-
   const [invitations, setInvitations] = useState(mockInvitations);
   const [currentPage, setCurrentPage] = useState(1);
   const [activeTab, setActiveTab] = useState("overview");
   const [viewMode, setViewMode] = useState("card"); // 'card' or 'table'
   const [activeMember, setActiveMember] = useState(null);
+
+  // Modal states
+  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
+  const [isEditMemberModalOpen, setIsEditMemberModalOpen] = useState(false);
+  const [isDeleteMemberModalOpen, setIsDeleteMemberModalOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<any>(null);
+  const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] =
+    useState(false);
+  const [isEditAccountModalOpen, setIsEditAccountModalOpen] = useState(false);
+
   const dispatch = useDispatch();
 
   // Redux State
@@ -130,45 +145,41 @@ export default function AccountPage() {
     usagePercent,
     resetInDays,
     location,
-    loading
+    loading,
   } = useSelector((state: RootState) => state.account);
 
   const { user } = useSelector((state: RootState) => state.auth);
 
-  const { data: members, isLoading: isMemberLoading } =
-    useMembers({ accountId: activeAccountId! });
+  const { data: members, isLoading: isMemberLoading } = useMembers({
+    accountId: activeAccountId!,
+  });
 
+  console.log({ activeMember });
 
-
-
-  console.log({ activeMember })
-
-  const membersList = members?.data?.data;
+  const membersList: any[] = members?.data?.data || [];
   const pagination = members?.data.pagination;
 
-  console.log(membersList, "jhjhjhjhjh")
+  console.log(membersList, "jhjhjhjhjh");
   const router = useRouter();
 
-  const handleInvitationAction = (id: number, action: 'Accepted' | 'Rejected') => {
+  const handleInvitationAction = (
+    id: number,
+    action: "Accepted" | "Rejected",
+  ) => {
     // In a real app, you would make an API call here.
     // For now, we optimistically update the state.
-    setInvitations(prev => prev.map(inv =>
-      inv.id === id ? { ...inv, status: action } : inv
-    ));
+    setInvitations((prev) =>
+      prev.map((inv) => (inv.id === id ? { ...inv, status: action } : inv)),
+    );
   };
 
   const onAccountChange = (id: string) => {
     dispatch(setActiveAccountId(id));
   };
 
-
-
   if (loading) {
-    return (
-      <Loader />
-    );
+    return <Loader />;
   }
-
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] relative overflow-hidden w-full font-sans">
@@ -220,7 +231,6 @@ export default function AccountPage() {
                 Create New
               </button>
             </Link>
-
           </div>
         </div>
 
@@ -242,8 +252,12 @@ export default function AccountPage() {
                       {account?.accountName.charAt(0)}
                     </div>
                     <div className="flex flex-col overflow-hidden text-left">
-                      <span className="font-bold text-[#313131] text-sm truncate block">{account?.accountName}</span>
-                      <span className="text-[10px] text-gray-500 truncate block font-medium">#{account?.accountNumber}</span>
+                      <span className="font-bold text-[#313131] text-sm truncate block">
+                        {account?.accountName}
+                      </span>
+                      <span className="text-[10px] text-gray-500 truncate block font-medium">
+                        #{account?.accountNumber}
+                      </span>
                     </div>
                   </div>
                 </SelectTrigger>
@@ -273,26 +287,48 @@ export default function AccountPage() {
                     </SelectItem>
                   ))}
                 </SelectContent>
-
               </Select>
             </div>
 
             {/* Navigation Menu */}
             <NavigationMenu
               items={[
-                { id: 'overview', label: 'Overview', icon: User },
-                { id: 'budget', label: 'Budget & Finance', icon: Wallet },
-                { id: 'members', label: 'Family Members', icon: Users },
-                { id: 'invitations', label: 'Invitations', icon: MailIcon },
+                { id: "overview", label: "Overview", icon: User },
+                { id: "budget", label: "Budget & Finance", icon: Wallet },
+                { id: "members", label: "Family Members", icon: Users },
+                { id: "invitations", label: "Invitations", icon: MailIcon },
               ]}
               activeTab={activeTab}
               onChange={setActiveTab}
             />
+
+            {/* Danger Zone - Delete Account */}
+            <div className="bg-red-50 rounded-xl p-4 border-2 border-red-100">
+              <div className="flex items-start gap-3 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center flex-shrink-0">
+                  <AlertTriangle size={16} className="text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-red-900 uppercase tracking-wider">
+                    Danger Zone
+                  </h3>
+                  <p className="text-xs text-red-700 mt-1">
+                    Permanently delete this account
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsDeleteAccountModalOpen(true)}
+                className="w-full bg-red-600 hover:bg-red-700 text-white font-bold text-xs py-2.5 px-4 rounded-lg transition-all flex items-center justify-center gap-2 shadow-sm"
+              >
+                <Trash2 size={14} />
+                Delete Account
+              </button>
+            </div>
           </div>
 
           {/* RIGHT CONTENT: Dynamic Sections */}
           <div className="lg:col-span-9 space-y-5">
-
             {/* Compact Highlights Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Budget Card */}
@@ -342,11 +378,10 @@ export default function AccountPage() {
                     </span>
 
                     <h3 className="text-2xl font-extrabold text-white tracking-tight">
-
                       {activeBudget
                         ? `$${Math.max(
                           activeBudget.amount - spent,
-                          0
+                          0,
                         ).toLocaleString()}`
                         : "—"}
                     </h3>
@@ -369,10 +404,8 @@ export default function AccountPage() {
               </div>
             </div>
 
-
             {/* TABS CONTENT AREA */}
             <div className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 min-h-[400px]">
-
               {activeTab === "overview" && (
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                   {/* Header */}
@@ -380,7 +413,10 @@ export default function AccountPage() {
                     <h3 className="text-xl font-extrabold text-[#313131]">
                       Account Information
                     </h3>
-                    <button className="text-[#7661d3] font-bold text-xs hover:bg-[#F3F0FD] px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5">
+                    <button
+                      onClick={() => setIsEditAccountModalOpen(true)}
+                      className="text-[#7661d3] font-bold text-xs hover:bg-[#F3F0FD] px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5"
+                    >
                       <Edit size={14} /> Edit
                     </button>
                   </div>
@@ -408,12 +444,6 @@ export default function AccountPage() {
                         value: account?.description,
                         fullWidth: true,
                       },
-                      {
-                        label: "Location",
-                        value: [account?.city, account?.state, account?.country]
-                          .filter(Boolean)
-                          .join(", "),
-                      },
                     ].map((field, i) => (
                       <div key={i} className="group">
                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1.5">
@@ -427,6 +457,102 @@ export default function AccountPage() {
                       </div>
                     ))}
                   </div>
+
+                  {/* Address Section */}
+                  {(account?.formattedAddress ||
+                    account?.addressLine1 ||
+                    account?.city) && (
+                      <div className="mt-8">
+                        <div className="flex items-center gap-2 mb-4">
+                          <MapPin size={18} className="text-[#7661d3]" />
+                          <h4 className="font-bold text-[#313131] text-sm">
+                            Account Address
+                          </h4>
+                        </div>
+                        <div className="bg-[#F8F7FC] rounded-xl p-5 border border-gray-100">
+                          <div className="space-y-3">
+                            {account?.formattedAddress && (
+                              <div>
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                                  Full Address
+                                </label>
+                                <p className="text-sm font-medium text-[#313131]">
+                                  {account.formattedAddress}
+                                </p>
+                              </div>
+                            )}
+
+                            <div className="grid grid-cols-2 gap-4">
+                              {account?.addressLine1 && (
+                                <div>
+                                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                                    Address Line 1
+                                  </label>
+                                  <p className="text-sm font-medium text-gray-700">
+                                    {account.addressLine1}
+                                  </p>
+                                </div>
+                              )}
+
+                              {account?.addressLine2 && (
+                                <div>
+                                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                                    Address Line 2
+                                  </label>
+                                  <p className="text-sm font-medium text-gray-700">
+                                    {account.addressLine2}
+                                  </p>
+                                </div>
+                              )}
+
+                              {account?.city && (
+                                <div>
+                                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                                    City
+                                  </label>
+                                  <p className="text-sm font-medium text-gray-700">
+                                    {account.city}
+                                  </p>
+                                </div>
+                              )}
+
+                              {account?.state && (
+                                <div>
+                                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                                    State
+                                  </label>
+                                  <p className="text-sm font-medium text-gray-700">
+                                    {account.state}
+                                  </p>
+                                </div>
+                              )}
+
+                              {account?.zipCode && (
+                                <div>
+                                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                                    ZIP Code
+                                  </label>
+                                  <p className="text-sm font-medium text-gray-700">
+                                    {account.zipCode}
+                                  </p>
+                                </div>
+                              )}
+
+                              {account?.country && (
+                                <div>
+                                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                                    Country
+                                  </label>
+                                  <p className="text-sm font-medium text-gray-700">
+                                    {account.country}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                   {/* Preferences */}
                   <div className="bg-[#F8F7FC] rounded-xl p-5 mt-4">
@@ -492,10 +618,8 @@ export default function AccountPage() {
                 </div>
               )}
 
-
               {activeTab === "budget" && account && (
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-
                   {/* HEADER */}
                   <div className="flex items-center justify-between border-b border-gray-100 pb-4">
                     <h3 className="text-xl font-extrabold text-[#313131]">
@@ -574,9 +698,13 @@ export default function AccountPage() {
                         key={item.label}
                         className="bg-[#F8F7FC] rounded-xl p-5 text-center relative overflow-hidden"
                       >
-                        <div className={`absolute top-0 left-0 w-full h-1 ${item.color}`} />
+                        <div
+                          className={`absolute top-0 left-0 w-full h-1 ${item.color}`}
+                        />
                         <div className="text-3xl mb-2">{item.icon}</div>
-                        <p className="text-sm font-bold text-gray-700">{item.label}</p>
+                        <p className="text-sm font-bold text-gray-700">
+                          {item.label}
+                        </p>
                         <p className="text-2xl font-extrabold text-[#313131]">
                           {item.value}%
                         </p>
@@ -587,7 +715,10 @@ export default function AccountPage() {
                   {/* STATS */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     {[
-                      { label: "Current Streak", value: account.weeklyFoodStreak },
+                      {
+                        label: "Current Streak",
+                        value: account.weeklyFoodStreak,
+                      },
                       { label: "Best Streak", value: account.bestFoodStreak },
                       { label: "Overrides", value: account.totalFoodOverrides },
                     ].map((stat) => (
@@ -607,15 +738,20 @@ export default function AccountPage() {
                 </div>
               )}
 
-              {activeTab === 'invitations' && (
+              {activeTab === "invitations" && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h3 className="text-xl font-extrabold text-[#313131]">Invitations</h3>
-                      <p className="text-sm text-gray-500 mt-1">Manage pending invitations and history</p>
+                      <h3 className="text-xl font-extrabold text-[#313131]">
+                        Invitations
+                      </h3>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Manage pending invitations and history
+                      </p>
                     </div>
                     <span className="bg-[#F3F0FD] text-[#7661d3] font-bold text-xs px-3 py-1 rounded-full">
-                      {invitations.filter(i => i.status === 'Pending').length} Pending
+                      {invitations.filter((i) => i.status === "Pending").length}{" "}
+                      Pending
                     </span>
                   </div>
 
@@ -623,24 +759,41 @@ export default function AccountPage() {
                     <Table>
                       <TableHeader className="bg-[#F8F7FC]">
                         <TableRow>
-                          <TableHead className="font-bold text-gray-600">Sender</TableHead>
-                          <TableHead className="font-bold text-gray-600">Role</TableHead>
-                          <TableHead className="font-bold text-gray-600">Date Received</TableHead>
-                          <TableHead className="font-bold text-gray-600">Status</TableHead>
-                          <TableHead className="text-right font-bold text-gray-600">Actions</TableHead>
+                          <TableHead className="font-bold text-gray-600">
+                            Sender
+                          </TableHead>
+                          <TableHead className="font-bold text-gray-600">
+                            Role
+                          </TableHead>
+                          <TableHead className="font-bold text-gray-600">
+                            Date Received
+                          </TableHead>
+                          <TableHead className="font-bold text-gray-600">
+                            Status
+                          </TableHead>
+                          <TableHead className="text-right font-bold text-gray-600">
+                            Actions
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {invitations.map((inv) => (
-                          <TableRow key={inv.id} className="hover:bg-gray-50/50">
+                          <TableRow
+                            key={inv.id}
+                            className="hover:bg-gray-50/50"
+                          >
                             <TableCell>
                               <div className="flex items-center gap-3">
                                 <div className="h-9 w-9 rounded-full bg-[#3d326d] flex items-center justify-center text-white text-xs font-bold">
                                   {inv.avatar}
                                 </div>
                                 <div>
-                                  <p className="font-bold text-[#313131] text-sm">{inv.sender}</p>
-                                  <p className="text-xs text-gray-500">{inv.email}</p>
+                                  <p className="font-bold text-[#313131] text-sm">
+                                    {inv.sender}
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    {inv.email}
+                                  </p>
                                 </div>
                               </div>
                             </TableCell>
@@ -654,28 +807,38 @@ export default function AccountPage() {
                               {inv.date}
                             </TableCell>
                             <TableCell>
-                              {inv.status === 'Pending' && (
-                                <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-200 border-0 shadow-none font-bold">Pending</Badge>
+                              {inv.status === "Pending" && (
+                                <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-200 border-0 shadow-none font-bold">
+                                  Pending
+                                </Badge>
                               )}
-                              {inv.status === 'Accepted' && (
-                                <Badge className="bg-green-100 text-green-700 hover:bg-green-200 border-0 shadow-none font-bold">Accepted</Badge>
+                              {inv.status === "Accepted" && (
+                                <Badge className="bg-green-100 text-green-700 hover:bg-green-200 border-0 shadow-none font-bold">
+                                  Accepted
+                                </Badge>
                               )}
-                              {inv.status === 'Rejected' && (
-                                <Badge className="bg-red-100 text-red-700 hover:bg-red-200 border-0 shadow-none font-bold">Rejected</Badge>
+                              {inv.status === "Rejected" && (
+                                <Badge className="bg-red-100 text-red-700 hover:bg-red-200 border-0 shadow-none font-bold">
+                                  Rejected
+                                </Badge>
                               )}
                             </TableCell>
                             <TableCell className="text-right">
-                              {inv.status === 'Pending' ? (
+                              {inv.status === "Pending" ? (
                                 <div className="flex items-center justify-end gap-2">
                                   <button
-                                    onClick={() => handleInvitationAction(inv.id, 'Accepted')}
+                                    onClick={() =>
+                                      handleInvitationAction(inv.id, "Accepted")
+                                    }
                                     className="h-8 w-8 rounded-full bg-green-50 text-green-600 hover:bg-green-600 hover:text-white flex items-center justify-center transition-all shadow-sm"
                                     title="Accept"
                                   >
                                     <Check size={16} strokeWidth={3} />
                                   </button>
                                   <button
-                                    onClick={() => handleInvitationAction(inv.id, 'Rejected')}
+                                    onClick={() =>
+                                      handleInvitationAction(inv.id, "Rejected")
+                                    }
                                     className="h-8 w-8 rounded-full bg-red-50 text-red-600 hover:bg-red-600 hover:text-white flex items-center justify-center transition-all shadow-sm"
                                     title="Reject"
                                   >
@@ -696,30 +859,33 @@ export default function AccountPage() {
                 </div>
               )}
 
-
-
-
-
-
               {activeTab === "members" && (
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-xl font-extrabold text-[#313131]">Family Members</h3>
-                      <p className="text-sm text-gray-500 mt-1">Manage account members and roles</p>
+                      <h3 className="text-xl font-extrabold text-[#313131]">
+                        Family Members
+                      </h3>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Manage account members and roles
+                      </p>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="flex items-center bg-gray-100 rounded-lg p-1">
                         <button
                           onClick={() => setViewMode("card")}
-                          className={`p-1.5 rounded transition-all ${viewMode === "card" ? "bg-white shadow-sm" : "text-gray-400"
+                          className={`p-1.5 rounded transition-all ${viewMode === "card"
+                            ? "bg-white shadow-sm"
+                            : "text-gray-400"
                             }`}
                         >
                           <Grid3x3 size={16} />
                         </button>
                         <button
                           onClick={() => setViewMode("table")}
-                          className={`p-1.5 rounded transition-all ${viewMode === "table" ? "bg-white shadow-sm" : "text-gray-400"
+                          className={`p-1.5 rounded transition-all ${viewMode === "table"
+                            ? "bg-white shadow-sm"
+                            : "text-gray-400"
                             }`}
                         >
                           <List size={16} />
@@ -728,17 +894,35 @@ export default function AccountPage() {
                       <span className="bg-[#F3F0FD] text-[#7661d3] font-bold text-xs px-3 py-1 rounded-full">
                         {pagination?.total} Members
                       </span>
-                      <button className="bg-[#7661d3] hover:bg-[#6952c2] text-white font-bold text-xs px-4 py-2 rounded-lg transition-all flex items-center gap-1.5 shadow-sm">
+                      <button
+                        onClick={() => setIsAddMemberModalOpen(true)}
+                        className="bg-[#7661d3] hover:bg-[#6952c2] text-white font-bold text-xs px-4 py-2 rounded-lg transition-all flex items-center gap-1.5 shadow-sm"
+                      >
                         <Plus size={14} />
-                        Invite
+                        Add Member
                       </button>
                     </div>
                   </div>
 
                   {viewMode === "card" ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {membersList?.map((member) => (
-                        <MemberCard key={member.id} member={member} userId={user?.id} setActiveMember={(member) => router.push(`/health-profile/${member?.id}`)} />
+                      {(membersList as any[])?.map((member) => (
+                        <MemberCard
+                          key={member.id}
+                          member={member}
+                          userId={user?.id}
+                          setActiveMember={(member: any) =>
+                            router.push(`/health-profile/${member?.id}`)
+                          }
+                          onEdit={(member: any) => {
+                            setSelectedMember(member);
+                            setIsEditMemberModalOpen(true);
+                          }}
+                          onDelete={(member: any) => {
+                            setSelectedMember(member);
+                            setIsDeleteMemberModalOpen(true);
+                          }}
+                        />
                       ))}
                     </div>
                   ) : (
@@ -746,16 +930,28 @@ export default function AccountPage() {
                       <table className="w-full">
                         <thead className="bg-[#F8F7FC]">
                           <tr>
-                            <th className="text-left py-3 px-4 font-bold text-gray-600 text-xs uppercase">Member</th>
-                            <th className="text-left py-3 px-4 font-bold text-gray-600 text-xs uppercase">Email</th>
-                            <th className="text-left py-3 px-4 font-bold text-gray-600 text-xs uppercase">Role</th>
-                            <th className="text-left py-3 px-4 font-bold text-gray-600 text-xs uppercase">Account</th>
-                            <th className="text-left py-3 px-4 font-bold text-gray-600 text-xs uppercase">Joined</th>
-                            <th className="text-left py-3 px-4 font-bold text-gray-600 text-xs uppercase">Actions</th>
+                            <th className="text-left py-3 px-4 font-bold text-gray-600 text-xs uppercase">
+                              Member
+                            </th>
+                            <th className="text-left py-3 px-4 font-bold text-gray-600 text-xs uppercase">
+                              Email
+                            </th>
+                            <th className="text-left py-3 px-4 font-bold text-gray-600 text-xs uppercase">
+                              Role
+                            </th>
+                            <th className="text-left py-3 px-4 font-bold text-gray-600 text-xs uppercase">
+                              Account
+                            </th>
+                            <th className="text-left py-3 px-4 font-bold text-gray-600 text-xs uppercase">
+                              Joined
+                            </th>
+                            <th className="text-left py-3 px-4 font-bold text-gray-600 text-xs uppercase">
+                              Actions
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
-                          {membersList.map((member) => (
+                          {membersList.map((member: any) => (
                             <MemberTableRow key={member.id} member={member} />
                           ))}
                         </tbody>
@@ -767,14 +963,24 @@ export default function AccountPage() {
                   {pagination?.totalPages > 1 && (
                     <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                       <p className="text-sm text-gray-600">
-                        Showing <span className="font-bold">{(pagination.page - 1) * pagination.limit + 1}</span> to{" "}
-                        <span className="font-bold">{Math.min(pagination.page * pagination.limit, pagination.total)}</span> of{" "}
-                        <span className="font-bold">{pagination.total}</span> members
+                        Showing{" "}
+                        <span className="font-bold">
+                          {(pagination.page - 1) * pagination.limit + 1}
+                        </span>{" "}
+                        to{" "}
+                        <span className="font-bold">
+                          {Math.min(
+                            pagination.page * pagination.limit,
+                            pagination.total,
+                          )}
+                        </span>{" "}
+                        of <span className="font-bold">{pagination.total}</span>{" "}
+                        members
                       </p>
                       <div className="flex items-center gap-2">
                         <button
                           disabled={!pagination.hasPrev}
-                          onClick={() => setCurrentPage(p => p - 1)}
+                          onClick={() => setCurrentPage((p) => p - 1)}
                           className={`h-9 w-9 rounded-lg flex items-center justify-center transition-all ${pagination.hasPrev
                             ? "bg-white border border-gray-200 hover:bg-gray-50 text-gray-600"
                             : "bg-gray-100 text-gray-400 cursor-not-allowed"
@@ -782,7 +988,10 @@ export default function AccountPage() {
                         >
                           <ChevronLeft size={16} />
                         </button>
-                        {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((page) => (
+                        {Array.from(
+                          { length: pagination.totalPages },
+                          (_, i) => i + 1,
+                        ).map((page) => (
                           <button
                             key={page}
                             onClick={() => setCurrentPage(page)}
@@ -796,7 +1005,7 @@ export default function AccountPage() {
                         ))}
                         <button
                           disabled={!pagination.hasNext}
-                          onClick={() => setCurrentPage(p => p + 1)}
+                          onClick={() => setCurrentPage((p) => p + 1)}
                           className={`h-9 w-9 rounded-lg flex items-center justify-center transition-all ${pagination.hasNext
                             ? "bg-white border border-gray-200 hover:bg-gray-50 text-gray-600"
                             : "bg-gray-100 text-gray-400 cursor-not-allowed"
@@ -810,66 +1019,97 @@ export default function AccountPage() {
                 </div>
               )}
 
-
-
               {/* Placeholder for other tabs */}
-              {(activeTab !== 'overview' && activeTab !== 'budget' && activeTab !== 'invitations' && activeTab !== 'members') && (
-                <div className="flex flex-col items-center justify-center h-[300px] text-center animate-in fade-in zoom-in-95 duration-300">
-                  <div className="w-20 h-20 bg-[#F3F0FD] text-[#7661d3] rounded-full flex items-center justify-center mb-4 shadow-inner">
-                    <Settings size={32} className="animate-spin-slow" />
+              {activeTab !== "overview" &&
+                activeTab !== "budget" &&
+                activeTab !== "invitations" &&
+                activeTab !== "members" && (
+                  <div className="flex flex-col items-center justify-center h-[300px] text-center animate-in fade-in zoom-in-95 duration-300">
+                    <div className="w-20 h-20 bg-[#F3F0FD] text-[#7661d3] rounded-full flex items-center justify-center mb-4 shadow-inner">
+                      <Settings size={32} className="animate-spin-slow" />
+                    </div>
+                    <h3 className="text-xl font-bold text-[#313131] mb-2">
+                      Coming Soon
+                    </h3>
+                    <p className="text-gray-500 text-sm max-w-sm mx-auto">
+                      We are currently crafting the pixel-perfect {activeTab}{" "}
+                      experience.
+                    </p>
                   </div>
-                  <h3 className="text-xl font-bold text-[#313131] mb-2">Coming Soon</h3>
-                  <p className="text-gray-500 text-sm max-w-sm mx-auto">
-                    We are currently crafting the pixel-perfect {activeTab} experience.
-                  </p>
-                </div>
-              )}
-              {/* Placeholder for other tabs
-              {(activeTab !== 'overview' && activeTab !== 'budget' && activeTab !== 'invitations') && (
-                <div className="flex flex-col items-center justify-center h-[300px] text-center animate-in fade-in zoom-in-95 duration-300">
-                  <div className="w-20 h-20 bg-[#F3F0FD] text-[#7661d3] rounded-full flex items-center justify-center mb-4 shadow-inner">
-                    <Settings size={32} className="animate-spin-slow" />
-                  </div>
-                  <h3 className="text-xl font-bold text-[#313131] mb-2">Coming Soon</h3>
-                  <p className="text-gray-500 text-sm max-w-sm mx-auto">
-                    We are currently crafting the pixel-perfect {activeTab} experience.
-                  </p>
-                </div>
-              )} */}
-
+                )}
             </div>
           </div>
         </div>
       </div>
 
+      {/* Modals */}
+      <AddMemberModal
+        isOpen={isAddMemberModalOpen}
+        onClose={() => setIsAddMemberModalOpen(false)}
+        accountId={activeAccountId!}
+      />
+
+      <EditMemberModal
+        isOpen={isEditMemberModalOpen}
+        onClose={() => {
+          setIsEditMemberModalOpen(false);
+          setSelectedMember(null);
+        }}
+        member={selectedMember}
+        accountId={activeAccountId!}
+      />
+
+      <DeleteMemberModal
+        isOpen={isDeleteMemberModalOpen}
+        onClose={() => {
+          setIsDeleteMemberModalOpen(false);
+          setSelectedMember(null);
+        }}
+        member={selectedMember}
+        accountId={activeAccountId!}
+      />
+
+      <DeleteAccountModal
+        isOpen={isDeleteAccountModalOpen}
+        onClose={() => setIsDeleteAccountModalOpen(false)}
+        account={account}
+      />
+
+      <EditAccountModal
+        isOpen={isEditAccountModalOpen}
+        onClose={() => setIsEditAccountModalOpen(false)}
+        account={account}
+      />
+
       <style jsx global>{`
         .animate-spin-slow {
-            animation: spin 8s linear infinite;
+          animation: spin 8s linear infinite;
         }
         @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
         }
       `}</style>
     </div>
   );
 }
 
-
-
-const MemberCard = ({ member, userId, setActiveMember }) => (
-
-
-
-
-
-
-
+const MemberCard = ({
+  member,
+  userId,
+  setActiveMember,
+  onEdit,
+  onDelete,
+}: any) => (
   <div className="bg-white rounded-xl border border-gray-100 hover:border-[#7661d3]/30 transition-all p-5 shadow-sm hover:shadow-md group">
     <div className="flex items-start justify-between mb-4">
       <div className="flex items-center gap-3">
         <div className="relative">
-          {member.user?.avatar ? (
+          {member.userId && member.user?.avatar ? (
             <img
               src={member.user.avatar}
               alt={member.user.firstName}
@@ -877,10 +1117,12 @@ const MemberCard = ({ member, userId, setActiveMember }) => (
             />
           ) : (
             <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#7661d3] to-[#3d326d] flex items-center justify-center text-white text-base font-bold ring-2 ring-[#F3F0FD] shadow-sm">
-              {member.user?.firstName?.[0]}{member.user?.lastName?.[0]}
+              {member.userId
+                ? `${member.user?.firstName?.[0] || ""}${member.user?.lastName?.[0] || ""}`
+                : member.name?.[0]?.toUpperCase() || "M"}
             </div>
           )}
-          {member.role === 'super_admin' && (
+          {member.role === "super_admin" && (
             <div className="absolute -bottom-1 -right-1 h-5 w-5 bg-[#7dab4f] rounded-full flex items-center justify-center border-2 border-white">
               <Crown size={10} className="fill-white text-white" />
             </div>
@@ -889,45 +1131,67 @@ const MemberCard = ({ member, userId, setActiveMember }) => (
 
         <div>
           <h4 className="font-bold text-[#313131] text-base">
-            {member.user?.firstName} {member.user?.lastName} {userId == member?.userId && "(You)"}
+            {member.userId
+              ? `${member.user?.firstName || ""} ${member.user?.lastName || ""}`.trim()
+              : member.name || "Unnamed Member"}
+            {userId == member?.userId && " (You)"}
           </h4>
-          <p className="text-xs text-gray-500 font-medium">
-            @{member.user?.username}
-          </p>
+          {member.userId && member.user?.username && (
+            <p className="text-xs text-gray-500 font-medium">
+              @{member.user.username}
+            </p>
+          )}
+          {!member.userId && (
+            <p className="text-xs text-gray-500 font-medium">In-house Member</p>
+          )}
         </div>
       </div>
 
-      <div className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${member.role === 'super_admin'
-        ? 'bg-[#7dab4f]/10 text-[#7dab4f]'
-        : member.role === 'admin'
-          ? 'bg-blue-50 text-blue-600'
-          : member.role === 'member'
-            ? 'bg-purple-50 text-purple-600'
-            : 'bg-gray-100 text-gray-600'
-        }`}>
-        {member.role === 'super_admin' ? 'Super Admin' : member.role}
+      <div
+        className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${member.role === "super_admin"
+          ? "bg-[#7dab4f]/10 text-[#7dab4f]"
+          : member.role === "admin"
+            ? "bg-blue-50 text-blue-600"
+            : member.role === "member"
+              ? "bg-purple-50 text-purple-600"
+              : member.role === "internal"
+                ? "bg-orange-50 text-orange-600"
+                : "bg-gray-100 text-gray-600"
+          }`}
+      >
+        {member.role === "super_admin" ? "Super Admin" : member.role}
       </div>
     </div>
 
     <div className="space-y-2 mb-4 pb-4 border-b border-gray-50">
-      <div className="flex items-center gap-2 text-sm">
-        <Mail size={14} className="text-gray-400" />
-        <span className="text-gray-600 font-medium">{member.user?.email}</span>
-      </div>
-
-      {member.name && (
+      {/* For registered members (with userId) - show email */}
+      {member.userId && member.user?.email && (
         <div className="flex items-center gap-2 text-sm">
-          <User size={14} className="text-gray-400" />
-          <span className="text-gray-600 font-medium">{member.name}</span>
+          <Mail size={14} className="text-gray-400" />
+          <span className="text-gray-600 font-medium">{member.user.email}</span>
         </div>
       )}
 
-      {(member.age || member.sex) && (
-        <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
-          {member.age && <span>Age: {member.age}</span>}
-          {member.sex && <span>•</span>}
-          {member.sex && <span className="capitalize">{member.sex}</span>}
-        </div>
+      {/* For in-house members (without userId) - show age and sex */}
+      {!member.userId && (
+        <>
+          {member.age && (
+            <div className="flex items-center gap-2 text-sm">
+              <Calendar size={14} className="text-gray-400" />
+              <span className="text-gray-600 font-medium">
+                Age: {member.age} years
+              </span>
+            </div>
+          )}
+          {member.sex && (
+            <div className="flex items-center gap-2 text-sm">
+              <User size={14} className="text-gray-400" />
+              <span className="text-gray-600 font-medium capitalize">
+                {member.sex}
+              </span>
+            </div>
+          )}
+        </>
       )}
     </div>
 
@@ -935,12 +1199,17 @@ const MemberCard = ({ member, userId, setActiveMember }) => (
       <div className="grid grid-cols-2 gap-3 text-xs">
         <div>
           <p className="text-gray-500 font-medium mb-1">Account Type</p>
-          <p className="text-[#313131] font-bold capitalize">{member.account?.accountType}</p>
+          <p className="text-[#313131] font-bold capitalize">
+            {member.account?.accountType}
+          </p>
         </div>
         <div>
           <p className="text-gray-500 font-medium mb-1">Member Since</p>
           <p className="text-[#313131] font-bold">
-            {new Date(member.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+            {new Date(member.createdAt).toLocaleDateString("en-US", {
+              month: "short",
+              year: "numeric",
+            })}
           </p>
         </div>
       </div>
@@ -959,14 +1228,7 @@ const MemberCard = ({ member, userId, setActiveMember }) => (
       {member.userId && (
         <>
           <button
-            className="bg-white hover:bg-gray-50 text-[#313131] font-bold text-xs py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 border border-gray-200 shadow-sm"
-            title="Change Role"
-          >
-            <ShieldCheck size={13} />
-            <span>Change Role</span>
-          </button>
-
-          <button
+            onClick={() => onEdit(member)}
             className="bg-white hover:bg-gray-50 text-[#313131] font-bold text-xs py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 border border-gray-200 shadow-sm"
             title="Edit Member"
           >
@@ -974,37 +1236,49 @@ const MemberCard = ({ member, userId, setActiveMember }) => (
             <span>Edit</span>
           </button>
 
-          {member.role !== 'super_admin' && (
+          {member.role !== "super_admin" && (
             <button
-              className="col-span-2 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white font-bold text-xs py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 border border-red-100 hover:border-red-500"
+              onClick={() => onDelete(member)}
+              className="bg-red-50 hover:bg-red-500 text-red-600 hover:text-white font-bold text-xs py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 border border-red-100 hover:border-red-500"
               title="Remove Member"
             >
               <X size={13} />
-              <span>Remove Member</span>
+              <span>Remove</span>
             </button>
           )}
         </>
       )}
 
       {!member.userId && (
-        <button
-          className="col-span-2 bg-white hover:bg-gray-50 text-[#313131] font-bold text-xs py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 border border-gray-200 shadow-sm"
-          title="More Options"
-        >
-          <MoreHorizontal size={13} />
-          <span>More Options</span>
-        </button>
+        <>
+          <button
+            onClick={() => onEdit(member)}
+            className="bg-white hover:bg-gray-50 text-[#313131] font-bold text-xs py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 border border-gray-200 shadow-sm"
+            title="Edit Member"
+          >
+            <Edit size={13} />
+            <span>Edit</span>
+          </button>
+          <button
+            onClick={() => onDelete(member)}
+            className="bg-red-50 hover:bg-red-500 text-red-600 hover:text-white font-bold text-xs py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 border border-red-100 hover:border-red-500"
+            title="Remove Member"
+          >
+            <X size={13} />
+            <span>Remove</span>
+          </button>
+        </>
       )}
     </div>
   </div>
 );
 
-const MemberTableRow = ({ member }) => (
+const MemberTableRow = ({ member }: { member: any }) => (
   <tr className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
     <td className="py-4 px-4">
       <div className="flex items-center gap-3">
         <div className="relative">
-          {member.user?.avatar ? (
+          {member.userId && member.user?.avatar ? (
             <img
               src={member.user.avatar}
               alt={member.user.firstName}
@@ -1012,10 +1286,12 @@ const MemberTableRow = ({ member }) => (
             />
           ) : (
             <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#7661d3] to-[#3d326d] flex items-center justify-center text-white text-sm font-bold ring-2 ring-[#F3F0FD]">
-              {member.user?.firstName?.[0]}{member.user?.lastName?.[0]}
+              {member.userId
+                ? `${member.user?.firstName?.[0] || ""}${member.user?.lastName?.[0] || ""}`
+                : member.name?.[0]?.toUpperCase() || "M"}
             </div>
           )}
-          {member.role === 'super_admin' && (
+          {member.role === "super_admin" && (
             <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-[#7dab4f] rounded-full flex items-center justify-center border-2 border-white">
               <Crown size={8} className="fill-white text-white" />
             </div>
@@ -1023,31 +1299,59 @@ const MemberTableRow = ({ member }) => (
         </div>
         <div>
           <p className="font-bold text-[#313131] text-sm">
-            {member.user?.firstName} {member.user?.lastName}
+            {member.userId
+              ? `${member.user?.firstName || ""} ${member.user?.lastName || ""}`.trim()
+              : member.name || "Unnamed Member"}
           </p>
-          <p className="text-xs text-gray-500">@{member.user?.username}</p>
+          {member.userId && member.user?.username && (
+            <p className="text-xs text-gray-500">@{member.user.username}</p>
+          )}
+          {!member.userId && (
+            <p className="text-xs text-gray-500">In-house Member</p>
+          )}
         </div>
       </div>
     </td>
     <td className="py-4 px-4">
-      <p className="text-sm text-gray-600 font-medium">{member.user?.email}</p>
+      {member.userId && member.user?.email ? (
+        <p className="text-sm text-gray-600 font-medium">{member.user.email}</p>
+      ) : (
+        <div className="space-y-1">
+          {member.age && (
+            <p className="text-sm text-gray-600 font-medium">
+              Age: {member.age} years
+            </p>
+          )}
+          {member.sex && (
+            <p className="text-xs text-gray-500 capitalize">{member.sex}</p>
+          )}
+        </div>
+      )}
     </td>
     <td className="py-4 px-4">
-      <div className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${member.role === 'super_admin'
-        ? 'bg-[#7dab4f]/10 text-[#7dab4f]'
-        : member.role === 'admin'
-          ? 'bg-blue-50 text-blue-600'
-          : 'bg-purple-50 text-purple-600'
-        }`}>
-        {member.role === 'super_admin' ? 'Super Admin' : member.role}
+      <div
+        className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${member.role === "super_admin"
+          ? "bg-[#7dab4f]/10 text-[#7dab4f]"
+          : member.role === "admin"
+            ? "bg-blue-50 text-blue-600"
+            : "bg-purple-50 text-purple-600"
+          }`}
+      >
+        {member.role === "super_admin" ? "Super Admin" : member.role}
       </div>
     </td>
     <td className="py-4 px-4">
-      <p className="text-sm text-gray-600 font-medium capitalize">{member.account?.accountType}</p>
+      <p className="text-sm text-gray-600 font-medium capitalize">
+        {member.account?.accountType}
+      </p>
     </td>
     <td className="py-4 px-4">
       <p className="text-sm text-gray-600 font-medium">
-        {new Date(member.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+        {new Date(member.createdAt).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })}
       </p>
     </td>
     <td className="py-4 px-4">
@@ -1072,7 +1376,7 @@ const MemberTableRow = ({ member }) => (
             >
               <Edit size={14} />
             </button>
-            {member.role !== 'super_admin' && (
+            {member.role !== "super_admin" && (
               <button
                 className="h-8 w-8 rounded-lg bg-red-50 hover:bg-red-600 text-red-600 hover:text-white flex items-center justify-center transition-all"
                 title="Remove"

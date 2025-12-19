@@ -14,10 +14,24 @@ export const useCreateAccount = () => {
       queryClient.invalidateQueries({
         queryKey: ["myaccounts"],
       });
-
     },
     onError: (error: any) => {
       console.log(error, "Error in Account Creation");
+    },
+  });
+};
+
+export const useDeleteAccount = () => {
+  return useMutation({
+    mutationKey: ["deleteAccount"],
+    mutationFn: (accountId: string) => accountService.deleteAccount(accountId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["myaccounts"],
+      });
+    },
+    onError: (error: any) => {
+      console.log(error, "Error in Account Deletion");
     },
   });
 };

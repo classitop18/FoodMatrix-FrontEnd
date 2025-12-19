@@ -141,7 +141,7 @@ const InvitationTable: React.FC<InvitationTableProps> = ({
         open={confirmationDialogOpen}
         setOpen={setConfirmationDialogOpen}
         title="Delete Invitation?"
-        description="Are you sure you want to remove this invitation? This action cannot be undone."
+        message="Are you sure you want to remove this invitation? This action cannot be undone."
         onConfirm={() => {
           if (invitationForAction?.id) onRemove(invitationForAction.id);
           setConfirmationDialogOpen(false);
@@ -162,9 +162,9 @@ const InvitationTable: React.FC<InvitationTableProps> = ({
                     {header.isPlaceholder
                       ? null
                       : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
                   </th>
                 ))}
               </tr>

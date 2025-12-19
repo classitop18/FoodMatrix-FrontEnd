@@ -1,533 +1,547 @@
-import { Button } from "../ui/button";
-import { Checkbox } from "../ui/checkbox";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { FoodPreferencesForm } from "./food-preference-form";
+"use client";
+import React, { useState } from "react";
+import { ArrowLeft, User, Heart, Shield, Star, Check } from "lucide-react";
 
+export default function ProfileEditPage() {
+  const [activeTab, setActiveTab] = useState("basic");
+  const [isSaving, setIsSaving] = useState(false);
 
-interface EditMemberDialogProps {
-    open: boolean;
-    isSaving: boolean;
-    member: any;                  // you can strongly type this if needed
-    form: any;                    // react-hook-form instance typed in parent
-    onClose: () => void;
-    onSubmit: any;
-    healthProfileForm: any;
-}
+  // Basic Info State
+  const [name, setName] = useState("");
+  const [age, setAge] = useState("");
+  const [sex, setSex] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
 
-export default function EditMemberDialog({
-    open,
-    onClose,
-    isSaving,
-    member,
-    form,
-    onSubmit,
-    healthProfileForm
-}: EditMemberDialogProps) {
+  // Health Profile State
+  const [height, setHeight] = useState("");
+  const [weight, setWeight] = useState("");
+  const [activityLevel, setActivityLevel] = useState("");
+  const [conditions, setConditions] = useState<string[]>([]);
+  const [allergies, setAllergies] = useState<string[]>([]);
+  const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>([]);
+  const [organicPreference, setOrganicPreference] = useState(
+    "prefer_when_budget_allows",
+  );
+  const [goals, setGoals] = useState<string[]>([]);
+  const [privacyLevel, setPrivacyLevel] = useState("private");
 
-    console.log(healthProfileForm,"healthProfileFormhealthProfileForm")
+  const handleSave = () => {
+    setIsSaving(true);
+    setTimeout(() => {
+      console.log("Saved successfully");
+      setIsSaving(false);
+    }, 1500);
+  };
 
+  const toggleArrayItem = (
+    array: string[],
+    setArray: Function,
+    item: string,
+  ) => {
+    if (array.includes(item)) {
+      setArray(array.filter((i) => i !== item));
+    } else {
+      setArray([...array, item]);
+    }
+  };
 
-    return (
-        <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[900px] p-0 overflow-hidden">
+  return (
+    <div className="min-h-screen bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] relative overflow-hidden">
+      {/* Background Patterns */}
+      <div className="absolute -top-64 -left-32 w-[818px] h-[818px] opacity-30 pointer-events-none">
+        <div className="w-full h-full bg-gradient-to-br from-purple-200 to-transparent rounded-full blur-3xl"></div>
+      </div>
+      <div className="absolute -bottom-64 -right-32 w-[818px] h-[818px] opacity-30 pointer-events-none">
+        <div className="w-full h-full bg-gradient-to-tl from-purple-200 to-transparent rounded-full blur-3xl"></div>
+      </div>
 
-                <DialogHeader className="px-6 pt-6">
-                    <DialogTitle className="text-xl font-semibold">Edit Member Profile</DialogTitle>
-                    <DialogDescription className="text-sm text-muted-foreground">
-                        Update the member’s basic details and complete health profile.
-                    </DialogDescription>
-                </DialogHeader>
+      {/* Header */}
+      <header className="relative z-10 border-b border-purple-200 bg-white/50 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center gap-4">
+            <button
+              className="hover:bg-purple-100 p-2 rounded-lg transition-colors"
+              onClick={() => window.history.back()}
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <div>
+              <h1 className="text-2xl font-extrabold text-gray-900">
+                Edit Profile
+              </h1>
+              <p className="text-sm text-gray-600">
+                Update your personal and health information
+              </p>
+            </div>
+          </div>
+        </div>
+      </header>
 
-                <div className="px-6">
-                    <Tabs defaultValue="basic" className="w-full mt-4">
-                        <TabsList className="w-full grid grid-cols-2 bg-muted/40 p-1 rounded-lg">
-                            <TabsTrigger
-                                value="basic"
-                                className="text-sm font-medium data-[state=active]:bg-green-600 data-[state=active]:text-white hover:bg-orange-500 hover:text-white"
-                            >
-                                Basic Info
-                            </TabsTrigger>
-                            <TabsTrigger
-                                value="health"
-                                className="text-sm font-medium data-[state=active]:bg-green-600 data-[state=active]:text-white hover:bg-orange-500 hover:text-white"
-                            >
-                                Health Profile
-                            </TabsTrigger>
-                        </TabsList>
+      {/* Main Content */}
+      <main className="relative z-10 max-w-6xl mx-auto px-6 py-12">
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          {/* Tabs */}
+          <div className="bg-gradient-to-r from-[#705CC7] to-[#8B7DD8] px-8 pt-8">
+            <div className="w-full grid grid-cols-2 bg-white/20 backdrop-blur-sm p-1.5 rounded-xl border-2 border-white/30">
+              <button
+                onClick={() => setActiveTab("basic")}
+                className={`text-sm font-bold rounded-lg transition-all duration-200 py-3 ${
+                  activeTab === "basic"
+                    ? "bg-white text-[#705CC7]"
+                    : "text-white hover:bg-white/30"
+                }`}
+              >
+                <User className="w-4 h-4 mr-2 inline" />
+                Basic Info
+              </button>
+              <button
+                onClick={() => setActiveTab("health")}
+                className={`text-sm font-bold rounded-lg transition-all duration-200 py-3 ${
+                  activeTab === "health"
+                    ? "bg-white text-[#705CC7]"
+                    : "text-white hover:bg-white/30"
+                }`}
+              >
+                <Heart className="w-4 h-4 mr-2 inline" />
+                Health Profile
+              </button>
+            </div>
+          </div>
 
-                        <div className="max-h-[65vh] overflow-y-auto pr-3">
-                            <TabsContent value="basic" className="space-y-4 pt-4">
-                                <Form {...form}>
-                                    <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+          {/* Tab Content */}
+          <div className="p-8">
+            {activeTab === "basic" && (
+              <div className="space-y-6">
+                <div className="inline-flex items-center gap-2 bg-[#705CC7]/10 text-[#705CC7] px-4 py-2 rounded-full">
+                  <Star className="w-4 h-4 fill-current" />
+                  <span className="text-sm font-bold">
+                    Personal Information
+                  </span>
+                </div>
 
-                                        <FormField
-                                            control={form.control}
-                                            name="name"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Name</FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder="John Doe" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
+                {/* Name */}
+                <div>
+                  <label className="block text-base font-semibold text-gray-900 mb-2">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Enter your full name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full h-12 px-4 text-base border-2 border-gray-200 focus:border-[#705CC7] rounded-xl focus:outline-none"
+                  />
+                </div>
 
-                                        <div className="grid md:grid-cols-2 gap-4">
-                                            <FormField
-                                                control={form.control}
-                                                name="age"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>Age</FormLabel>
-                                                        <FormControl>
-                                                            <Input type="number" placeholder="34" {...field} />
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
+                {/* Age & Sex */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-base font-semibold text-gray-900 mb-2">
+                      Age
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="34"
+                      value={age}
+                      onChange={(e) => setAge(e.target.value)}
+                      className="w-full h-12 px-4 text-base border-2 border-gray-200 focus:border-[#705CC7] rounded-xl focus:outline-none"
+                    />
+                  </div>
 
-                                            <FormField
-                                                control={form.control}
-                                                name="sex"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>Sex</FormLabel>
-                                                        <Select onValueChange={field.onChange} value={field.value}>
-                                                            <FormControl>
-                                                                <SelectTrigger>
-                                                                    <SelectValue placeholder="Select" />
-                                                                </SelectTrigger>
-                                                            </FormControl>
-                                                            <SelectContent>
-                                                                <SelectItem value="male">Male</SelectItem>
-                                                                <SelectItem value="female">Female</SelectItem>
-                                                                <SelectItem value="other">Other</SelectItem>
-                                                            </SelectContent>
-                                                        </Select>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        </div>
+                  <div>
+                    <label className="block text-base font-semibold text-gray-900 mb-2">
+                      Sex
+                    </label>
+                    <select
+                      value={sex}
+                      onChange={(e) => setSex(e.target.value)}
+                      className="w-full h-12 px-4 text-base border-2 border-gray-200 focus:border-[#705CC7] rounded-xl focus:outline-none bg-white"
+                    >
+                      <option value="">Select your sex</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                </div>
 
-                                        <FormField
-                                            control={form.control}
-                                            name="isAdmin"
-                                            render={({ field }) => (
-                                                <FormItem className="flex justify-between items-center border rounded-lg p-3">
-                                                    <div>
-                                                        <FormLabel>Admin Access</FormLabel>
-                                                        <p className="text-xs text-muted-foreground">
-                                                            Can manage account settings & members
-                                                        </p>
-                                                    </div>
-                                                    <FormControl>
-                                                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                                                    </FormControl>
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </form>
-                                </Form>
-                            </TabsContent>
+                {/* Admin Access */}
+                <div className="flex justify-between items-center border-2 border-gray-200 rounded-xl p-4 hover:border-[#705CC7] transition-colors">
+                  <div>
+                    <div className="text-base font-semibold text-gray-900">
+                      Admin Access
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      Can manage account settings & members
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setIsAdmin(!isAdmin)}
+                    className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                      isAdmin
+                        ? "bg-[#705CC7] border-[#705CC7]"
+                        : "border-gray-300 bg-white"
+                    }`}
+                  >
+                    {isAdmin && <Check className="w-3 h-3 text-white" />}
+                  </button>
+                </div>
+              </div>
+            )}
 
-                            <TabsContent value="health" className="space-y-6 pt-4">
-                                <Form {...healthProfileForm}>
-                                    <form className="space-y-4" onSubmit={healthProfileForm.handleSubmit(onSubmit)}>
+            {activeTab === "health" && (
+              <div className="space-y-8">
+                <div className="inline-flex items-center gap-2 bg-[#705CC7]/10 text-[#705CC7] px-4 py-2 rounded-full">
+                  <Heart className="w-4 h-4 fill-current" />
+                  <span className="text-sm font-bold">Health & Wellness</span>
+                </div>
 
-                                        {/* Physical Stats */}
-                                        <div className="space-y-4">
-                                            <h4 className="font-medium">Physical Information</h4>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <FormField
-                                                    control={healthProfileForm?.control}
-                                                    name="height"
-                                                    render={({ field }) => (
-                                                        <FormItem>
-                                                            <FormLabel>Height (inches)</FormLabel>
-                                                            <FormControl>
-                                                                <Input
-                                                                    type="number"
-                                                                    placeholder="e.g., 68"
-                                                                    {...field}
-                                                                    value={field.value || ''}
-                                                                />
-                                                            </FormControl>
-                                                            <FormMessage />
-                                                        </FormItem>
-                                                    )}
-                                                />
-                                                <FormField
-                                                    control={healthProfileForm.control}
-                                                    name="weight"
-                                                    render={({ field }) => (
-                                                        <FormItem>
-                                                            <FormLabel>Weight (pounds)</FormLabel>
-                                                            <FormControl>
-                                                                <Input
-                                                                    type="number"
-                                                                    placeholder="e.g., 150"
-                                                                    {...field}
-                                                                    value={field.value || ''}
-                                                                />
-                                                            </FormControl>
-                                                            <FormMessage />
-                                                        </FormItem>
-                                                    )}
-                                                />
-                                            </div>
+                {/* Physical Stats */}
+                <div className="space-y-4">
+                  <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                    <div className="w-8 h-8 bg-[#705CC7]/10 rounded-lg flex items-center justify-center">
+                      <User className="w-4 h-4 text-[#705CC7]" />
+                    </div>
+                    Physical Information
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block font-semibold mb-2">
+                        Height (inches)
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="68"
+                        value={height}
+                        onChange={(e) => setHeight(e.target.value)}
+                        className="w-full h-12 px-4 border-2 border-gray-200 focus:border-[#705CC7] rounded-xl focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-semibold mb-2">
+                        Weight (pounds)
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="150"
+                        value={weight}
+                        onChange={(e) => setWeight(e.target.value)}
+                        className="w-full h-12 px-4 border-2 border-gray-200 focus:border-[#705CC7] rounded-xl focus:outline-none"
+                      />
+                    </div>
+                  </div>
 
-                                            <FormField
-                                                control={healthProfileForm.control}
-                                                name="activityLevel"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>Activity Level</FormLabel>
-                                                        <Select onValueChange={field.onChange} value={field.value}>
-                                                            <FormControl>
-                                                                <SelectTrigger>
-                                                                    <SelectValue placeholder="Select activity level" />
-                                                                </SelectTrigger>
-                                                            </FormControl>
-                                                            <SelectContent>
-                                                                <SelectItem value="sedentary">Sedentary (little/no exercise)</SelectItem>
-                                                                <SelectItem value="moderate">Moderate (1-3 days/week)</SelectItem>
-                                                                <SelectItem value="active">Active (3-5 days/week)</SelectItem>
-                                                                <SelectItem value="very_active">Very Active (6-7 days/week)</SelectItem>
-                                                            </SelectContent>
-                                                        </Select>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        </div>
+                  <div>
+                    <label className="block font-semibold mb-2">
+                      Activity Level
+                    </label>
+                    <select
+                      value={activityLevel}
+                      onChange={(e) => setActivityLevel(e.target.value)}
+                      className="w-full h-12 px-4 border-2 border-gray-200 focus:border-[#705CC7] rounded-xl focus:outline-none bg-white"
+                    >
+                      <option value="">Select activity level</option>
+                      <option value="sedentary">
+                        Sedentary (little/no exercise)
+                      </option>
+                      <option value="moderate">Moderate (1-3 days/week)</option>
+                      <option value="active">Active (3-5 days/week)</option>
+                      <option value="very_active">
+                        Very Active (6-7 days/week)
+                      </option>
+                    </select>
+                  </div>
+                </div>
 
-                                        {/* Health Conditions */}
-                                        <div className="space-y-4">
-                                            <h4 className="font-medium">Health Conditions</h4>
-                                            <FormField
-                                                control={healthProfileForm.control}
-                                                name="conditions"
-                                                render={() => (
-                                                    <FormItem>
-                                                        <div className="grid grid-cols-2 gap-2">
-                                                            {(['type1_diabetes', 'type2_diabetes', 'prediabetes', 'hypertension', 'high_cholesterol', 'heart_disease', 'ibs', 'gerd', 'celiac_disease', 'obesity', 'pcos', 'kidney_disease', 'gout'] as const).map((condition) => (
-                                                                <FormField
-                                                                    key={condition}
-                                                                    control={healthProfileForm.control}
-                                                                    name="conditions"
-                                                                    render={({ field }) => {
-                                                                        return (
-                                                                            <FormItem
-                                                                                key={condition}
-                                                                                className="flex flex-row items-start space-x-3 space-y-0"
-                                                                            >
-                                                                                <FormControl>
-                                                                                    <Checkbox
-                                                                                        checked={field.value?.includes(condition)}
-                                                                                        onCheckedChange={(checked) => {
-                                                                                            return checked
-                                                                                                ? field.onChange([...field.value, condition])
-                                                                                                : field.onChange(
-                                                                                                    field.value?.filter(
-                                                                                                        (value: any) => value !== condition
-                                                                                                    )
-                                                                                                )
-                                                                                        }}
-                                                                                    />
-                                                                                </FormControl>
-                                                                                <FormLabel className="text-sm font-normal">
-                                                                                    {condition.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                                                                                </FormLabel>
-                                                                            </FormItem>
-                                                                        )
-                                                                    }}
-                                                                />
-                                                            ))}
-                                                        </div>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        </div>
+                {/* Health Conditions */}
+                <div className="space-y-4">
+                  <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                    <div className="w-8 h-8 bg-[#705CC7]/10 rounded-lg flex items-center justify-center">
+                      <Shield className="w-4 h-4 text-[#705CC7]" />
+                    </div>
+                    Health Conditions
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {[
+                      "type1_diabetes",
+                      "type2_diabetes",
+                      "prediabetes",
+                      "hypertension",
+                      "high_cholesterol",
+                      "heart_disease",
+                      "ibs",
+                      "gerd",
+                      "celiac_disease",
+                      "obesity",
+                      "pcos",
+                      "kidney_disease",
+                      "gout",
+                    ].map((condition) => (
+                      <div
+                        key={condition}
+                        className="flex items-start space-x-3 bg-gray-50 p-3 rounded-lg hover:bg-purple-50 transition-colors border-2 border-transparent hover:border-purple-200 cursor-pointer"
+                        onClick={() =>
+                          toggleArrayItem(conditions, setConditions, condition)
+                        }
+                      >
+                        <button
+                          className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
+                            conditions.includes(condition)
+                              ? "bg-[#705CC7] border-[#705CC7]"
+                              : "border-gray-300 bg-white"
+                          }`}
+                        >
+                          {conditions.includes(condition) && (
+                            <Check className="w-3 h-3 text-white" />
+                          )}
+                        </button>
+                        <label className="text-sm font-medium cursor-pointer leading-tight">
+                          {condition
+                            .replace(/_/g, " ")
+                            .replace(/\b\w/g, (l) => l.toUpperCase())}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
 
-                                        {/* Allergies */}
-                                        <div className="space-y-4">
-                                            <h4 className="font-medium">Food Allergies</h4>
-                                            <FormField
-                                                control={healthProfileForm.control}
-                                                name="allergies"
-                                                render={() => (
-                                                    <FormItem>
-                                                        <div className="grid grid-cols-3 gap-2">
-                                                            {(['nuts', 'dairy', 'gluten', 'shellfish', 'soy', 'eggs'] as const).map((allergy) => (
-                                                                <FormField
-                                                                    key={allergy}
-                                                                    control={healthProfileForm.control}
-                                                                    name="allergies"
-                                                                    render={({ field }) => {
-                                                                        return (
-                                                                            <FormItem
-                                                                                key={allergy}
-                                                                                className="flex flex-row items-start space-x-3 space-y-0"
-                                                                            >
-                                                                                <FormControl>
-                                                                                    <Checkbox
-                                                                                        checked={field.value?.includes(allergy)}
-                                                                                        onCheckedChange={(checked) => {
-                                                                                            return checked
-                                                                                                ? field.onChange([...field.value, allergy])
-                                                                                                : field.onChange(
-                                                                                                    field.value?.filter(
-                                                                                                        (value: any) => value !== allergy
-                                                                                                    )
-                                                                                                )
-                                                                                        }}
-                                                                                    />
-                                                                                </FormControl>
-                                                                                <FormLabel className="text-sm font-normal capitalize">
-                                                                                    {allergy}
-                                                                                </FormLabel>
-                                                                            </FormItem>
-                                                                        )
-                                                                    }}
-                                                                />
-                                                            ))}
-                                                        </div>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        </div>
+                {/* Allergies */}
+                <div className="space-y-4">
+                  <h3 className="text-xl font-bold text-gray-900">
+                    Food Allergies
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {[
+                      "nuts",
+                      "dairy",
+                      "gluten",
+                      "shellfish",
+                      "soy",
+                      "eggs",
+                    ].map((allergy) => (
+                      <div
+                        key={allergy}
+                        className="flex items-start space-x-3 bg-gray-50 p-3 rounded-lg hover:bg-purple-50 transition-colors border-2 border-transparent hover:border-purple-200 cursor-pointer"
+                        onClick={() =>
+                          toggleArrayItem(allergies, setAllergies, allergy)
+                        }
+                      >
+                        <button
+                          className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
+                            allergies.includes(allergy)
+                              ? "bg-[#705CC7] border-[#705CC7]"
+                              : "border-gray-300 bg-white"
+                          }`}
+                        >
+                          {allergies.includes(allergy) && (
+                            <Check className="w-3 h-3 text-white" />
+                          )}
+                        </button>
+                        <label className="text-sm font-medium cursor-pointer capitalize leading-tight">
+                          {allergy}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
 
-                                        {/* Dietary Restrictions */}
-                                        <div className="space-y-4">
-                                            <h4 className="font-medium">Dietary Restrictions</h4>
-                                            <FormField
-                                                control={healthProfileForm.control}
-                                                name="dietaryRestrictions"
-                                                render={() => (
-                                                    <FormItem>
-                                                        <div className="grid grid-cols-3 gap-2">
-                                                            {(['vegan', 'vegetarian', 'keto', 'paleo', 'mediterranean', 'low_carb', 'dash', 'halal', 'kosher'] as const).map((diet) => (
-                                                                <FormField
-                                                                    key={diet}
-                                                                    control={healthProfileForm.control}
-                                                                    name="dietaryRestrictions"
-                                                                    render={({ field }) => {
-                                                                        return (
-                                                                            <FormItem
-                                                                                key={diet}
-                                                                                className="flex flex-row items-start space-x-3 space-y-0"
-                                                                            >
-                                                                                <FormControl>
-                                                                                    <Checkbox
-                                                                                        checked={field.value?.includes(diet)}
-                                                                                        onCheckedChange={(checked) => {
-                                                                                            return checked
-                                                                                                ? field.onChange([...field.value, diet])
-                                                                                                : field.onChange(
-                                                                                                    field.value?.filter(
-                                                                                                        (value: any) => value !== diet
-                                                                                                    )
-                                                                                                )
-                                                                                        }}
-                                                                                    />
-                                                                                </FormControl>
-                                                                                <FormLabel className="text-sm font-normal capitalize">
-                                                                                    {diet.replace(/_/g, ' ')}
-                                                                                </FormLabel>
-                                                                            </FormItem>
-                                                                        )
-                                                                    }}
-                                                                />
-                                                            ))}
-                                                        </div>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        </div>
+                {/* Dietary Restrictions */}
+                <div className="space-y-4">
+                  <h3 className="text-xl font-bold text-gray-900">
+                    Dietary Restrictions
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {[
+                      "vegan",
+                      "vegetarian",
+                      "keto",
+                      "paleo",
+                      "mediterranean",
+                      "low_carb",
+                      "dash",
+                      "halal",
+                      "kosher",
+                    ].map((diet) => (
+                      <div
+                        key={diet}
+                        className="flex items-start space-x-3 bg-gray-50 p-3 rounded-lg hover:bg-purple-50 transition-colors border-2 border-transparent hover:border-purple-200 cursor-pointer"
+                        onClick={() =>
+                          toggleArrayItem(
+                            dietaryRestrictions,
+                            setDietaryRestrictions,
+                            diet,
+                          )
+                        }
+                      >
+                        <button
+                          className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
+                            dietaryRestrictions.includes(diet)
+                              ? "bg-[#705CC7] border-[#705CC7]"
+                              : "border-gray-300 bg-white"
+                          }`}
+                        >
+                          {dietaryRestrictions.includes(diet) && (
+                            <Check className="w-3 h-3 text-white" />
+                          )}
+                        </button>
+                        <label className="text-sm font-medium cursor-pointer capitalize leading-tight">
+                          {diet.replace(/_/g, " ")}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
 
-                                        {/* Organic Food Preference */}
-                                        <div className="space-y-4">
-                                            <h4 className="font-medium">🥬 Organic Food Preference</h4>
-                                            <FormField
-                                                control={healthProfileForm.control}
-                                                name="organicPreference"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormControl>
-                                                            <RadioGroup
-                                                                onValueChange={field.onChange}
-                                                                value={field.value}
-                                                                className="space-y-3"
-                                                                data-testid="radio-organic-preference"
-                                                            >
-                                                                <div className="flex items-center space-x-2">
-                                                                    <RadioGroupItem value="standard_only" id="standard_only" />
-                                                                    <Label htmlFor="standard_only" className="font-normal cursor-pointer">
-                                                                        <div>
-                                                                            <div className="font-medium">Only Standard Food</div>
-                                                                            <div className="text-sm text-muted-foreground">Choose conventional food options only</div>
-                                                                        </div>
-                                                                    </Label>
-                                                                </div>
-                                                                <div className="flex items-center space-x-2">
-                                                                    <RadioGroupItem value="prefer_when_budget_allows" id="prefer_when_budget_allows" />
-                                                                    <Label htmlFor="prefer_when_budget_allows" className="font-normal cursor-pointer">
-                                                                        <div>
-                                                                            <div className="font-medium">Prefer Organic Foods</div>
-                                                                            <div className="text-sm text-muted-foreground">When budget allows, prioritize organic options</div>
-                                                                        </div>
-                                                                    </Label>
-                                                                </div>
-                                                                <div className="flex items-center space-x-2">
-                                                                    <RadioGroupItem value="organic_only" id="organic_only" />
-                                                                    <Label htmlFor="organic_only" className="font-normal cursor-pointer">
-                                                                        <div>
-                                                                            <div className="font-medium">Organic Food Only</div>
-                                                                            <div className="text-sm text-muted-foreground">Purchase only certified organic food products</div>
-                                                                        </div>
-                                                                    </Label>
-                                                                </div>
-                                                            </RadioGroup>
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        </div>
-
-                                        {/* Goals */}
-                                        <div className="space-y-4">
-                                            <h4 className="font-medium">Health Goals</h4>
-                                            <FormField
-                                                control={healthProfileForm.control}
-                                                name="goals"
-                                                render={() => (
-                                                    <FormItem>
-                                                        <div className="grid grid-cols-2 gap-2">
-                                                            {(['lose_weight', 'maintain_weight', 'gain_weight', 'build_muscle', 'control_blood_sugar', 'lower_cholesterol', 'reduce_sodium', 'general_wellness', 'healthy_family_eating'] as const).map((goal) => (
-                                                                <FormField
-                                                                    key={goal}
-                                                                    control={healthProfileForm.control}
-                                                                    name="goals"
-                                                                    render={({ field }) => {
-                                                                        return (
-                                                                            <FormItem
-                                                                                key={goal}
-                                                                                className="flex flex-row items-start space-x-3 space-y-0"
-                                                                            >
-                                                                                <FormControl>
-                                                                                    <Checkbox
-                                                                                        checked={field.value?.includes(goal)}
-                                                                                        onCheckedChange={(checked) => {
-                                                                                            return checked
-                                                                                                ? field.onChange([...field.value, goal])
-                                                                                                : field.onChange(
-                                                                                                    field.value?.filter(
-                                                                                                        (value: any) => value !== goal
-                                                                                                    )
-                                                                                                )
-                                                                                        }}
-                                                                                    />
-                                                                                </FormControl>
-                                                                                <FormLabel className="text-sm font-normal">
-                                                                                    {goal.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                                                                                </FormLabel>
-                                                                            </FormItem>
-                                                                        )
-                                                                    }}
-                                                                />
-                                                            ))}
-                                                        </div>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        </div>
-
-                                        {/* Privacy Settings */}
-                                        <div className="space-y-4">
-                                            <h4 className="font-medium">Privacy Settings</h4>
-                                            <FormField
-                                                control={healthProfileForm.control}
-                                                name="privacyLevel"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>Health Data Visibility</FormLabel>
-                                                        <Select onValueChange={field.onChange} value={field.value}>
-                                                            <FormControl>
-                                                                <SelectTrigger>
-                                                                    <SelectValue placeholder="Select privacy level" />
-                                                                </SelectTrigger>
-                                                            </FormControl>
-                                                            <SelectContent>
-                                                                <SelectItem value="private">Private (only me)</SelectItem>
-                                                                <SelectItem value="admin_only">Admin Only</SelectItem>
-                                                                <SelectItem value="shared">Shared with all members</SelectItem>
-                                                            </SelectContent>
-                                                        </Select>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        </div>
-
-                                        {/* Food Preferences */}
-                                        <div className="space-y-4">
-                                            <h4 className="font-medium">Food Preferences</h4>
-                                            <p className="text-sm text-muted-foreground">
-                                                Manage food exclusions, inclusions, and dietary preferences for personalized meal planning
-                                            </p>
-                                            {
-                                                Object.keys(healthProfileForm).length > 0 &&
-                                                <FoodPreferencesForm
-                                                    excludedFoods={healthProfileForm.watch('excludedFoods')}
-                                                    includedFoods={healthProfileForm.watch('includedFoods')}
-                                                    customExclusions={healthProfileForm.watch('customExclusions')}
-                                                    customInclusions={healthProfileForm.watch('customInclusions')}
-                                                    preferenceSets={healthProfileForm.watch('preferenceSets')}
-                                                    autoLearn={healthProfileForm.watch('autoLearn')}
-                                                    autoSwap={healthProfileForm.watch('autoSwap')}
-                                                    onExcludedFoodsChange={(foods) => healthProfileForm.setValue('excludedFoods', foods)}
-                                                    onIncludedFoodsChange={(foods) => healthProfileForm.setValue('includedFoods', foods)}
-                                                    onCustomExclusionsChange={(exclusions) => healthProfileForm.setValue('customExclusions', exclusions)}
-                                                    onCustomInclusionsChange={(inclusions) => healthProfileForm.setValue('customInclusions', inclusions)}
-                                                    onPreferenceSetsChange={(sets) => healthProfileForm.setValue('preferenceSets', sets)}
-                                                    onAutoLearnChange={(value) => healthProfileForm.setValue('autoLearn', value)}
-                                                    onAutoSwapChange={(value) => healthProfileForm.setValue('autoSwap', value)}
-                                                />
-                                            }
-
-                                        </div>
-                                    </form>
-                                </Form>
-                            </TabsContent>
-
+                {/* Organic Preference */}
+                <div className="space-y-4">
+                  <h3 className="text-xl font-bold text-gray-900">
+                    🥬 Organic Food Preference
+                  </h3>
+                  <div className="space-y-3">
+                    {[
+                      {
+                        value: "standard_only",
+                        title: "Only Standard Food",
+                        desc: "Choose conventional food options only",
+                      },
+                      {
+                        value: "prefer_when_budget_allows",
+                        title: "Prefer Organic Foods",
+                        desc: "When budget allows, prioritize organic options",
+                      },
+                      {
+                        value: "organic_only",
+                        title: "Organic Food Only",
+                        desc: "Purchase only certified organic food products",
+                      },
+                    ].map((option) => (
+                      <div
+                        key={option.value}
+                        className="flex items-center space-x-3 border-2 border-gray-200 p-4 rounded-xl hover:border-[#705CC7] transition-colors cursor-pointer"
+                        onClick={() => setOrganicPreference(option.value)}
+                      >
+                        <div
+                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                            organicPreference === option.value
+                              ? "border-[#705CC7]"
+                              : "border-gray-300"
+                          }`}
+                        >
+                          {organicPreference === option.value && (
+                            <div className="w-3 h-3 rounded-full bg-[#705CC7]"></div>
+                          )}
                         </div>
-                    </Tabs>
+                        <label className="font-normal cursor-pointer flex-1">
+                          <div className="font-semibold text-gray-900">
+                            {option.title}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            {option.desc}
+                          </div>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
-                <div className="border-t bg-background px-6 py-4 flex justify-end gap-2">
-                    <Button variant="outline" onClick={onClose}>
-                        Cancel
-                    </Button>
-                    <Button onClick={healthProfileForm.handleSubmit(onSubmit)} disabled={isSaving}>
-                        {isSaving ? "Saving..." : "Save Changes"}
-                    </Button>
+                {/* Health Goals */}
+                <div className="space-y-4">
+                  <h3 className="text-xl font-bold text-gray-900">
+                    Health Goals
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {[
+                      "lose_weight",
+                      "maintain_weight",
+                      "gain_weight",
+                      "build_muscle",
+                      "control_blood_sugar",
+                      "lower_cholesterol",
+                      "reduce_sodium",
+                      "general_wellness",
+                      "healthy_family_eating",
+                    ].map((goal) => (
+                      <div
+                        key={goal}
+                        className="flex items-start space-x-3 bg-gray-50 p-3 rounded-lg hover:bg-purple-50 transition-colors border-2 border-transparent hover:border-purple-200 cursor-pointer"
+                        onClick={() => toggleArrayItem(goals, setGoals, goal)}
+                      >
+                        <button
+                          className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
+                            goals.includes(goal)
+                              ? "bg-[#705CC7] border-[#705CC7]"
+                              : "border-gray-300 bg-white"
+                          }`}
+                        >
+                          {goals.includes(goal) && (
+                            <Check className="w-3 h-3 text-white" />
+                          )}
+                        </button>
+                        <label className="text-sm font-medium cursor-pointer leading-tight">
+                          {goal
+                            .replace(/_/g, " ")
+                            .replace(/\b\w/g, (l) => l.toUpperCase())}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-            </DialogContent>
-        </Dialog>
-    );
+
+                {/* Privacy Settings */}
+                <div className="space-y-4">
+                  <h3 className="text-xl font-bold text-gray-900">
+                    Privacy Settings
+                  </h3>
+                  <div>
+                    <label className="block font-semibold mb-2">
+                      Health Data Visibility
+                    </label>
+                    <select
+                      value={privacyLevel}
+                      onChange={(e) => setPrivacyLevel(e.target.value)}
+                      className="w-full h-12 px-4 border-2 border-gray-200 focus:border-[#705CC7] rounded-xl focus:outline-none bg-white"
+                    >
+                      <option value="private">Private (only me)</option>
+                      <option value="admin_only">Admin Only</option>
+                      <option value="shared">Shared with all members</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Footer Actions */}
+          <div className="border-t-2 border-gray-100 bg-gray-50 px-8 py-6 flex justify-end gap-4">
+            <button
+              onClick={() => window.history.back()}
+              className="px-6 py-3 border-2 border-gray-300 hover:bg-gray-100 rounded-xl font-bold transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="px-8 py-3 bg-[#705CC7] hover:bg-[#5d4ba8] text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            >
+              {isSaving ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Star className="w-4 h-4 mr-2 fill-current" />
+                  Save Changes
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Bottom gradient line */}
+        <div className="mt-8 bg-gradient-to-r from-[#705CC7] to-transparent h-1 rounded-full"></div>
+      </main>
+    </div>
+  );
 }

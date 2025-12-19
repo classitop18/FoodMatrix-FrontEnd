@@ -33,7 +33,7 @@ export default function SetupPage() {
   const [isPreparing, setIsPreparing] = useState(false);
 
   const form = useForm<SetupData>({
-    resolver: zodResolver(setupSchema),
+    resolver: zodResolver(setupSchema) as any,
     defaultValues: {
       accountType: "family",
       weeklyBudget: 300,
@@ -155,9 +155,9 @@ export default function SetupPage() {
       // await Promise.all(keys.map((key) => queryClient.invalidateQueries({ queryKey: [key] })));
       await new Promise((resolve) => setTimeout(resolve, 4000));
       setIsPreparing(false);
-    //   const destination =
-    //     data?.accountType === "individual" ? "/meal-planning" : "/dashboard";
-    //   // setLocation(destination);
+      //   const destination =
+      //     data?.accountType === "individual" ? "/meal-planning" : "/dashboard";
+      //   // setLocation(destination);
     },
 
     onError: (error: any) => {

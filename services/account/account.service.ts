@@ -21,4 +21,19 @@ export class AccountService {
     const response = await apiClient.get(API_ENDPOINTS.ACCOUNT.GET_ACCOUNT(id));
     return response.data;
   }
+
+  async updateAccount(accountId: string, payload: Partial<CreateAccountPayload>) {
+    const response = await apiClient.put(
+      API_ENDPOINTS.ACCOUNT.UPDATE_ACCOUNT(accountId),
+      payload,
+    );
+    return response.data;
+  }
+
+  async deleteAccount(accountId: string) {
+    const response = await apiClient.delete(
+      API_ENDPOINTS.ACCOUNT.DELETE_ACCOUNT(accountId),
+    );
+    return response.data;
+  }
 }

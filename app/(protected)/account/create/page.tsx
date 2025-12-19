@@ -3,8 +3,7 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-// import { useLocation } from "wouter";
+import { useMutation } from "@tanstack/react-query";
 import { z } from "zod";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -22,6 +21,7 @@ import Image from "next/image";
 import { setupSchema } from "@/schema/account/account.schema";
 import { useCreateAccount } from "@/services/account/account.mutation";
 import { useRouter } from "next/navigation";
+import { AddressAutocomplete } from "@/components/profile/address-autocomplete";
 
 type SetupData = z.infer<typeof setupSchema>;
 
@@ -32,15 +32,18 @@ export default function SetupPage() {
     "individual" | "family" | "group"
   >("family");
   const [isPreparing, setIsPreparing] = useState(false);
+  const [addressData, setAddressData] = useState<any>(null);
 
   const router = useRouter();
 
-  const form = useForm<SetupData>({
+  const form = useForm({
     resolver: zodResolver(setupSchema),
     defaultValues: {
       accountType: "family",
+      accountName: "",
+      description: "",
       weeklyBudget: 300,
-      currentAllocation: "weekly" as const,
+      currentAllocation: "weekly",
       groceriesPercentage: 70,
       diningPercentage: 20,
       emergencyPercentage: 10,
@@ -49,7 +52,7 @@ export default function SetupPage() {
       dietaryRestrictions: [],
       goals: [],
       preferredCuisines: [],
-      organicPreference: "standard_only" as const,
+      organicPreference: "standard_only",
       hasDeepFreezer: false,
       shopsDaily: false,
     },
@@ -69,19 +72,21 @@ export default function SetupPage() {
   // Calculate current budget based on selected allocation
   const currentBudget =
     currentAllocation === "daily"
-      ? dailyBudget
+      ? dailyBudget || 0
       : currentAllocation === "weekly"
-        ? weeklyBudget
+        ? weeklyBudget || 0
         : currentAllocation === "monthly"
-          ? monthlyBudget
+          ? monthlyBudget || 0
           : currentAllocation === "annual"
-            ? annualBudget
-            : weeklyBudget;
+            ? annualBudget || 0
+            : weeklyBudget || 0;
 
   // Calculate category budgets based on user percentages
-  const groceriesBudget = (currentBudget * groceriesPercentage) / 100;
-  const diningBudget = (currentBudget * diningPercentage) / 100;
-  const emergencyBudget = (currentBudget * emergencyPercentage) / 100;
+  const groceriesBudget =
+    ((currentBudget as number) * groceriesPercentage) / 100;
+  const diningBudget = ((currentBudget as number) * diningPercentage) / 100;
+  const emergencyBudget =
+    ((currentBudget as number) * emergencyPercentage) / 100;
 
   // Validation: Check if percentages add up to 100% (allow small rounding tolerance)
   const totalPercentage =
@@ -102,80 +107,8 @@ export default function SetupPage() {
 
   const createAccountMutation = useCreateAccount();
 
-  const setupMutation = useMutation({
-    mutationFn: async (data: SetupData) => {
-      const accountData = {
-        type: data.accountType,
-        accountName: data.accountName,
-        dailyBudget: data.dailyBudget?.toString(),
-        weeklyBudget: data.weeklyBudget?.toString() || "300",
-        monthlyBudget: data.monthlyBudget?.toString(),
-        annualBudget: data.annualBudget?.toString(),
-        currentAllocation: data.currentAllocation,
-        groceriesPercentage: data.groceriesPercentage,
-        diningPercentage: data.diningPercentage,
-        emergencyPercentage: data.emergencyPercentage,
-        healthProfile: {
-          height: data.height,
-          weight: data.weight,
-          activityLevel: data.activityLevel,
-          conditions: data.conditions,
-          allergies: data.allergies,
-          dietaryRestrictions: data.dietaryRestrictions,
-          organicPreference: data.organicPreference,
-          goals: data.goals,
-          targetWeight: data.targetWeight,
-          cookingSkill: data.cookingSkill,
-          cookingFrequency: data.cookingFrequency,
-          preferredCuisines: data.preferredCuisines,
-          budgetFlexibility: data.budgetFlexibility,
-          hasDeepFreezer: data.hasDeepFreezer,
-          shopsDaily: data.shopsDaily,
-          isPrivate: false,
-          healthScore: 50,
-        },
-      };
-
-      // const response = await apiRequest("POST", "/api/accounts", accountData);
-
-      // if (!response.ok) {
-      //     const errorData = await response.text();
-      //     throw new Error(`Account creation failed: ${errorData}`);
-      // }
-
-      // const result = await response.json();
-      // return result;
-    },
-    onSuccess: async (data) => {
-      setIsPreparing(true);
-      const keys = [
-        "/api/auth/me",
-        "/api/dashboard",
-        "/api/budget-summary",
-        "/api/checkout-history",
-      ];
-
-      // await Promise.all(keys.map((key) => queryClient.invalidateQueries({ queryKey: [key] })));
-      await new Promise((resolve) => setTimeout(resolve, 4000));
-      setIsPreparing(false);
-      const destination =
-        data.accountType === "individual" ? "/meal-planning" : "/dashboard";
-      // setLocation(destination);
-    },
-
-    onError: (error: any) => {
-      toast({
-        title: "Setup failed",
-        description:
-          error.message || "Something went wrong during account creation",
-        variant: "destructive",
-      });
-    },
-  });
-
   const onSubmit = async (data: SetupData) => {
     try {
-      // ❌ Hard validation
       if (!correctedIsPercentageValid) {
         toast({
           title: "Budget Allocation Error",
@@ -186,7 +119,6 @@ Currently it is ${totalPercentage}%. Please adjust and try again.`,
         return;
       }
 
-      // ⚠️ Soft warning (allowed)
       if (Math.abs(totalPercentage - 100) > 1) {
         toast({
           title: "Budget Allocation Warning",
@@ -196,7 +128,7 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
       }
 
       const accountData = {
-        type: data.accountType,
+        accountType: "family",
         accountName: data.accountName,
         dailyBudget: data.dailyBudget?.toString(),
         weeklyBudget: data.weeklyBudget?.toString() || "300",
@@ -206,6 +138,19 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
         groceriesPercentage: data.groceriesPercentage,
         diningPercentage: data.diningPercentage,
         emergencyPercentage: data.emergencyPercentage,
+        // Add address data if available
+        ...(addressData && {
+          addressLine1: addressData.addressLine1,
+          addressLine2: addressData.addressLine2,
+          city: addressData.city,
+          state: addressData.state,
+          country: addressData.country,
+          zipCode: addressData.zipCode,
+          formattedAddress: addressData.formattedAddress,
+          latitude: addressData.latitude,
+          longitude: addressData.longitude,
+          placeId: addressData.placeId,
+        }),
         healthProfile: {
           height: data.height,
           weight: data.weight,
@@ -229,20 +174,17 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
 
       toast({
         title: "Creating Account...",
-        description: "Please wait while we set up your account and preferences.",
+        description:
+          "Please wait while we set up your account and preferences.",
       });
-
       await createAccountMutation.mutateAsync(accountData);
 
       toast({
-        title: "Account Created Successfuly",
+        title: "Account Created Successfully",
         description: "Redirecting......",
       });
 
-      router.push("/dashboard")
-
-
-
+      router.push("/dashboard");
     } catch (error) {
       toast({
         title: "Something went wrong",
@@ -257,7 +199,7 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
     const errors: Record<string, string> = {};
 
     if (step === 1) {
-      if (!values.weeklyBudget || values.weeklyBudget < 10)
+      if (!values.weeklyBudget || Number(values.weeklyBudget) < 10)
         errors.weeklyBudget = "Weekly budget must be at least $10";
       const totalPercent =
         Number(values.groceriesPercentage || 0) +
@@ -353,14 +295,14 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
           alt="Pattern-2"
         />
 
-        {/* Animated Gradient Orbs */}
+        {/* Animated Gradient Orbs - Using CSS variables for theme colors */}
         <motion.div
-          className="absolute top-1/4 right-1/4 w-96 h-96 bg-[#7661d3]/20 rounded-full blur-3xl"
+          className="absolute top-1/4 right-1/4 w-96 h-96 bg-[var(--primary)]/20 rounded-full blur-3xl"
           animate={{ y: [0, 30, 0], opacity: [0.3, 0.5, 0.3] }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
-          className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-[#7dab4f]/20 rounded-full blur-3xl"
+          className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-[var(--green)]/20 rounded-full blur-3xl"
           animate={{ y: [0, -30, 0], opacity: [0.3, 0.5, 0.3] }}
           transition={{
             duration: 6,
@@ -370,8 +312,9 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
           }}
         />
       </div>
+
       {/* Main Content */}
-      <main className="relative z-10  mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-10">
+      <main className="relative z-10 mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -379,7 +322,7 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
           className="mb-8 text-center"
         >
           <div className="mb-6 animate-slide-up">
-            <div className="flex flex-col  items-start  justify-between ">
+            <div className="flex flex-col items-start justify-between">
               <h1 className="text-2xl lg:text-3xl font-extrabold text-[var(--primary)] mb-1">
                 Account Setup
               </h1>
@@ -391,13 +334,13 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
         </motion.div>
 
         <motion.div
-          className=" rounded-2xl sm:rounded-3xl overflow-hidden"
+          className="rounded-2xl sm:rounded-3xl overflow-hidden"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           {/* Step Indicator */}
-          <div className=" px-5 py-3 border-b-2 border-[#7661d3]/20">
+          <div className="px-5 py-3 border-b-2 border-[var(--primary)]/20">
             <StepIndicator
               currentStep={currentStep}
               totalSteps={4}
@@ -407,15 +350,15 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
 
           {/* Preparing Dashboard Overlay */}
           {isPreparing && (
-            <div className="fixed inset-0 bg-gradient-to-br from-[#7661d3]/20 to-[#7dab4f]/20 backdrop-blur-md flex items-center justify-center z-50">
+            <div className="fixed inset-0 bg-gradient-to-br from-[var(--primary)]/20 to-[var(--green)]/20 backdrop-blur-md flex items-center justify-center z-50">
               <motion.div
-                className="p-8 bg-white rounded-3xl shadow-2xl text-center max-w-md border-2 border-[#7661d3]/30"
+                className="p-8 bg-white rounded-3xl shadow-2xl text-center max-w-md border-2 border-[var(--primary)]/30"
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.5 }}
               >
-                <Loader2 className="w-16 h-16 animate-spin mx-auto mb-4 text-[#7661d3]" />
-                <h2 className="text-2xl font-bold mb-2 text-[#3d326d]">
+                <Loader2 className="w-16 h-16 animate-spin mx-auto mb-4 text-[var(--primary)]" />
+                <h2 className="text-2xl font-bold mb-2 text-[var(--primary)]">
                   Preparing your dashboard
                 </h2>
                 <p className="text-gray-600">
@@ -432,20 +375,47 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
           >
             <AnimatePresence mode="wait">
               {currentStep === 1 && (
-                <Step1ProfileBudget
-                  key="step1"
-                  form={form}
-                  accountType={accountType}
-                  currentAllocation={currentAllocation}
-                  groceriesPercentage={groceriesPercentage}
-                  diningPercentage={diningPercentage}
-                  emergencyPercentage={emergencyPercentage}
-                  groceriesBudget={groceriesBudget}
-                  diningBudget={diningBudget}
-                  emergencyBudget={emergencyBudget}
-                  totalPercentage={totalPercentage}
-                  isPercentageValid={isPercentageValid}
-                />
+                <>
+                  <Step1ProfileBudget
+                    key="step1"
+                    form={form}
+                    accountType={accountType}
+                    currentAllocation={currentAllocation || "weekly"}
+                    groceriesPercentage={groceriesPercentage}
+                    diningPercentage={diningPercentage}
+                    emergencyPercentage={emergencyPercentage}
+                    groceriesBudget={groceriesBudget}
+                    diningBudget={diningBudget}
+                    emergencyBudget={emergencyBudget}
+                    totalPercentage={totalPercentage}
+                    isPercentageValid={isPercentageValid}
+                  />
+
+                  {/* Address Section */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="mt-6 space-y-4"
+                  >
+                    <div className="border-t-2 border-[var(--primary)]/20 pt-6">
+                      <h3 className="text-lg font-bold text-[var(--primary)] mb-4">
+                        Account Address (Optional)
+                      </h3>
+                      <AddressAutocomplete
+                        onAddressSelect={(address) => {
+                          setAddressData(address);
+                        }}
+                        label="Primary Address"
+                        placeholder="Start typing your address..."
+                      />
+                      <p className="text-xs text-gray-500 mt-2">
+                        This will be used for delivery and location-based
+                        recommendations
+                      </p>
+                    </div>
+                  </motion.div>
+                </>
               )}
               {currentStep === 2 && (
                 <Step2HealthActivity
@@ -467,12 +437,12 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
             </AnimatePresence>
 
             {/* Navigation Buttons */}
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8 mt-8 border-t-2 border-[#7661d3]/20">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8 mt-8 border-t-2 border-[var(--primary)]/20">
               <Button
                 type="button"
                 variant="outline"
                 onClick={handlePrevious}
-                className="w-full sm:w-auto h-12 px-8 rounded-xl border-2 border-[#7661d3]/30 hover:bg-[#F3F0FD] hover:border-[#7661d3] transition-all duration-300 font-semibold"
+                className="w-full sm:w-auto h-12 px-8 rounded-xl border-2 border-[var(--primary)]/30 hover:bg-[#F3F0FD] hover:border-[var(--primary)] transition-all duration-300 font-semibold"
                 data-testid="button-previous"
               >
                 <ArrowLeft className="mr-2 h-5 w-5" />
@@ -482,9 +452,10 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
               {isLastStep ? (
                 <Button
                   type="submit"
-                  className="w-full sm:w-auto h-12 px-8 rounded-xl bg-gradient-to-r from-[#7661d3] to-[#3d326d] hover:from-[#3d326d] hover:to-[#7661d3] text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="w-full sm:w-auto h-12 px-8 rounded-xl bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] hover:from-[var(--primary-light)] hover:to-[var(--primary)] text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300"
                   disabled={
-                    createAccountMutation.isPending || !correctedIsPercentageValid
+                    createAccountMutation.isPending ||
+                    !correctedIsPercentageValid
                   }
                   data-testid="button-create-account"
                 >
@@ -496,7 +467,7 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
               ) : (
                 <Button
                   type="button"
-                  className="w-full sm:w-auto h-12 px-8 rounded-xl bg-gradient-to-r from-[#7661d3] to-[#3d326d] hover:from-[#3d326d] hover:to-[#7661d3] text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="w-full sm:w-auto h-12 px-8 rounded-xl bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] hover:from-[var(--primary-light)] hover:to-[var(--primary)] text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300"
                   onClick={handleNext}
                   data-testid="button-next"
                 >

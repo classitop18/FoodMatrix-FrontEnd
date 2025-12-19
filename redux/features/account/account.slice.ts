@@ -52,20 +52,29 @@ const getActiveBudget = (account: any): ActiveBudget | null => {
     { type: "monthly", label: "Monthly Budget", value: account?.monthlyBudget },
     { type: "annual", label: "Annual Budget", value: account?.annualBudget },
   ];
-  const active = budgets.find(b => b.value !== null);
+  const active = budgets.find((b) => b.value !== null);
   return active
-    ? { type: active.type as BudgetType, label: active.label, amount: Number(active.value) }
+    ? {
+        type: active.type as BudgetType,
+        label: active.label,
+        amount: Number(active.value),
+      }
     : null;
 };
 
 const calculateSpent = (account: any, budget: ActiveBudget | null) => {
   if (!budget || !account) return 0;
   switch (budget.type) {
-    case "daily": return Number(account?.currentDayFoodSpending ?? 0);
-    case "weekly": return Number(account?.currentWeekFoodSpending ?? 0);
-    case "monthly": return Number(account?.currentMonthFoodSpending ?? 0);
-    case "annual": return Number(account?.currentYearFoodSpending ?? 0);
-    default: return 0;
+    case "daily":
+      return Number(account?.currentDayFoodSpending ?? 0);
+    case "weekly":
+      return Number(account?.currentWeekFoodSpending ?? 0);
+    case "monthly":
+      return Number(account?.currentMonthFoodSpending ?? 0);
+    case "annual":
+      return Number(account?.currentYearFoodSpending ?? 0);
+    default:
+      return 0;
   }
 };
 
@@ -76,9 +85,15 @@ const calculateAccountDerived = (account: any) => {
     account,
     activeBudget,
     spent,
-    usagePercent: activeBudget && activeBudget.amount > 0 ? Math.min((spent / activeBudget.amount) * 100, 100) : 0,
+    usagePercent:
+      activeBudget && activeBudget.amount > 0
+        ? Math.min((spent / activeBudget.amount) * 100, 100)
+        : 0,
     resetInDays: calculateResetInDays(account?.lastFoodBudgetReset),
-    location: [account?.city, account?.state, account?.country].filter(Boolean).join(", ") || "Not provided",
+    location:
+      [account?.city, account?.state, account?.country]
+        .filter(Boolean)
+        .join(", ") || "Not provided",
   };
 };
 
@@ -89,7 +104,7 @@ export const fetchAccountDetail = createAsyncThunk(
   async (accountId: string) => {
     const res = await new AccountService().getAccountById(accountId);
     return res.data;
-  }
+  },
 );
 
 /* -------------------------------- */
@@ -110,9 +125,9 @@ export const accountSlice = createSlice({
       return initialState;
     },
   },
-  extraReducers: builder => {
+  extraReducers: (builder) => {
     builder
-      .addCase(fetchAccountDetail.pending, state => {
+      .addCase(fetchAccountDetail.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
@@ -130,8 +145,9 @@ export const accountSlice = createSlice({
         state.loading = false;
         state.error = action.error.message || "Failed to fetch account";
       });
-  }
+  },
 });
 
-export const { setAccounts, setActiveAccountId, clearAccount } = accountSlice.actions;
+export const { setAccounts, setActiveAccountId, clearAccount } =
+  accountSlice.actions;
 export default accountSlice.reducer;

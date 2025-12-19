@@ -32,7 +32,7 @@ const staticSubscription = {
 
 export default function SubscriptionPage() {
   const [isYearly, setIsYearly] = useState(false);
-  const [subscription] = useState(staticSubscription);
+  const [subscription] = useState<any>(staticSubscription);
 
   const plans = [
     {

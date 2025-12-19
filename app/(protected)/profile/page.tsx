@@ -29,7 +29,7 @@ import {
   AlertCircle,
   Loader2,
   XCircle,
-  CheckCircle2
+  CheckCircle2,
 } from "lucide-react";
 
 import Image from "next/image";
@@ -39,20 +39,26 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store.redux";
 import { AddressAutocomplete } from "@/components/profile/address-autocomplete";
 import Loader from "@/components/common/Loader";
-import { useChangePassword, useCheckProperty, useUpdateUserProfile } from "@/services/auth/auth.mutation";
+import {
+  useChangePassword,
+  useCheckProperty,
+  useUpdateUserProfile,
+} from "@/services/auth/auth.mutation";
 
 import ChangePasswordModal from "@/components/profile/change-password-modal";
 import { toast } from "@/hooks/use-toast";
 
 export const usernameRegex = /^[A-Za-z][A-Za-z0-9_]{2,19}$/;
 
-const AccountPage = () => {
+const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState("account");
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState(null);
+  const [editData, setEditData] = useState<any>(null);
   const [isChangePasswordEnable, setIsChangePasswordEnable] = useState(false);
   const { user } = useSelector((state: RootState) => state.auth);
-  const { account, activeBudget } = useSelector((state: RootState) => state.account);
+  const { account, activeBudget } = useSelector(
+    (state: RootState) => state.account,
+  );
   const [isMfaUpdating, setIsMfaUpdating] = useState(false);
 
   const checkIsExistMutation = useCheckProperty();
@@ -93,6 +99,12 @@ const AccountPage = () => {
       country: user.country ?? "",
       zipCode: user.zipCode ?? "",
 
+      addressLine1: user.addressLine1 ?? "",
+      addressLine2: user.addressLine2 ?? "",
+      latitude: user.latitude ?? "",
+      longitude: user.longitude ?? "",
+      placeId: user.placeId ?? "",
+
       formattedAddress:
         user.formattedAddress ??
         [
@@ -121,7 +133,9 @@ const AccountPage = () => {
 
   const handleEdit = () => {
     setIsEditing(true);
-    setEditData({ ...accountData });
+    if (accountData) {
+      setEditData({ ...accountData });
+    }
     // Reset validation when starting edit
     setValidation({
       username: { checking: false, isValid: true, exists: false, message: "" },
@@ -136,12 +150,14 @@ const AccountPage = () => {
         title: "Password Updated Successfully 🎉",
         description: "Your password has been changed.",
       });
-      setIsChangePasswordEnable(false);  // close modal after success
+      setIsChangePasswordEnable(false); // close modal after success
     } catch (error: any) {
       console.error("Change password error:", error);
       toast({
         title: "Failed to Update Password ❌",
-        description: error?.response?.data?.message || "Something went wrong, please try again.",
+        description:
+          error?.response?.data?.message ||
+          "Something went wrong, please try again.",
         variant: "destructive",
       });
     }
@@ -160,7 +176,7 @@ const AccountPage = () => {
 
   const validateFields = async () => {
     // Validate Username
-    if (editData?.username && editData.username !== accountData.username) {
+    if (editData?.username && editData.username !== accountData?.username) {
       // Check format first
       const isValidFormat = usernameRegex.test(editData.username);
 
@@ -171,7 +187,8 @@ const AccountPage = () => {
             checking: false,
             isValid: false,
             exists: false,
-            message: "Username must start with a letter and be 3-20 characters (letters, numbers, underscore)",
+            message:
+              "Username must start with a letter and be 3-20 characters (letters, numbers, underscore)",
           },
         }));
         return;
@@ -196,7 +213,9 @@ const AccountPage = () => {
             checking: false,
             isValid: !exists,
             exists: exists,
-            message: exists ? "This username is already taken" : "Username is available",
+            message: exists
+              ? "This username is already taken"
+              : "Username is available",
           },
         }));
       } catch (error) {
@@ -210,7 +229,7 @@ const AccountPage = () => {
           },
         }));
       }
-    } else if (editData?.username === accountData.username) {
+    } else if (editData?.username === accountData?.username) {
       // Same as original, no validation needed
       setValidation((prev) => ({
         ...prev,
@@ -224,7 +243,7 @@ const AccountPage = () => {
     }
 
     // Validate Email (if you allow email changes)
-    if (editData?.email && editData.email !== accountData.email) {
+    if (editData?.email && editData.email !== accountData?.email) {
       setValidation((prev) => ({
         ...prev,
         email: { ...prev.email, checking: true },
@@ -243,7 +262,9 @@ const AccountPage = () => {
             checking: false,
             isValid: !exists,
             exists: exists,
-            message: exists ? "This email is already registered" : "Email is available",
+            message: exists
+              ? "This email is already registered"
+              : "Email is available",
           },
         }));
       } catch (error) {
@@ -257,7 +278,7 @@ const AccountPage = () => {
           },
         }));
       }
-    } else if (editData?.email === accountData.email) {
+    } else if (editData?.email === accountData?.email) {
       setValidation((prev) => ({
         ...prev,
         email: {
@@ -270,7 +291,6 @@ const AccountPage = () => {
     }
   };
 
-
   const handleMfaToggle = async (checked: boolean) => {
     if (!user) return;
 
@@ -281,16 +301,15 @@ const AccountPage = () => {
         isMfaEnabled: checked,
       });
 
-      toast.success(
-        checked ? "MFA Enabled" : "MFA Disabled",
-        {
-          description: checked
-            ? "Two-factor authentication has been enabled."
-            : "Two-factor authentication has been disabled.",
-        }
-      );
+      toast({
+        title: checked ? "MFA Enabled" : "MFA Disabled",
+        description: checked
+          ? "Two-factor authentication has been enabled."
+          : "Two-factor authentication has been disabled.",
+      });
     } catch (error: any) {
-      toast.error("Failed to update MFA", {
+      toast({
+        title: "Failed to update MFA",
         description:
           error?.response?.data?.message ||
           "Something went wrong. Please try again.",
@@ -300,13 +319,13 @@ const AccountPage = () => {
     }
   };
 
-
   const handleSave = async () => {
     if (!editData) return;
 
     // Check if all validations pass
     if (!validation.username.isValid || !validation.email.isValid) {
-      toast.error("Validation Error", {
+      toast({
+        title: "Validation Error",
         description: "Please fix the validation errors before saving.",
       });
       return;
@@ -314,8 +333,10 @@ const AccountPage = () => {
 
     // Check if username/email exists
     if (validation.username.exists || validation.email.exists) {
-      toast.error("Duplicate Entry", {
-        description: "Username or email already exists. Please choose different values.",
+      toast({
+        title: "Duplicate Entry",
+        description:
+          "Username or email already exists. Please choose different values.",
       });
       return;
     }
@@ -323,13 +344,15 @@ const AccountPage = () => {
     try {
       await profileUpdateMutation.mutateAsync(editData);
 
-      toast.success("Profile updated successfully", {
+      toast({
+        title: "Profile updated successfully",
         description: "Your changes have been saved.",
       });
 
       setIsEditing(false);
     } catch (error: any) {
-      toast.error("Failed to update profile", {
+      toast({
+        title: "Failed to update profile",
         description:
           error?.response?.data?.message ||
           error?.message ||
@@ -340,7 +363,9 @@ const AccountPage = () => {
 
   const handleCancel = () => {
     setIsEditing(false);
-    setEditData({ ...accountData });
+    if (accountData) {
+      setEditData({ ...accountData });
+    }
     setValidation({
       username: { checking: false, isValid: true, exists: false, message: "" },
       email: { checking: false, isValid: true, exists: false, message: "" },
@@ -352,7 +377,7 @@ const AccountPage = () => {
     const val = validation[field];
 
     if (!isEditing) return null;
-    if (editData?.[field] === accountData[field]) return null;
+    if (editData?.[field] === accountData?.[field]) return null;
     if (!editData?.[field]) return null;
 
     if (val.checking) {
@@ -433,10 +458,11 @@ const AccountPage = () => {
         <div className="flex gap-3 mb-6 overflow-x-auto pb-2 animate-fade-in">
           <button
             onClick={() => setActiveTab("account")}
-            className={`px-5 py-2 rounded-full font-bold text-sm transition-all duration-300 whitespace-nowrap ${activeTab === "account"
-              ? "bg-[var(--primary)] text-white shadow-lg"
-              : "bg-white text-gray-600 hover:bg-gray-100"
-              }`}
+            className={`px-5 py-2 rounded-full font-bold text-sm transition-all duration-300 whitespace-nowrap ${
+              activeTab === "account"
+                ? "bg-[var(--primary)] text-white shadow-lg"
+                : "bg-white text-gray-600 hover:bg-gray-100"
+            }`}
           >
             <div className="flex items-center gap-2">
               <UserCircle className="w-4 h-4" />
@@ -446,10 +472,11 @@ const AccountPage = () => {
 
           <button
             onClick={() => setActiveTab("settings")}
-            className={`px-5 py-2 rounded-full font-bold text-sm transition-all duration-300 whitespace-nowrap ${activeTab === "settings"
-              ? "bg-[var(--primary)] text-white shadow-lg"
-              : "bg-white text-gray-600 hover:bg-gray-100"
-              }`}
+            className={`px-5 py-2 rounded-full font-bold text-sm transition-all duration-300 whitespace-nowrap ${
+              activeTab === "settings"
+                ? "bg-[var(--primary)] text-white shadow-lg"
+                : "bg-white text-gray-600 hover:bg-gray-100"
+            }`}
           >
             <div className="flex items-center gap-2">
               <Settings className="w-4 h-4" />
@@ -596,7 +623,9 @@ const AccountPage = () => {
                     </p>
                     <p className="text-xs text-gray-500">
                       Last login:{" "}
-                      {new Date(accountData?.lastLoginAt).toLocaleString("en-GB")}
+                      {new Date(accountData?.lastLoginAt!).toLocaleString(
+                        "en-GB",
+                      )}
                     </p>
                     <button className="mt-3 bg-[var(--primary-bg)] text-[var(--primary)] px-5 py-2 rounded-full font-bold text-sm hover:bg-[var(--primary)] hover:text-white transition-all duration-300">
                       Change Photo
@@ -618,9 +647,7 @@ const AccountPage = () => {
                     <Input
                       id="firstName"
                       value={
-                        isEditing
-                          ? editData?.firstName
-                          : accountData?.firstName
+                        isEditing ? editData?.firstName : accountData?.firstName
                       }
                       onChange={(e) =>
                         setEditData({ ...editData, firstName: e.target.value })
@@ -642,9 +669,7 @@ const AccountPage = () => {
                     <Input
                       id="lastName"
                       value={
-                        isEditing
-                          ? editData?.lastName
-                          : accountData?.lastName
+                        isEditing ? editData?.lastName : accountData?.lastName
                       }
                       onChange={(e) =>
                         setEditData({ ...editData, lastName: e.target.value })
@@ -653,7 +678,6 @@ const AccountPage = () => {
                       className="h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none"
                     />
                   </div>
-
 
                   {/* Username with Validation */}
                   <div className="space-y-1.5">
@@ -667,31 +691,41 @@ const AccountPage = () => {
                     <div className="relative">
                       <Input
                         id="username"
-                        value={isEditing ? editData.username : accountData.username}
+                        value={
+                          isEditing ? editData?.username : accountData.username
+                        }
                         onChange={(e) =>
                           setEditData({ ...editData, username: e.target.value })
                         }
                         disabled={!isEditing}
-                        className={`h-11 rounded-lg border text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none pr-10 ${isEditing && editData?.username !== accountData.username
-                          ? validation.username.exists || !validation.username.isValid
-                            ? "border-red-500 focus:border-red-500"
-                            : validation.username.isValid && validation.username.message
-                              ? "border-green-500 focus:border-green-500"
-                              : "border-[#BCBCBC]"
-                          : "border-[#BCBCBC]"
-                          }`}
+                        className={`h-11 rounded-lg border text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none pr-10 ${
+                          isEditing &&
+                          editData?.username !== accountData.username
+                            ? validation.username.exists ||
+                              !validation.username.isValid
+                              ? "border-red-500 focus:border-red-500"
+                              : validation.username.isValid &&
+                                  validation.username.message
+                                ? "border-green-500 focus:border-green-500"
+                                : "border-[#BCBCBC]"
+                            : "border-[#BCBCBC]"
+                        }`}
                       />
-                      {isEditing && editData?.username !== accountData.username && editData?.username && (
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                          {validation.username.checking ? (
-                            <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
-                          ) : validation.username.exists || !validation.username.isValid ? (
-                            <XCircle className="w-4 h-4 text-red-600" />
-                          ) : validation.username.isValid && validation.username.message ? (
-                            <CheckCircle2 className="w-4 h-4 text-green-600" />
-                          ) : null}
-                        </div>
-                      )}
+                      {isEditing &&
+                        editData?.username !== accountData.username &&
+                        editData?.username && (
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                            {validation.username.checking ? (
+                              <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
+                            ) : validation.username.exists ||
+                              !validation.username.isValid ? (
+                              <XCircle className="w-4 h-4 text-red-600" />
+                            ) : validation.username.isValid &&
+                              validation.username.message ? (
+                              <CheckCircle2 className="w-4 h-4 text-green-600" />
+                            ) : null}
+                          </div>
+                        )}
                     </div>
                     <ValidationIndicator field="username" />
                   </div>
@@ -712,7 +746,9 @@ const AccountPage = () => {
                       disabled
                       className="h-11 rounded-lg border border-[#BCBCBC] text-black bg-gray-50 focus:ring-0 transition-all text-base font-medium shadow-none cursor-not-allowed"
                     />
-                    <p className="text-xs text-gray-500">Email cannot be changed</p>
+                    <p className="text-xs text-gray-500">
+                      Email cannot be changed
+                    </p>
                   </div>
 
                   {/* Phone */}
@@ -726,7 +762,7 @@ const AccountPage = () => {
                     </Label>
                     <Input
                       id="phone"
-                      value={isEditing ? editData.phone : accountData.phone}
+                      value={isEditing ? editData?.phone : accountData?.phone}
                       onChange={(e) =>
                         setEditData({ ...editData, phone: e.target.value })
                       }
@@ -739,7 +775,10 @@ const AccountPage = () => {
                   {isEditing ? (
                     <div className="space-y-1.5 md:col-span-2">
                       <AddressAutocomplete
-                        initialValue={editData?.formattedAddress || accountData.formattedAddress}
+                        initialValue={
+                          editData?.formattedAddress ||
+                          accountData.formattedAddress
+                        }
                         onAddressSelect={(address) => {
                           setEditData({
                             ...editData,
@@ -771,7 +810,9 @@ const AccountPage = () => {
                       </Label>
                       <Input
                         id="address"
-                        value={accountData?.formattedAddress || "No address set"}
+                        value={
+                          accountData?.formattedAddress || "No address set"
+                        }
                         disabled
                         className="h-11 rounded-lg border border-[#BCBCBC] text-black bg-gray-50 focus:ring-0 transition-all text-base font-medium shadow-none cursor-not-allowed"
                       />
@@ -780,12 +821,15 @@ const AccountPage = () => {
 
                   {/* City, State, Zip, Country */}
                   <div className="space-y-1.5">
-                    <Label htmlFor="city" className="font-bold text-gray-700 text-sm">
+                    <Label
+                      htmlFor="city"
+                      className="font-bold text-gray-700 text-sm"
+                    >
                       City
                     </Label>
                     <Input
                       id="city"
-                      value={isEditing ? editData.city : accountData.city}
+                      value={isEditing ? editData?.city : accountData.city}
                       onChange={(e) =>
                         setEditData({ ...editData, city: e.target.value })
                       }
@@ -795,12 +839,15 @@ const AccountPage = () => {
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="state" className="font-bold text-gray-700 text-sm">
+                    <Label
+                      htmlFor="state"
+                      className="font-bold text-gray-700 text-sm"
+                    >
                       State
                     </Label>
                     <Input
                       id="state"
-                      value={isEditing ? editData.state : accountData.state}
+                      value={isEditing ? editData?.state : accountData.state}
                       onChange={(e) =>
                         setEditData({ ...editData, state: e.target.value })
                       }
@@ -810,12 +857,17 @@ const AccountPage = () => {
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="zipCode" className="font-bold text-gray-700 text-sm">
+                    <Label
+                      htmlFor="zipCode"
+                      className="font-bold text-gray-700 text-sm"
+                    >
                       ZIP Code
                     </Label>
                     <Input
                       id="zipCode"
-                      value={isEditing ? editData.zipCode : accountData.zipCode}
+                      value={
+                        isEditing ? editData?.zipCode : accountData.zipCode
+                      }
                       onChange={(e) =>
                         setEditData({ ...editData, zipCode: e.target.value })
                       }
@@ -825,12 +877,17 @@ const AccountPage = () => {
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="country" className="font-bold text-gray-700 text-sm">
+                    <Label
+                      htmlFor="country"
+                      className="font-bold text-gray-700 text-sm"
+                    >
                       Country
                     </Label>
                     <Input
                       id="country"
-                      value={isEditing ? editData.country : accountData.country}
+                      value={
+                        isEditing ? editData?.country : accountData.country
+                      }
                       onChange={(e) =>
                         setEditData({ ...editData, country: e.target.value })
                       }
@@ -888,19 +945,15 @@ const AccountPage = () => {
                       className="data-[state=checked]:bg-[var(--green)] border border-gray-600 "
                     />
                   </div>
-
-
                 </div>
 
-                {
-                  isChangePasswordEnable && <ChangePasswordModal
+                {isChangePasswordEnable && (
+                  <ChangePasswordModal
                     open={isChangePasswordEnable}
                     onSave={handleChangePassword}
-                    onClose={() => setIsChangePasswordEnable(false)
-                    }
+                    onClose={() => setIsChangePasswordEnable(false)}
                   />
-
-                }
+                )}
 
                 <div
                   className="flex items-center justify-between p-5 
@@ -970,4 +1023,4 @@ const AccountPage = () => {
   );
 };
 
-export default AccountPage;
+export default ProfilePage;

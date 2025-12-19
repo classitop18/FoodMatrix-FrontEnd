@@ -76,7 +76,7 @@ export default function ChangePasswordModal({ open, onClose, onSave }: any) {
               error={errors.currentPassword}
               show={show.current}
               onToggle={() => toggle("current")}
-              onChange={(v) => handleChange("currentPassword", v)}
+              onChange={(v: any) => handleChange("currentPassword", v)}
             />
 
             {/* New Password */}
@@ -86,7 +86,7 @@ export default function ChangePasswordModal({ open, onClose, onSave }: any) {
               error={errors.newPassword}
               show={show.new}
               onToggle={() => toggle("new")}
-              onChange={(v) => handleChange("newPassword", v)}
+              onChange={(v: any) => handleChange("newPassword", v)}
             />
 
             {/* Confirm Password */}
@@ -96,7 +96,7 @@ export default function ChangePasswordModal({ open, onClose, onSave }: any) {
               error={errors.confirmPassword}
               show={show.confirm}
               onToggle={() => toggle("confirm")}
-              onChange={(v) => handleChange("confirmPassword", v)}
+              onChange={(v: any) => handleChange("confirmPassword", v)}
             />
 
             <DialogFooter className="pt-4 flex justify-end gap-3">
@@ -149,8 +149,9 @@ const PasswordField = ({
       type={show ? "text" : "password"}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className={`h-11 pr-10 rounded-lg border ${error ? "border-red-500" : "border-[#BCBCBC]"
-        }`}
+      className={`h-11 pr-10 rounded-lg border ${
+        error ? "border-red-500" : "border-[#BCBCBC]"
+      }`}
     />
 
     <button

@@ -115,7 +115,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
         htmlFor="address-autocomplete"
         className="flex items-center gap-2 font-semibold text-gray-700 dark:text-gray-200"
       >
-       <MapPin className="w-4 h-4 text-[var(--primary)]" />
+        <MapPin className="w-4 h-4 text-[var(--primary)]" />
         {label}
       </Label>
 

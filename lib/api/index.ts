@@ -79,7 +79,7 @@ class ApiClient {
 
         if (
           error.response?.status === 401 &&
-          error.response?.data?.errorCode === "TOKEN_EXPIRED" &&
+          (error.response?.data as any)?.errorCode === "TOKEN_EXPIRED" &&
           !originalRequest._retry
         ) {
           originalRequest._retry = true;

@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Lock, Eye, EyeOff, KeyRound } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useResetPassword } from "@/services/auth/auth.mutation";
 
 type ResetPasswordFormData = {
@@ -21,7 +21,6 @@ export default function ResetPasswordPage() {
   const [showPassword2, setShowPassword2] = useState(false);
 
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const resetPasswordMutation = useResetPassword();
 

@@ -17,6 +17,8 @@ export interface PlaceDetails {
   zipCode?: string;
   latitude?: number;
   longitude?: number;
+  location?: string;
+
 }
 
 export interface PlaceAutocompleteResult {
@@ -36,15 +38,12 @@ export const useGooglePlaces = () => {
   /* ---------- Autocomplete ---------- */
   const autocompleteMutation = useMutation({
     mutationFn: async (input: string) => {
-      const { data } = await apiClient.get(
-        "/places/autocomplete",
-        {
-          params: {
-            input,
-            types: "address",
-          },
-        }
-      );
+      const { data } = await apiClient.get("/places/autocomplete", {
+        params: {
+          input,
+          types: "address",
+        },
+      });
 
       return data.data as PlaceAutocompleteResult[];
     },
@@ -60,9 +59,7 @@ export const useGooglePlaces = () => {
   /* ---------- Place Details ---------- */
   const placeDetailsMutation = useMutation({
     mutationFn: async (placeId: string) => {
-      const { data } = await apiClient.get(
-        `/places/details/${placeId}`
-      );
+      const { data } = await apiClient.get(`/places/details/${placeId}`);
 
       return data.data as PlaceDetails;
     },
@@ -71,10 +68,7 @@ export const useGooglePlaces = () => {
   /* ---------- Geocode ---------- */
   const geocodeMutation = useMutation({
     mutationFn: async (address: string) => {
-      const { data } = await apiClient.post(
-        "/places/geocode",
-        { address }
-      );
+      const { data } = await apiClient.post("/places/geocode", { address });
 
       return data.data as PlaceDetails;
     },
@@ -89,13 +83,10 @@ export const useGooglePlaces = () => {
       latitude: number;
       longitude: number;
     }) => {
-      const { data } = await apiClient.post(
-        "/places/reverse-geocode",
-        {
-          latitude,
-          longitude,
-        }
-      );
+      const { data } = await apiClient.post("/places/reverse-geocode", {
+        latitude,
+        longitude,
+      });
 
       return data.data as PlaceDetails;
     },

@@ -1,4 +1,5 @@
 import { Sidebar } from "@/components/sidebar";
+import ProtectedHeader from "@/components/common/ProtectedHeader";
 
 import AuthProvider from "@/providers/auth.provider";
 import ReactQueryProvider from "@/providers/react-query.provider";
@@ -22,6 +23,10 @@ export default function ProtectedLayout({
 
             {/* Main content (only this scrolls) */}
             <main className="flex-1 h-screen overflow-y-auto transition-all duration-300">
+              {/* Header - Sticky at top */}
+              <ProtectedHeader />
+
+              {/* Page Content */}
               {children}
             </main>
           </div>

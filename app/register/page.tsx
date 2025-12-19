@@ -28,6 +28,8 @@ import Image from "next/image";
 import pattern1 from "@/public/hero-pattern-1.svg";
 import pattern2 from "@/public/hero-pattern-2.svg";
 import foodBanner from "@/public/food-banner.svg";
+import ThemeButton from "@/components/common/buttons/theme-button-arrow";
+import BorderButton from "@/components/common/buttons/border-button";
 
 export const usernameRegex = /^[A-Za-z][A-Za-z0-9_]{2,19}$/;
 
@@ -134,8 +136,6 @@ export default function Register() {
 
     return () => clearTimeout(timer);
   }, [email, username]);
-
-
 
   const onSubmit = async (data: RegisterFormData) => {
     // Client-side validation
@@ -432,10 +432,13 @@ export default function Register() {
 
               <Button
                 type="submit"
-                className="w-full h-14 mt-6 flex items-center justify-center gap-2 bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white text-lg font-bold rounded-xl hover:shadow-lg hover:shadow-[var(--primary)]/30 transition-all duration-300 hover:scale-[1.02]"
+                className="w-full justify-center text-white bg-(--primary) hover:bg-(--primary) font-medium ps-6! pe-6! py-1 h-12 rounded-lg text-base transition-all duration-300 cursor-pointer group relative flex items-center
+            inset-shadow-[5px_5px_5px_rgba(0,0,0,0.30)] hover:inset-shadow-[-5px_-5px_5px_rgba(0,0,0,0.50)]"
+                disabled={registerMutation?.isPending}
               >
-                Create Account <ArrowRight className="w-5 h-5" />
+                {registerMutation?.isPending ? "Creating Account..." : "Create Account"}
               </Button>
+
             </form>
 
             <div className="flex items-center my-8">
@@ -446,13 +449,19 @@ export default function Register() {
               <div className="flex-1 border-t-2 border-[var(--primary)]/10"></div>
             </div>
 
+
+
+
             <Button
               variant="outline"
-              className="w-full h-12 border-2 border-[var(--green)] text-[var(--green)] hover:bg-[var(--green)] hover:text-white font-semibold rounded-xl transition-all duration-300"
+              className="w-full justify-center bg-white  hover:text-white hover:bg-(--primary) border-(--primary) border text-(--primary) font-medium ps-6! pe-6! py-1 h-10 rounded-lg text-base transition-all duration-300 cursor-pointer group relative flex items-center hover:inset-shadow-[-5px_-5px_5px_rgba(0,0,0,0.30)]"
+              disabled={registerMutation?.isPending}
               asChild
             >
               <Link href="/login">Sign In Instead</Link>
             </Button>
+
+
           </CardContent>
         </Card>
 
