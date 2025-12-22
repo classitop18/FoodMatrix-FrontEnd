@@ -1,26 +1,301 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --light: #313131;
+  --primary: #3d326d;
+  --primary-light: #7661d3;
+  --primary-bg: #f3f0fd;
+  --green: #7dab4f;
+  --green-light: #9bc76d;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Manrope", sans-serif;
+  font-weight: 500;
+}
+
+/* Smooth transitions */
+* {
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+/* Premium animations */
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.3s ease-out;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.4s ease-out;
+}
+
+.foodBanner {
+  position: absolute;
+  right: -350px;
+  top: -130px;
+  max-width: 780px;
+}
+
+.foodBanner_main {
+  min-height: 390px;
+}
+
+.foodBannerItem1 {
+  left: 160px;
+  top: 20px;
+}
+
+.foodBannerItem2 {
+  left: 40px;
+  top: 150px;
+}
+
+.foodBannerItem3 {
+  bottom: 60px;
+  left: 130px;
+}
+
+@media (max-width: 1024px) {
+  .foodBanner {
+    max-width: 580px;
+    right: 0;
+    left: 0;
+    top: 0;
+    margin: auto;
+  }
+
+  .foodBanner_main {
+    width: 100%;
+  }
+
+  .foodBannerItem1 {
+    top: 50px;
+    left: 70px;
+  }
+
+  .foodBannerItem2 {
+    top: 150px;
+    right: 60px;
+    left: inherit;
+  }
+
+  .foodBannerItem3 {
+    bottom: 60px;
+    left: 130px;
+  }
+}
+
+@media (max-width: 768px) {
+  .foodBanner {
+    max-width: 550px;
+  }
+
+  .foodBannerItem1 {
+    top: 50px;
+    left: 70px;
+  }
+
+  .foodBannerItem2 {
+    top: 150px;
+    right: 20px;
+    left: inherit;
+  }
+
+  .foodBannerItem3 {
+    bottom: 60px;
+    left: 20px;
+  }
+}
+
+@media (max-width: 560px) {
+  .foodBanner {
+    max-width: 350px;
+  }
+
+  .foodBannerItem1 {
+    top: 20px;
+    left: 10px;
+  }
+
+  .foodBannerItem2 {
+    top: 150px;
+    right: 0px;
+    left: inherit;
+  }
+
+  .foodBannerItem3 {
+    bottom: 70px;
+    left: 30px;
+  }
+}
+
+.masonry {
+  column-count: 3;
+  column-gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .masonry {
+    column-count: 2;
+  }
+}
+
+@media (max-width: 560px) {
+  .masonry {
+    column-count: 1;
+  }
+}
+
+.masonry-item {
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  margin-bottom: 1rem;
+}
+
+/* Setup Form Select Boxes - Theme Styling */
+[data-radix-select-viewport] {
+  background: white !important;
+  max-height: 300px !important;
+}
+
+[data-radix-select-content] {
+  background: white !important;
+  border: 2px solid rgba(118, 97, 211, 0.2) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px rgba(118, 97, 211, 0.15) !important;
+  overflow: hidden !important;
+  z-index: 9999 !important;
+}
+
+[data-radix-select-item] {
+  background: white !important;
+  padding: 12px 16px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  color: #3d326d !important;
+  font-weight: 500 !important;
+}
+
+[data-radix-select-item]:hover,
+[data-radix-select-item][data-highlighted] {
+  background: linear-gradient(135deg, #f3f0fd 0%, #e8f5e0 100%) !important;
+  color: #3d326d !important;
+  outline: none !important;
+}
+
+[data-radix-select-item][data-state="checked"] {
+  background: linear-gradient(135deg, #7661d3 0%, #7dab4f 100%) !important;
+  color: white !important;
+  font-weight: 600 !important;
+}
+
+/* Select Trigger Styling */
+button[role="combobox"] {
+  background: white !important;
+  border: 2px solid rgba(118, 97, 211, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+button[role="combobox"]:hover {
+  border-color: rgba(118, 97, 211, 0.5) !important;
+  box-shadow: 0 2px 8px rgba(118, 97, 211, 0.1) !important;
+}
+
+button[role="combobox"]:focus,
+button[role="combobox"][data-state="open"] {
+  border-color: #7661d3 !important;
+  box-shadow: 0 0 0 3px rgba(118, 97, 211, 0.1) !important;
+  outline: none !important;
+}
+
+/* Prevent Layout Shift on Select Open */
+[data-radix-popper-content-wrapper] {
+  z-index: 9999 !important;
+  will-change: transform !important;
+}
+
+/* Checkbox Styling */
+button[role="checkbox"] {
+  border: 2px solid rgba(118, 97, 211, 0.4) !important;
+  transition: all 0.2s ease !important;
+}
+
+button[role="checkbox"]:hover {
+  border-color: #7661d3 !important;
+}
+
+button[role="checkbox"][data-state="checked"] {
+  background: linear-gradient(135deg, #7661d3 0%, #7dab4f 100%) !important;
+  border-color: transparent !important;
+}
+
+/* Input Focus States */
+input:focus,
+textarea:focus {
+  outline: none !important;
+  border-color: #7661d3 !important;
+  box-shadow: 0 0 0 3px rgba(118, 97, 211, 0.1) !important;
+}
+
+/* Smooth Transitions for Form Elements */
+input,
+textarea,
+select,
+button {
+  transition: all 0.3s ease !important;
+}
+
+/* Prevent Flickering */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+[data-radix-portal] {
+  position: fixed !important;
+  z-index: 9999 !important;
 }

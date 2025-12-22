@@ -1,0 +1,20 @@
+<svg width="675" height="793" viewBox="0 0 675 793" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g opacity="0.5">
+<mask id="mask0_436_2039" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="-142" y="-24" width="817" height="817">
+<circle cx="266.5" cy="384.5" r="408.5" fill="url(#paint0_radial_436_2039)"/>
+</mask>
+<g mask="url(#mask0_436_2039)">
+<rect x="-195.662" y="-62.9048" width="925.665" height="855.905" fill="url(#pattern0_436_2039)"/>
+</g>
+</g>
+<defs>
+<radialGradient id="paint0_radial_436_2039" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(266.5 384.5) rotate(90) scale(408.5)">
+<stop stop-color="white"/>
+<stop offset="1"/>
+</radialGradient>
+<pattern id="pattern0_436_2039" patternUnits="userSpaceOnUse" patternTransform="matrix(35 0 0 35 -195.662 -62.9048)" preserveAspectRatio="none" viewBox="0 0 35 35" width="1" height="1">
+<g id="pattern0_436_2039_inner">
+<rect x="0.5" y="0.5" width="34" height="34" stroke="#CCC3EF"/>
+</g>
+</pattern></defs>
+</svg>
