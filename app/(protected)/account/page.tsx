@@ -253,9 +253,9 @@ export default function AccountPage() {
   ) => {
     // In a real app, you would make an API call here.
     // For now, we optimistically update the state.
-    setInvitations((prev) =>
-      prev.map((inv) => (inv.id === id ? { ...inv, status: action } : inv)),
-    );
+    // setInvitations((prev) =>
+    //   prev.map((inv) => (inv.id === id ? { ...inv, status: action } : inv)),
+    // );
   };
 
   const onAccountChange = (id: string) => {
@@ -933,20 +933,19 @@ export default function AccountPage() {
                               {inv.status === "pending" && (
                                 <div className="flex items-center justify-end gap-2">
                                   <ThemeButton
-                                    size="sm"
+                                 
                                     onClick={() => handleAcceptInvitation(inv.token)}
                                     className="h-8 px-4 bg-green-600 hover:bg-green-700 text-white font-bold"
-                                  >
-                                    Accept
-                                  </ThemeButton>
-                                  <ThemeButton
-                                    variant="secondary"
-                                    size="sm"
+                                    label="Accept"
+                                  />
+                                  
+                                  <ThemeButton                   
                                     onClick={() => handleRejectInvitation(inv.id, "Rejected by user")}
                                     className="h-8 px-4 font-bold"
-                                  >
-                                    Decline
-                                  </ThemeButton>
+                                    label=" Decline"
+                                  />
+                                   
+                                  
                                 </div>
                               )}
                               {inv.status === "user_accepted" && (
