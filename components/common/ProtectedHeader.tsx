@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useLogout } from "@/services/auth/auth.mutation";
+import { toast } from "@/hooks/use-toast";
 
 export default function ProtectedHeader() {
   const router = useRouter();
@@ -19,10 +21,19 @@ export default function ProtectedHeader() {
   const { account } = useSelector((state: RootState) => state.account);
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const logoutMutation = useLogout();
 
-  const handleLogout = () => {
-    // TODO: clear auth state
-    router.push("/auth/login");
+  const handleLogout = async () => {
+
+    await logoutMutation.mutateAsync();
+    toast({
+      variant: "default",
+      title: "Logout",
+      description: "You have been logged out.",
+    })
+
+
+    router.push("/");
   };
 
   // Close on outside click / Esc
