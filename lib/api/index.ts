@@ -1,7 +1,9 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
+import { toast } from "sonner";
 
 interface RetriableRequestConfig extends AxiosRequestConfig {
   _retry?: boolean;
+  _silentRefresh?: boolean; // Flag to suppress toast on automatic refresh
 }
 
 type RefreshSubscriber = {
@@ -77,23 +79,41 @@ class ApiClient {
         const isTokenAvailable = localStorage.getItem("accessToken");
         const originalRequest = error.config as RetriableRequestConfig;
 
+        // Handle token expiration
         if (
           error.response?.status === 401 &&
           (error.response?.data as any)?.errorCode === "TOKEN_EXPIRED" &&
-          !originalRequest._retry
+          !originalRequest._retry &&
+          isTokenAvailable
         ) {
           originalRequest._retry = true;
 
+          // If already refreshing, queue this request
           if (this.refreshing) {
             return new Promise((resolve, reject) => {
-              this.refreshSubscribers.push({ resolve, reject });
+              this.refreshSubscribers.push({
+                resolve: (token: string) => {
+                  originalRequest.headers = originalRequest.headers || {};
+                  originalRequest.headers["Authorization"] = `Bearer ${token}`;
+                  resolve(this.client(originalRequest));
+                },
+                reject
+              });
             });
           }
 
           this.refreshing = true;
+
           try {
             const newToken = await this.refreshAccessToken();
             this.processSubscribers(null, newToken);
+
+            // Show success toast only if not a silent refresh
+            if (!originalRequest._silentRefresh && typeof window !== "undefined") {
+              toast.success("Session refreshed successfully", {
+                duration: 2000,
+              });
+            }
 
             originalRequest.headers = originalRequest.headers || {};
             originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
@@ -106,21 +126,77 @@ class ApiClient {
           }
         }
 
+        // Handle other 401 errors (invalid token, no refresh token, etc.)
+        if (error.response?.status === 401 && isTokenAvailable) {
+          const errorCode = (error.response?.data as any)?.errorCode;
+          const errorMessage = (error.response?.data as any)?.message;
+
+          if (errorCode === "REFRESH_TOKEN_MISSING" || errorCode === "SESSION_EXPIRED") {
+            toast.error("Your session has expired. Please login again.", {
+              duration: 4000,
+            });
+            this.handleLogout();
+          } else if (errorCode === "INVALID_REFRESH_TOKEN" || errorCode === "SESSION_INVALID") {
+            toast.error("Invalid session. Please login again.", {
+              duration: 4000,
+            });
+            this.handleLogout();
+          } else if (errorMessage) {
+            toast.error(errorMessage, {
+              duration: 3000,
+            });
+          }
+        }
+
         return Promise.reject(error);
       },
     );
   }
 
   private async refreshAccessToken(): Promise<string> {
-    const response = await this.refreshClient.post("/auth/refresh-token");
+    try {
+      const response = await this.refreshClient.post("/auth/refresh-token");
 
-    const newToken = response.data?.data?.accessToken;
-    if (!newToken) throw new Error("Invalid refresh response");
+      const newToken = response.data?.data?.accessToken;
+      if (!newToken) {
+        throw new Error("Invalid refresh response");
+      }
 
-    this.saveToken(newToken);
-    this.refreshing = false;
+      this.saveToken(newToken);
+      this.refreshing = false;
 
-    return newToken;
+      return newToken;
+    } catch (error: any) {
+      this.refreshing = false;
+
+      // Handle specific refresh token errors
+      const errorCode = error.response?.data?.errorCode;
+      const errorMessage = error.response?.data?.message;
+
+      if (errorCode === "REFRESH_TOKEN_MISSING") {
+        toast.error("Session expired. Please login again.", {
+          duration: 4000,
+        });
+      } else if (errorCode === "SESSION_EXPIRED") {
+        toast.error("Your session has expired. Please login again.", {
+          duration: 4000,
+        });
+      } else if (errorCode === "INVALID_REFRESH_TOKEN") {
+        toast.error("Invalid session. Please login again.", {
+          duration: 4000,
+        });
+      } else if (errorMessage) {
+        toast.error(errorMessage, {
+          duration: 3000,
+        });
+      } else {
+        toast.error("Failed to refresh session. Please login again.", {
+          duration: 4000,
+        });
+      }
+
+      throw error;
+    }
   }
 
   private processSubscribers(error: Error | null, token: string | null) {
@@ -132,9 +208,17 @@ class ApiClient {
 
   private handleLogout() {
     this.clearToken();
-    // Optionally redirect user to login page
+
+    // Show logout toast
     if (typeof window !== "undefined") {
-      window.location.href = "/login";
+      toast.info("You have been logged out. Redirecting to login...", {
+        duration: 3000,
+      });
+
+      // Redirect after a short delay
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 1000);
     }
   }
 
@@ -154,9 +238,24 @@ class ApiClient {
   public patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig) {
     return this.client.patch<T>(url, data, config);
   }
+
   public delete<T = any>(url: string, config?: AxiosRequestConfig) {
     return this.client.delete<T>(url, config);
+  }
+
+  // Manual refresh token method (can be called explicitly)
+  public async manualRefreshToken(): Promise<string> {
+    try {
+      const newToken = await this.refreshAccessToken();
+      toast.success("Session refreshed successfully", {
+        duration: 2000,
+      });
+      return newToken;
+    } catch (error) {
+      throw error;
+    }
   }
 }
 
 export const apiClient = new ApiClient();
+

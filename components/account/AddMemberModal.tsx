@@ -78,7 +78,6 @@ export default function AddMemberModal({
     sendInviteMutation.mutate({
       email: inviteData.email.trim(),
       accountId,
-      proposedRole: inviteData.role,
     }, {
       onSuccess: () => {
         onClose();
@@ -215,23 +214,14 @@ export default function AddMemberModal({
               </div>
               <div>
                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 block">Access Level</label>
-                <div className="relative">
-                  <ShieldCheck size={16} className="absolute left-3 top-3 text-gray-400" />
-                  <select
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm font-bold"
-                    value={inviteData.role}
-                    onChange={(e) => setInviteData({ ...inviteData, role: e.target.value })}
-                  >
-                    {roleOptions.map((opt) => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                  </select>
+                <div className="flex items-center gap-2 bg-gray-100 w-fit px-2 py-1 rounded text-[10px] font-extrabold text-gray-600 uppercase">
+                  Member
                 </div>
               </div>
               <div className="bg-amber-50 p-3 rounded-xl flex gap-3">
                 <Info size={16} className="text-amber-500 shrink-0" />
                 <p className="text-[10px] text-amber-700 leading-normal">
-                  User will receive an email. After they accept, you'll need to <strong>Approve</strong> them from the Invitations tab.
+                  User will receive an email invitation. After they accept, you'll <strong>assign their role</strong> and approve them from the Invitations tab.
                 </p>
               </div>
               <button

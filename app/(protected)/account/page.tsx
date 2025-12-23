@@ -73,6 +73,8 @@ import { toast } from "sonner";
 import { useAccountInvitations, useMyInvitations } from "@/services/invitation/invitation.query";
 import { useAcceptInvitation, useApproveInvitation, useCancelInvitation, useRejectInvitation, useResendInvitation } from "@/services/invitation/invitation.mutation";
 import { queryClient } from "@/lib/react-query";
+import InputModal from "@/components/common/InputModal";
+import ConfirmationModal from "@/components/common/ConfirmationModal";
 
 const mockInvitations = [
   {
@@ -140,6 +142,12 @@ export default function AccountPage() {
     useState(false);
   const [isEditAccountModalOpen, setIsEditAccountModalOpen] = useState(false);
 
+  // New modal states for invitation flow
+  const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
+  const [selectedInvitationId, setSelectedInvitationId] = useState<string | null>(null);
+
   const dispatch = useDispatch();
 
   // Redux State
@@ -194,8 +202,15 @@ export default function AccountPage() {
   };
 
   const handleCancelInvitation = async (invitationId: string) => {
-    if (!window.confirm("Are you sure you want to cancel this invitation?")) return;
-    await cancelInvMutation.mutateAsync({ invitationId, accountId: activeAccountId! });
+    setSelectedInvitationId(invitationId);
+    setIsCancelConfirmOpen(true);
+  };
+
+  const confirmCancelInvitation = async () => {
+    if (!selectedInvitationId) return;
+    await cancelInvMutation.mutateAsync({ invitationId: selectedInvitationId, accountId: activeAccountId! });
+    setIsCancelConfirmOpen(false);
+    setSelectedInvitationId(null);
   };
 
   console.log({ activeMember });
@@ -1058,14 +1073,20 @@ export default function AccountPage() {
                                 {inv.status === "user_accepted" && (
                                   <>
                                     <button
-                                      onClick={() => handleApproveInvitation(inv.id, inv.role || "member")}
+                                      onClick={() => {
+                                        setSelectedInvitationId(inv.id);
+                                        setIsRoleModalOpen(true);
+                                      }}
                                       className="h-8 w-8 rounded-full bg-green-50 text-green-600 hover:bg-green-600 hover:text-white flex items-center justify-center transition-all shadow-sm"
                                       title="Approve User"
                                     >
                                       <Check size={16} strokeWidth={3} />
                                     </button>
                                     <button
-                                      onClick={() => handleRejectInvitation(inv.id, "Admin rejected")}
+                                      onClick={() => {
+                                        setSelectedInvitationId(inv.id);
+                                        setIsRejectModalOpen(true);
+                                      }}
                                       className="h-8 w-8 rounded-full bg-red-50 text-red-600 hover:bg-red-600 hover:text-white flex items-center justify-center transition-all shadow-sm"
                                       title="Reject User"
                                     >
@@ -1345,6 +1366,78 @@ export default function AccountPage() {
         isOpen={isEditAccountModalOpen}
         onClose={() => setIsEditAccountModalOpen(false)}
         account={account}
+      />
+
+      {/* Role Selection Modal */}
+      <InputModal
+        isOpen={isRoleModalOpen}
+        onClose={() => {
+          setIsRoleModalOpen(false);
+          setSelectedInvitationId(null);
+        }}
+        onSubmit={async (role) => {
+          if (selectedInvitationId) {
+            await handleApproveInvitation(selectedInvitationId, role);
+            setIsRoleModalOpen(false);
+            setSelectedInvitationId(null);
+          }
+        }}
+        title="Assign Role"
+        description="Select the role for this member"
+        inputLabel="Role"
+        inputType="select"
+        options={[
+          { value: "member", label: "Member" },
+          { value: "admin", label: "Admin" },
+          { value: "super_admin", label: "Super Admin" },
+          { value: "viewer", label: "Viewer" },
+        ]}
+        defaultValue="member"
+        submitText="Approve & Assign"
+        isLoading={approveInvMutation.isPending}
+        icon={<ShieldCheck size={20} />}
+      />
+
+      {/* Rejection Reason Modal */}
+      <InputModal
+        isOpen={isRejectModalOpen}
+        onClose={() => {
+          setIsRejectModalOpen(false);
+          setSelectedInvitationId(null);
+        }}
+        onSubmit={async (reason) => {
+          if (selectedInvitationId) {
+            await handleRejectInvitation(selectedInvitationId, reason || "Rejected by admin");
+            setIsRejectModalOpen(false);
+            setSelectedInvitationId(null);
+          }
+        }}
+        title="Reject Invitation"
+        description="Provide a reason for rejection (optional)"
+        inputLabel="Rejection Reason"
+        inputType="textarea"
+        placeholder="e.g., Not authorized, Invalid request..."
+        defaultValue=""
+        submitText="Reject"
+        required={false}
+        isLoading={rejectInvMutation.isPending}
+        icon={<X size={20} />}
+      />
+
+      {/* Cancel Invitation Confirmation */}
+      <ConfirmationModal
+        isOpen={isCancelConfirmOpen}
+        onClose={() => {
+          setIsCancelConfirmOpen(false);
+          setSelectedInvitationId(null);
+        }}
+        onConfirm={confirmCancelInvitation}
+        title="Cancel Invitation"
+        message="Are you sure you want to cancel this invitation? The recipient will no longer be able to accept it."
+        confirmText="Yes, Cancel"
+        cancelText="No, Keep It"
+        variant="warning"
+        isLoading={cancelInvMutation.isPending}
       />
 
       <style jsx global>{`

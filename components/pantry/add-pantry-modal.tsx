@@ -96,7 +96,7 @@ function SearchableCategorySelect({ value, onChange, categories }: any) {
           <ChevronDown size={16} className="opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0">
+      <PopoverContent className="w-full p-0 bg-white border border-gray-200 rounded-xl shadow-lg z-50">
         <Command>
           <CommandInput
             placeholder="Search category..."
@@ -113,6 +113,7 @@ function SearchableCategorySelect({ value, onChange, categories }: any) {
                     onChange(cat);
                     setOpen(false);
                   }}
+                  className="flex items-center px-2 py-1.5 rounded-md cursor-pointer hover:bg-gray-100"
                 >
                   <Check
                     className={cn(
@@ -176,7 +177,7 @@ function SearchableIngredientSelect({ value, onChange, category }: any) {
           <ChevronDown size={16} className="opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0 bg-white border border-gray-200 rounded-xl shadow-xl">
+      <PopoverContent className="w-full p-0 bg-white border border-gray-200 rounded-xl shadow-xl z-50">
         <div className="max-h-60">
           <Command shouldFilter={false}>
             <CommandInput
@@ -216,6 +217,7 @@ function SearchableIngredientSelect({ value, onChange, category }: any) {
                       onChange(item);
                       setOpen(false);
                     }}
+                    className="flex items-center px-2 py-1.5 rounded-md cursor-pointer hover:bg-gray-100"
                   >
                     <Check
                       className={cn(
