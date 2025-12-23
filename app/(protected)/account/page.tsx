@@ -129,7 +129,7 @@ const mockInvitations = [
 
 const formatCurrency = (value: string | null) => {
   if (!value) return "—";
-  return `₹${Number(value).toLocaleString()}`;
+  return `$${Number(value).toLocaleString()}`;
 };
 
 const calculateResetInDays = (lastReset?: string) => {
@@ -482,9 +482,9 @@ export default function AccountPage() {
                   <h3 className="text-3xl font-extrabold text-white tracking-tight">
                     {activeBudget
                       ? `$${Math.max(
-                          activeBudget.amount - spent,
-                          0,
-                        ).toLocaleString()}`
+                        activeBudget.amount - spent,
+                        0,
+                      ).toLocaleString()}`
                       : "—"}
                   </h3>
                 </div>
@@ -521,11 +521,10 @@ export default function AccountPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-5 py-2 rounded-full font-bold text-sm transition-all duration-300 whitespace-nowrap ${
-                  activeTab === tab.id
-                    ? "bg-[var(--primary)] text-white shadow-lg"
-                    : "bg-white text-gray-600 hover:bg-gray-100"
-                }`}
+                className={`px-5 py-2 rounded-full font-bold text-sm transition-all duration-300 whitespace-nowrap ${activeTab === tab.id
+                  ? "bg-[var(--primary)] text-white shadow-lg"
+                  : "bg-white text-gray-600 hover:bg-gray-100"
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <Icon className="w-4 h-4" />
@@ -585,7 +584,7 @@ export default function AccountPage() {
                         label: "Account Type",
                         value: account?.accountType
                           ? account.accountType.charAt(0).toUpperCase() +
-                            account.accountType.slice(1)
+                          account.accountType.slice(1)
                           : null,
                       },
                       {
@@ -611,97 +610,97 @@ export default function AccountPage() {
                   {(account?.formattedAddress ||
                     account?.addressLine1 ||
                     account?.city) && (
-                    <div className="mt-8">
-                      <div className="flex items-center gap-2 mb-4">
-                        <MapPin size={18} className="text-[#7661d3]" />
-                        <h4 className="font-bold text-[#313131] text-sm">
-                          Account Address
-                        </h4>
-                      </div>
-                      <div className="bg-[#F8F7FC] rounded-xl p-5 border border-gray-100">
-                        <div className="space-y-3">
-                          {account?.formattedAddress && (
-                            <div>
-                              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
-                                Full Address
-                              </label>
-                              <p className="text-sm font-medium text-[#313131]">
-                                {account.formattedAddress}
-                              </p>
+                      <div className="mt-8">
+                        <div className="flex items-center gap-2 mb-4">
+                          <MapPin size={18} className="text-[#7661d3]" />
+                          <h4 className="font-bold text-[#313131] text-sm">
+                            Account Address
+                          </h4>
+                        </div>
+                        <div className="bg-[#F8F7FC] rounded-xl p-5 border border-gray-100">
+                          <div className="space-y-3">
+                            {account?.formattedAddress && (
+                              <div>
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                                  Full Address
+                                </label>
+                                <p className="text-sm font-medium text-[#313131]">
+                                  {account.formattedAddress}
+                                </p>
+                              </div>
+                            )}
+
+                            <div className="grid grid-cols-2 gap-4">
+                              {account?.addressLine1 && (
+                                <div>
+                                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                                    Address Line 1
+                                  </label>
+                                  <p className="text-sm font-medium text-gray-700">
+                                    {account.addressLine1}
+                                  </p>
+                                </div>
+                              )}
+
+                              {account?.addressLine2 && (
+                                <div>
+                                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                                    Address Line 2
+                                  </label>
+                                  <p className="text-sm font-medium text-gray-700">
+                                    {account.addressLine2}
+                                  </p>
+                                </div>
+                              )}
+
+                              {account?.city && (
+                                <div>
+                                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                                    City
+                                  </label>
+                                  <p className="text-sm font-medium text-gray-700">
+                                    {account.city}
+                                  </p>
+                                </div>
+                              )}
+
+                              {account?.state && (
+                                <div>
+                                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                                    State
+                                  </label>
+                                  <p className="text-sm font-medium text-gray-700">
+                                    {account.state}
+                                  </p>
+                                </div>
+                              )}
+
+                              {account?.zipCode && (
+                                <div>
+                                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                                    ZIP Code
+                                  </label>
+                                  <p className="text-sm font-medium text-gray-700">
+                                    {account.zipCode}
+                                  </p>
+                                </div>
+                              )}
+
+                              {account?.country && (
+                                <div>
+                                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                                    Country
+                                  </label>
+                                  <p className="text-sm font-medium text-gray-700">
+                                    {account.country}
+                                  </p>
+                                </div>
+                              )}
                             </div>
-                          )}
-
-                          <div className="grid grid-cols-2 gap-4">
-                            {account?.addressLine1 && (
-                              <div>
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
-                                  Address Line 1
-                                </label>
-                                <p className="text-sm font-medium text-gray-700">
-                                  {account.addressLine1}
-                                </p>
-                              </div>
-                            )}
-
-                            {account?.addressLine2 && (
-                              <div>
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
-                                  Address Line 2
-                                </label>
-                                <p className="text-sm font-medium text-gray-700">
-                                  {account.addressLine2}
-                                </p>
-                              </div>
-                            )}
-
-                            {account?.city && (
-                              <div>
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
-                                  City
-                                </label>
-                                <p className="text-sm font-medium text-gray-700">
-                                  {account.city}
-                                </p>
-                              </div>
-                            )}
-
-                            {account?.state && (
-                              <div>
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
-                                  State
-                                </label>
-                                <p className="text-sm font-medium text-gray-700">
-                                  {account.state}
-                                </p>
-                              </div>
-                            )}
-
-                            {account?.zipCode && (
-                              <div>
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
-                                  ZIP Code
-                                </label>
-                                <p className="text-sm font-medium text-gray-700">
-                                  {account.zipCode}
-                                </p>
-                              </div>
-                            )}
-
-                            {account?.country && (
-                              <div>
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
-                                  Country
-                                </label>
-                                <p className="text-sm font-medium text-gray-700">
-                                  {account.country}
-                                </p>
-                              </div>
-                            )}
                           </div>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
                   {/* Preferences */}
                   <div className="bg-[#F8F7FC] rounded-xl p-5 mt-4">
@@ -723,18 +722,16 @@ export default function AccountPage() {
                         </div>
 
                         <div
-                          className={`w-10 h-6 rounded-full relative transition-colors ${
-                            account?.requiresAdminApprovalForOverrides
-                              ? "bg-[#7dab4f]"
-                              : "bg-gray-200"
-                          }`}
+                          className={`w-10 h-6 rounded-full relative transition-colors ${account?.requiresAdminApprovalForOverrides
+                            ? "bg-[#7dab4f]"
+                            : "bg-gray-200"
+                            }`}
                         >
                           <div
-                            className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all shadow-sm ${
-                              account?.requiresAdminApprovalForOverrides
-                                ? "left-5"
-                                : "left-1"
-                            }`}
+                            className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all shadow-sm ${account?.requiresAdminApprovalForOverrides
+                              ? "left-5"
+                              : "left-1"
+                              }`}
                           />
                         </div>
                       </div>
@@ -751,18 +748,16 @@ export default function AccountPage() {
                         </div>
 
                         <div
-                          className={`w-10 h-6 rounded-full relative transition-colors ${
-                            account?.autoGenerateGroceryLists
-                              ? "bg-[#7dab4f]"
-                              : "bg-gray-200"
-                          }`}
+                          className={`w-10 h-6 rounded-full relative transition-colors ${account?.autoGenerateGroceryLists
+                            ? "bg-[#7dab4f]"
+                            : "bg-gray-200"
+                            }`}
                         >
                           <div
-                            className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all shadow-sm ${
-                              account?.autoGenerateGroceryLists
-                                ? "left-5"
-                                : "left-1"
-                            }`}
+                            className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all shadow-sm ${account?.autoGenerateGroceryLists
+                              ? "left-5"
+                              : "left-1"
+                              }`}
                           />
                         </div>
                       </div>
@@ -836,7 +831,7 @@ export default function AccountPage() {
                             {activeBudget.label}
                           </p>
                           <p className="text-3xl font-extrabold text-[#313131]">
-                            ₹{activeBudget.amount.toLocaleString("en-IN")}
+                            ${activeBudget.amount.toLocaleString("en-IN")}
                           </p>
                         </div>
 
@@ -849,7 +844,7 @@ export default function AccountPage() {
                       <div className="mt-4">
                         <div className="flex justify-between text-xs font-bold mb-1">
                           <span className="text-gray-500">
-                            Spent ₹{spent.toLocaleString("en-IN")}
+                            Spent ${spent.toLocaleString("en-IN")}
                           </span>
                           <span className="text-[#7dab4f]">
                             {usagePercent.toFixed(0)}%
@@ -1011,15 +1006,14 @@ export default function AccountPage() {
                               Status
                             </div>
                             <Badge
-                              className={`border-0 font-bold capitalize px-2.5 py-0.5 h-6 text-[10px] ${
-                                inv.status === "pending"
-                                  ? "bg-amber-100 text-amber-700"
-                                  : inv.status === "user_accepted"
-                                    ? "bg-blue-100 text-blue-700"
-                                    : inv.status === "approved"
-                                      ? "bg-green-100 text-green-700"
-                                      : "bg-red-100 text-red-700"
-                              }`}
+                              className={`border-0 font-bold capitalize px-2.5 py-0.5 h-6 text-[10px] ${inv.status === "pending"
+                                ? "bg-amber-100 text-amber-700"
+                                : inv.status === "user_accepted"
+                                  ? "bg-blue-100 text-blue-700"
+                                  : inv.status === "approved"
+                                    ? "bg-green-100 text-green-700"
+                                    : "bg-red-100 text-red-700"
+                                }`}
                             >
                               {inv.status.replace("_", " ")}
                             </Badge>
@@ -1165,17 +1159,16 @@ export default function AccountPage() {
                               Status
                             </div>
                             <Badge
-                              className={`border-0 font-bold capitalize px-2.5 py-0.5 h-6 text-[10px] ${
-                                inv.status === "pending"
-                                  ? "bg-amber-100 text-amber-700"
-                                  : inv.status === "user_accepted"
-                                    ? "bg-blue-100 text-blue-700"
-                                    : inv.status === "approved"
-                                      ? "bg-green-100 text-green-700"
-                                      : inv.status === "expired"
-                                        ? "bg-gray-100 text-gray-500"
-                                        : "bg-red-100 text-red-700"
-                              }`}
+                              className={`border-0 font-bold capitalize px-2.5 py-0.5 h-6 text-[10px] ${inv.status === "pending"
+                                ? "bg-amber-100 text-amber-700"
+                                : inv.status === "user_accepted"
+                                  ? "bg-blue-100 text-blue-700"
+                                  : inv.status === "approved"
+                                    ? "bg-green-100 text-green-700"
+                                    : inv.status === "expired"
+                                      ? "bg-gray-100 text-gray-500"
+                                      : "bg-red-100 text-red-700"
+                                }`}
                             >
                               {inv.status.replace("_", " ")}
                             </Badge>
@@ -1229,14 +1222,14 @@ export default function AccountPage() {
                             {(inv.status === "approved" ||
                               inv.status === "rejected" ||
                               inv.status === "expired") && (
-                              <button
-                                onClick={() => handleCancelInvitation(inv.id)}
-                                className="h-8 w-8 rounded-lg bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-500 flex items-center justify-center transition-all"
-                                title="Delete from history"
-                              >
-                                <Trash2 size={14} />
-                              </button>
-                            )}
+                                <button
+                                  onClick={() => handleCancelInvitation(inv.id)}
+                                  className="h-8 w-8 rounded-lg bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-500 flex items-center justify-center transition-all"
+                                  title="Delete from history"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              )}
                           </div>
                         </div>
                       ))
@@ -1265,21 +1258,19 @@ export default function AccountPage() {
                   <div className="flex items-center bg-gray-100 rounded-lg p-1">
                     <button
                       onClick={() => setViewMode("card")}
-                      className={`p-1.5 rounded transition-all ${
-                        viewMode === "card"
-                          ? "bg-white shadow-sm"
-                          : "text-gray-400"
-                      }`}
+                      className={`p-1.5 rounded transition-all ${viewMode === "card"
+                        ? "bg-white shadow-sm"
+                        : "text-gray-400"
+                        }`}
                     >
                       <Grid3x3 size={16} />
                     </button>
                     <button
                       onClick={() => setViewMode("table")}
-                      className={`p-1.5 rounded transition-all ${
-                        viewMode === "table"
-                          ? "bg-white shadow-sm"
-                          : "text-gray-400"
-                      }`}
+                      className={`p-1.5 rounded transition-all ${viewMode === "table"
+                        ? "bg-white shadow-sm"
+                        : "text-gray-400"
+                        }`}
                     >
                       <List size={16} />
                     </button>
@@ -1358,11 +1349,10 @@ export default function AccountPage() {
                     <button
                       disabled={!pagination.hasPrev}
                       onClick={() => setCurrentPage((p) => p - 1)}
-                      className={`h-9 w-9 rounded-lg flex items-center justify-center transition-all ${
-                        pagination.hasPrev
-                          ? "bg-white border border-gray-200 hover:bg-gray-50 text-gray-600"
-                          : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                      }`}
+                      className={`h-9 w-9 rounded-lg flex items-center justify-center transition-all ${pagination.hasPrev
+                        ? "bg-white border border-gray-200 hover:bg-gray-50 text-gray-600"
+                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        }`}
                     >
                       <ChevronLeft size={16} />
                     </button>
@@ -1373,11 +1363,10 @@ export default function AccountPage() {
                       <button
                         key={page}
                         onClick={() => setCurrentPage(page)}
-                        className={`h-9 px-3 rounded-lg font-bold text-sm transition-all ${
-                          page === pagination.page
-                            ? "bg-[#313131] text-white shadow-md"
-                            : "bg-white border border-gray-200 hover:bg-gray-50 text-gray-600"
-                        }`}
+                        className={`h-9 px-3 rounded-lg font-bold text-sm transition-all ${page === pagination.page
+                          ? "bg-[#313131] text-white shadow-md"
+                          : "bg-white border border-gray-200 hover:bg-gray-50 text-gray-600"
+                          }`}
                       >
                         {page}
                       </button>
@@ -1385,11 +1374,10 @@ export default function AccountPage() {
                     <button
                       disabled={!pagination.hasNext}
                       onClick={() => setCurrentPage((p) => p + 1)}
-                      className={`h-9 w-9 rounded-lg flex items-center justify-center transition-all ${
-                        pagination.hasNext
-                          ? "bg-white border border-gray-200 hover:bg-gray-50 text-gray-600"
-                          : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                      }`}
+                      className={`h-9 w-9 rounded-lg flex items-center justify-center transition-all ${pagination.hasNext
+                        ? "bg-white border border-gray-200 hover:bg-gray-50 text-gray-600"
+                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        }`}
                     >
                       <ChevronRight size={16} />
                     </button>
@@ -1601,15 +1589,14 @@ const MemberCard = ({
               </div>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <div
-                  className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wide leading-none ${
-                    member.role === "super_admin"
-                      ? "bg-amber-50 text-amber-700"
-                      : member.role === "admin"
-                        ? "bg-blue-50 text-blue-700"
-                        : member.role === "member"
-                          ? "bg-purple-50 text-purple-700"
-                          : "bg-gray-50 text-gray-600"
-                  }`}
+                  className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wide leading-none ${member.role === "super_admin"
+                    ? "bg-amber-50 text-amber-700"
+                    : member.role === "admin"
+                      ? "bg-blue-50 text-blue-700"
+                      : member.role === "member"
+                        ? "bg-purple-50 text-purple-700"
+                        : "bg-gray-50 text-gray-600"
+                    }`}
                 >
                   {member.role === "super_admin" ? "Super" : member.role}
                 </div>
@@ -1779,13 +1766,12 @@ const MemberTableRow = ({ member }: { member: any }) => (
         Role
       </div>
       <div
-        className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border ${
-          member.role === "super_admin"
-            ? "bg-amber-50 text-amber-600 border-amber-100"
-            : member.role === "admin"
-              ? "bg-blue-50 text-blue-600 border-blue-100"
-              : "bg-purple-50 text-purple-600 border-purple-100"
-        }`}
+        className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border ${member.role === "super_admin"
+          ? "bg-amber-50 text-amber-600 border-amber-100"
+          : member.role === "admin"
+            ? "bg-blue-50 text-blue-600 border-blue-100"
+            : "bg-purple-50 text-purple-600 border-purple-100"
+          }`}
       >
         {member.role === "super_admin" ? "Super Admin" : member.role}
       </div>

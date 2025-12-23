@@ -98,6 +98,11 @@ export default function Step2HealthActivity({
               data-testid="input-height"
               className="h-12 border-2 border-[#7661d3]/30 focus:border-[#7661d3] rounded-xl"
             />
+            {form.formState.errors.height && (
+              <p className="text-sm text-red-500 mt-1">
+                {String(form.formState.errors.height.message)}
+              </p>
+            )}
           </div>
           <div>
             <Label
@@ -116,6 +121,11 @@ export default function Step2HealthActivity({
               data-testid="input-weight"
               className="h-12 border-2 border-[#7661d3]/30 focus:border-[#7661d3] rounded-xl"
             />
+            {form.formState.errors.weight && (
+              <p className="text-sm text-red-500 mt-1">
+                {String(form.formState.errors.weight.message)}
+              </p>
+            )}
           </div>
           <div>
             <Label className="text-[#3d326d] font-semibold mb-2 block">

@@ -199,8 +199,47 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
     const errors: Record<string, string> = {};
 
     if (step === 1) {
-      if (!values.weeklyBudget || Number(values.weeklyBudget) < 10)
-        errors.weeklyBudget = "Weekly budget must be at least $10";
+      if (!values.accountName || values.accountName.trim().length < 2) {
+        errors.accountName = "Account name is required (min 2 characters)";
+      }
+
+      const allocation = values.currentAllocation || "weekly";
+      let budgetVal = 0;
+      let minBudget = 0;
+      let budgetField = "weeklyBudget";
+
+      switch (allocation) {
+        case "daily":
+          budgetVal = Number(values.dailyBudget);
+          minBudget = 5;
+          budgetField = "dailyBudget";
+          break;
+        case "weekly":
+          budgetVal = Number(values.weeklyBudget);
+          minBudget = 10;
+          budgetField = "weeklyBudget";
+          break;
+        case "monthly":
+          budgetVal = Number(values.monthlyBudget);
+          minBudget = 50;
+          budgetField = "monthlyBudget";
+          break;
+        case "annual":
+          budgetVal = Number(values.annualBudget);
+          minBudget = 500;
+          budgetField = "annualBudget";
+          break;
+        default:
+          budgetVal = Number(values.weeklyBudget);
+          minBudget = 10;
+          budgetField = "weeklyBudget";
+      }
+
+      if (!budgetVal || budgetVal < minBudget) {
+        errors[budgetField] = `${allocation.charAt(0).toUpperCase() + allocation.slice(1)
+          } budget must be at least $${minBudget}`;
+      }
+
       const totalPercent =
         Number(values.groceriesPercentage || 0) +
         Number(values.diningPercentage || 0) +
@@ -210,6 +249,12 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
     }
 
     if (step === 2) {
+      if (!values.height || Number(values.height) < 24 || Number(values.height) > 96)
+        errors.height = "Height must be between 24 and 96 inches";
+
+      if (!values.weight || Number(values.weight) < 50 || Number(values.weight) > 600)
+        errors.weight = "Weight must be between 50 and 600 lbs";
+
       if (!values.activityLevel)
         errors.activityLevel = "Activity level is required";
     }

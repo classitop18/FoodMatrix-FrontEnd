@@ -73,7 +73,7 @@ import { toast } from "sonner";
 
 const formatCurrency = (value: string | null) => {
   if (!value) return "—";
-  return `₹${Number(value).toLocaleString()}`;
+  return `$${Number(value).toLocaleString()}`;
 };
 
 const calculateResetInDays = (lastReset?: string) => {
