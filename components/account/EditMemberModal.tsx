@@ -54,9 +54,12 @@ export default function EditMemberModal({
       updateData.age = parseInt(formData.age);
     }
 
-    updateMemberMutation.mutate({ memberId: member.id, data: updateData }, {
-      onSuccess: () => onClose()
-    });
+    updateMemberMutation.mutate(
+      { memberId: member.id, data: updateData },
+      {
+        onSuccess: () => onClose(),
+      },
+    );
   };
 
   const handleChange = (

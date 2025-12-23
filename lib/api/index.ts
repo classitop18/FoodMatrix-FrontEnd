@@ -97,7 +97,7 @@ class ApiClient {
                   originalRequest.headers["Authorization"] = `Bearer ${token}`;
                   resolve(this.client(originalRequest));
                 },
-                reject
+                reject,
               });
             });
           }
@@ -109,7 +109,10 @@ class ApiClient {
             this.processSubscribers(null, newToken);
 
             // Show success toast only if not a silent refresh
-            if (!originalRequest._silentRefresh && typeof window !== "undefined") {
+            if (
+              !originalRequest._silentRefresh &&
+              typeof window !== "undefined"
+            ) {
               toast.success("Session refreshed successfully", {
                 duration: 2000,
               });
@@ -131,12 +134,18 @@ class ApiClient {
           const errorCode = (error.response?.data as any)?.errorCode;
           const errorMessage = (error.response?.data as any)?.message;
 
-          if (errorCode === "REFRESH_TOKEN_MISSING" || errorCode === "SESSION_EXPIRED") {
+          if (
+            errorCode === "REFRESH_TOKEN_MISSING" ||
+            errorCode === "SESSION_EXPIRED"
+          ) {
             toast.error("Your session has expired. Please login again.", {
               duration: 4000,
             });
             this.handleLogout();
-          } else if (errorCode === "INVALID_REFRESH_TOKEN" || errorCode === "SESSION_INVALID") {
+          } else if (
+            errorCode === "INVALID_REFRESH_TOKEN" ||
+            errorCode === "SESSION_INVALID"
+          ) {
             toast.error("Invalid session. Please login again.", {
               duration: 4000,
             });
@@ -258,4 +267,3 @@ class ApiClient {
 }
 
 export const apiClient = new ApiClient();
-

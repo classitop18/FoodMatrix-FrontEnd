@@ -18,7 +18,6 @@ export interface PlaceDetails {
   latitude?: number;
   longitude?: number;
   location?: string;
-
 }
 
 export interface PlaceAutocompleteResult {

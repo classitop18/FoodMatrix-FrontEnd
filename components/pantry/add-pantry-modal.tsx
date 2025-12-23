@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 
-
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -35,13 +34,25 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store.redux";
 
 // Import from services
-import { useIngredients, useIngredientSearch } from "@/services/ingredients/ingredients.query";
-import { useAddPantryMutation, useUpdatePantryMutation } from "@/services/pantry/pantry.mutation";
+import {
+  useIngredients,
+  useIngredientSearch,
+} from "@/services/ingredients/ingredients.query";
+import {
+  useAddPantryMutation,
+  useUpdatePantryMutation,
+} from "@/services/pantry/pantry.mutation";
 import { toast } from "@/hooks/use-toast";
 
 // Debounce hook
@@ -70,11 +81,33 @@ const CommandLoading = ({ children }: any) => (
 import { useIngredientCategories } from "@/services/ingredients/ingredients.query";
 
 const UNITS = [
-  "cup", "tbsp", "tsp", "oz", "lb", "gram", "kg", "ml", "liter",
-  "piece", "clove", "slice", "dozen", "can", "bunch", "jar", "pinch", "sprig"
+  "cup",
+  "tbsp",
+  "tsp",
+  "oz",
+  "lb",
+  "gram",
+  "kg",
+  "ml",
+  "liter",
+  "piece",
+  "clove",
+  "slice",
+  "dozen",
+  "can",
+  "bunch",
+  "jar",
+  "pinch",
+  "sprig",
 ];
 
-const LOCATIONS = ["refrigerator", "freezer", "pantry", "cabinet", "countertop"];
+const LOCATIONS = [
+  "refrigerator",
+  "freezer",
+  "pantry",
+  "cabinet",
+  "countertop",
+];
 
 // ---------------- SEARCHABLE CATEGORY SELECT (Creates New) -------------------
 function SearchableCategorySelect({ value, onChange, categories }: any) {
@@ -118,7 +151,7 @@ function SearchableCategorySelect({ value, onChange, categories }: any) {
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      value === cat ? "opacity-100" : "opacity-0"
+                      value === cat ? "opacity-100" : "opacity-0",
                     )}
                   />
                   {cat}
@@ -127,21 +160,26 @@ function SearchableCategorySelect({ value, onChange, categories }: any) {
             </CommandGroup>
 
             {/* Create New Option */}
-            {search && !categories.some((c: string) => c.toLowerCase() === search.toLowerCase()) && (
-              <CommandGroup heading="Create New">
-                <CommandItem
-                  onSelect={() => {
-                    const newCat = search.charAt(0).toUpperCase() + search.slice(1).toLowerCase();
-                    onChange(newCat);
-                    setOpen(false);
-                  }}
-                  className="bg-purple-50 text-purple-700 font-semibold cursor-pointer"
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create "{search}"
-                </CommandItem>
-              </CommandGroup>
-            )}
+            {search &&
+              !categories.some(
+                (c: string) => c.toLowerCase() === search.toLowerCase(),
+              ) && (
+                <CommandGroup heading="Create New">
+                  <CommandItem
+                    onSelect={() => {
+                      const newCat =
+                        search.charAt(0).toUpperCase() +
+                        search.slice(1).toLowerCase();
+                      onChange(newCat);
+                      setOpen(false);
+                    }}
+                    className="bg-purple-50 text-purple-700 font-semibold cursor-pointer"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create "{search}"
+                  </CommandItem>
+                </CommandGroup>
+              )}
           </CommandList>
         </Command>
       </PopoverContent>
@@ -172,8 +210,13 @@ function SearchableIngredientSelect({ value, onChange, category }: any) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="w-full justify-between h-11 rounded-xl border border-gray-200 bg-white hover:border-[#7661d3] hover:bg-white text-left font-normal px-3 transition-all">
-          <span className={value ? "text-gray-900" : "text-gray-500"}>{value?.name || "Search ingredients..."}</span>
+        <Button
+          variant="outline"
+          className="w-full justify-between h-11 rounded-xl border border-gray-200 bg-white hover:border-[#7661d3] hover:bg-white text-left font-normal px-3 transition-all"
+        >
+          <span className={value ? "text-gray-900" : "text-gray-500"}>
+            {value?.name || "Search ingredients..."}
+          </span>
           <ChevronDown size={16} className="opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -222,7 +265,7 @@ function SearchableIngredientSelect({ value, onChange, category }: any) {
                     <Check
                       className={cn(
                         "mr-2 h-4 w-4",
-                        value?.id === item.id ? "opacity-100" : "opacity-0"
+                        value?.id === item.id ? "opacity-100" : "opacity-0",
                       )}
                     />
                     <div className="flex flex-col">
@@ -251,9 +294,10 @@ export default function AddToPantry({ setIsAddModalOpen, itemToEdit }: any) {
 
   // Dynamic Categories
   const { data: fetchedCategories = [] } = useIngredientCategories();
-  const DISPLAY_CATEGORIES = fetchedCategories.length > 0 ? fetchedCategories : [
-    "Produce", "Pantry", "Dairy", "Protein", "Seafood", "Meat", "Bakery"
-  ];
+  const DISPLAY_CATEGORIES =
+    fetchedCategories.length > 0
+      ? fetchedCategories
+      : ["Produce", "Pantry", "Dairy", "Protein", "Seafood", "Meat", "Bakery"];
 
   const [category, setCategory] = useState("");
   const [ingredient, setIngredient] = useState<any>(null);
@@ -273,7 +317,8 @@ export default function AddToPantry({ setIsAddModalOpen, itemToEdit }: any) {
   useEffect(() => {
     if (itemToEdit) {
       const normalizedCategory = itemToEdit.category
-        ? itemToEdit.category.charAt(0).toUpperCase() + itemToEdit.category.slice(1).toLowerCase()
+        ? itemToEdit.category.charAt(0).toUpperCase() +
+          itemToEdit.category.slice(1).toLowerCase()
         : "";
 
       setCategory(normalizedCategory);
@@ -295,9 +340,9 @@ export default function AddToPantry({ setIsAddModalOpen, itemToEdit }: any) {
   // Auto-set unit when ingredient is selected
   useEffect(() => {
     if (ingredient?.defaultMeasurementUnit && !isEditMode) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        unit: ingredient.defaultMeasurementUnit
+        unit: ingredient.defaultMeasurementUnit,
       }));
     }
   }, [ingredient, isEditMode]);
@@ -311,7 +356,11 @@ export default function AddToPantry({ setIsAddModalOpen, itemToEdit }: any) {
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      toast({ title: "Validation Error", description: "Fix errors", variant: "destructive" });
+      toast({
+        title: "Validation Error",
+        description: "Fix errors",
+        variant: "destructive",
+      });
       return;
     }
     setErrors({});
@@ -334,20 +383,28 @@ export default function AddToPantry({ setIsAddModalOpen, itemToEdit }: any) {
       if (isEditMode) {
         await updatePantryMutation.mutateAsync({
           id: itemToEdit.id,
-          data: { ...payload, accountId: activeAccountId }
+          data: { ...payload, accountId: activeAccountId },
         });
         toast({ title: "Updated!", description: "Item updated." });
       } else {
-        await addPantryMutation.mutateAsync({ ...payload, accountId: activeAccountId });
+        await addPantryMutation.mutateAsync({
+          ...payload,
+          accountId: activeAccountId,
+        });
         toast({ title: "Added!", description: "Item added." });
       }
       setIsAddModalOpen(false);
     } catch (error: any) {
-      toast({ title: "Error", description: error?.message || "Failed", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: error?.message || "Failed",
+        variant: "destructive",
+      });
     }
   };
 
-  const isLoading = addPantryMutation.isPending || updatePantryMutation.isPending;
+  const isLoading =
+    addPantryMutation.isPending || updatePantryMutation.isPending;
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 animate-in fade-in duration-200">
@@ -379,7 +436,6 @@ export default function AddToPantry({ setIsAddModalOpen, itemToEdit }: any) {
 
         {/* Scrollable Content */}
         <div className="p-6 space-y-5 overflow-y-auto custom-scrollbar flex-1">
-
           {/* CATEGORY FIRST (Dynamic & Creatable) */}
           <div>
             <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">
@@ -395,7 +451,9 @@ export default function AddToPantry({ setIsAddModalOpen, itemToEdit }: any) {
               }}
             />
             {errors.category && (
-              <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.category}</p>
+              <p className="text-red-500 text-xs mt-1.5 font-medium">
+                {errors.category}
+              </p>
             )}
           </div>
 
@@ -420,7 +478,9 @@ export default function AddToPantry({ setIsAddModalOpen, itemToEdit }: any) {
               }}
             />
             {errors.ingredient && (
-              <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.ingredient}</p>
+              <p className="text-red-500 text-xs mt-1.5 font-medium">
+                {errors.ingredient}
+              </p>
             )}
 
             {/* Helper Text */}
@@ -443,7 +503,6 @@ export default function AddToPantry({ setIsAddModalOpen, itemToEdit }: any) {
                 </p>
               </div>
             )}
-
           </div>
 
           {/* SELECTED INGREDIENT CARD */}
@@ -455,10 +514,18 @@ export default function AddToPantry({ setIsAddModalOpen, itemToEdit }: any) {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <p className="font-bold text-[#3d326d] text-sm leading-tight">{ingredient.name}</p>
-                    {ingredient.isNew && <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-semibold">New</span>}
+                    <p className="font-bold text-[#3d326d] text-sm leading-tight">
+                      {ingredient.name}
+                    </p>
+                    {ingredient.isNew && (
+                      <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-semibold">
+                        New
+                      </span>
+                    )}
                   </div>
-                  <p className="text-xs text-gray-500 font-medium mt-0.5">{ingredient.category || category || "No category"}</p>
+                  <p className="text-xs text-gray-500 font-medium mt-0.5">
+                    {ingredient.category || category || "No category"}
+                  </p>
                 </div>
               </div>
               {!isEditMode && (
@@ -487,11 +554,14 @@ export default function AddToPantry({ setIsAddModalOpen, itemToEdit }: any) {
                   setFormData({ ...formData, quantity: e.target.value });
                   setErrors({ ...errors, quantity: "" });
                 }}
-                className={`bg-white rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-[#7661d3]/30 focus:border-[#7661d3] outline-none h-11 transition-all ${errors.quantity ? "border-red-500 focus:ring-red-500/20" : ""
-                  }`}
+                className={`bg-white rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-[#7661d3]/30 focus:border-[#7661d3] outline-none h-11 transition-all ${
+                  errors.quantity ? "border-red-500 focus:ring-red-500/20" : ""
+                }`}
               />
               {errors.quantity && (
-                <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.quantity}</p>
+                <p className="text-red-500 text-xs mt-1.5 font-medium">
+                  {errors.quantity}
+                </p>
               )}
             </div>
 
@@ -530,7 +600,10 @@ export default function AddToPantry({ setIsAddModalOpen, itemToEdit }: any) {
                 <SelectTrigger className="bg-white rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-[#7661d3]/30 focus:border-[#7661d3] outline-none h-11 pl-10 transition-all">
                   <SelectValue />
                 </SelectTrigger>
-                <MapPin size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <MapPin
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                />
                 <SelectContent className="bg-white border border-gray-200 rounded-xl shadow-xl">
                   {LOCATIONS.map((l) => (
                     <SelectItem key={l} value={l}>
@@ -557,7 +630,10 @@ export default function AddToPantry({ setIsAddModalOpen, itemToEdit }: any) {
                   }
                   className="bg-white rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-[#7661d3]/30 focus:border-[#7661d3] outline-none h-11 pl-10 block w-full transition-all"
                 />
-                <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <Calendar
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                />
               </div>
             </div>
 
@@ -576,7 +652,10 @@ export default function AddToPantry({ setIsAddModalOpen, itemToEdit }: any) {
                   }
                   className="bg-white rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-[#7661d3]/30 focus:border-[#7661d3] outline-none h-11 pl-10 transition-all"
                 />
-                <DollarSign size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <DollarSign
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                />
               </div>
             </div>
           </div>

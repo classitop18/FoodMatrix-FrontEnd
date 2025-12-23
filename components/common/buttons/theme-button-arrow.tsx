@@ -22,10 +22,11 @@ export default function ThemeButton({
     >
       {label}
 
-      {
-        icon ? icon : <ArrowRight className="size-5 transition-all duration-300" />
-      }
-
+      {icon ? (
+        icon
+      ) : (
+        <ArrowRight className="size-5 transition-all duration-300" />
+      )}
     </button>
   );
 }

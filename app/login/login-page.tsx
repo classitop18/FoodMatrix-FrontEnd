@@ -54,7 +54,9 @@ export default function LoginPage() {
       const response = await loginMutation.mutateAsync(data);
 
       if (response?.data?.mfaRequired) {
-        const otpUrl = returnUrl ? `/otp-verification?returnUrl=${encodeURIComponent(returnUrl)}` : "/otp-verification";
+        const otpUrl = returnUrl
+          ? `/otp-verification?returnUrl=${encodeURIComponent(returnUrl)}`
+          : "/otp-verification";
         router.push(otpUrl);
         return;
       }
@@ -221,7 +223,6 @@ export default function LoginPage() {
               )}
             </div>
 
-
             <Button
               type="submit"
               className="w-full justify-center text-white bg-(--primary) hover:bg-(--primary) font-medium ps-6! pe-6! py-1 h-12 rounded-lg text-base transition-all duration-300 cursor-pointer group relative flex items-center
@@ -248,7 +249,11 @@ export default function LoginPage() {
             disabled={loginMutation?.isPending}
             asChild
           >
-            <Link href={`/register${returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ""}`}>Create Account</Link>
+            <Link
+              href={`/register${returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ""}`}
+            >
+              Create Account
+            </Link>
           </Button>
         </CardContent>
       </Card>

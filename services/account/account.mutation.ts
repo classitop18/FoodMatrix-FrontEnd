@@ -23,11 +23,13 @@ export const useCreateAccount = () => {
 
 export const useUpdateAccount = () => {
   return useMutation({
-    mutationFn: ({ accountId, data }: { accountId: string, data: any }) =>
+    mutationFn: ({ accountId, data }: { accountId: string; data: any }) =>
       accountService.updateAccount(accountId, data),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["myaccounts"] });
-      queryClient.invalidateQueries({ queryKey: ["account", variables.accountId] });
+      queryClient.invalidateQueries({
+        queryKey: ["account", variables.accountId],
+      });
     },
     onError: (error: any) => {
       console.log(error, "Error in Account Update");

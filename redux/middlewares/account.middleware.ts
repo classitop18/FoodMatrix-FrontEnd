@@ -15,9 +15,7 @@ accountListener.startListening({
     const state = listenerApi.getState() as RootState;
     const currentAccountId = state.account.activeAccountId;
 
-    console.log({ currentAccountId, newAccountId })
-
-
+    console.log({ currentAccountId, newAccountId });
 
     listenerApi.dispatch(fetchAccountDetail(newAccountId));
   },

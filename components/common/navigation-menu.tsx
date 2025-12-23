@@ -40,9 +40,7 @@ const NavigationMenu: React.FC<NavigationMenuProps> = ({
               <Icon
                 size={20}
                 className={`transition-colors duration-300 ${
-                  isActive
-                    ? "text-[#7dab4f]"
-                    : "group-hover:text-[#7661d3]"
+                  isActive ? "text-[#7dab4f]" : "group-hover:text-[#7661d3]"
                 }`}
               />
 

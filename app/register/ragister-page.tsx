@@ -194,7 +194,9 @@ export default function Register() {
           response.message || "Your account has been created successfully.",
       });
       setRegisteredUser(response.user);
-      router.push(`/login${returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ""}`);
+      router.push(
+        `/login${returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ""}`,
+      );
     } catch (error: any) {
       console.error("Registration error:", error);
       toast({
@@ -441,9 +443,10 @@ export default function Register() {
             inset-shadow-[5px_5px_5px_rgba(0,0,0,0.30)] hover:inset-shadow-[-5px_-5px_5px_rgba(0,0,0,0.50)]"
                 disabled={registerMutation?.isPending}
               >
-                {registerMutation?.isPending ? "Creating Account..." : "Create Account"}
+                {registerMutation?.isPending
+                  ? "Creating Account..."
+                  : "Create Account"}
               </Button>
-
             </form>
 
             <div className="flex items-center my-8">
@@ -454,19 +457,18 @@ export default function Register() {
               <div className="flex-1 border-t-2 border-[var(--primary)]/10"></div>
             </div>
 
-
-
-
             <Button
               variant="outline"
               className="w-full justify-center bg-white  hover:text-white hover:bg-(--primary) border-(--primary) border text-(--primary) font-medium ps-6! pe-6! py-1 h-10 rounded-lg text-base transition-all duration-300 cursor-pointer group relative flex items-center hover:inset-shadow-[-5px_-5px_5px_rgba(0,0,0,0.30)]"
               disabled={registerMutation?.isPending}
               asChild
             >
-              <Link href={`/login${returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ""}`}>Sign In Instead</Link>
+              <Link
+                href={`/login${returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ""}`}
+              >
+                Sign In Instead
+              </Link>
             </Button>
-
-
           </CardContent>
         </Card>
 

@@ -68,7 +68,9 @@ export default function AuthProvider({
       // Only set active account if:
       // 1. No active account is set (not from localStorage)
       // 2. OR the persisted account doesn't exist in current accounts list
-      const persistedAccountExists = activeAccountId && accounts.some((acc: any) => acc.id === activeAccountId);
+      const persistedAccountExists =
+        activeAccountId &&
+        accounts.some((acc: any) => acc.id === activeAccountId);
 
       if (!activeAccountId || !persistedAccountExists) {
         dispatch(setActiveAccountId(accounts[0].id));

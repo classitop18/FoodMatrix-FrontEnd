@@ -23,7 +23,7 @@ import {
   Settings,
   MapPin,
   List,
-  Grid3x3
+  Grid3x3,
 } from "lucide-react";
 import {
   Select,
@@ -72,7 +72,9 @@ const LOCATIONS = [
 
 const PantryPage: React.FC = () => {
   const { toast } = useToast();
-  const { activeAccountId, account } = useSelector((state: RootState) => state.account);
+  const { activeAccountId, account } = useSelector(
+    (state: RootState) => state.account,
+  );
 
   // UI States
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -117,7 +119,9 @@ const PantryPage: React.FC = () => {
   });
 
   // Fetch alerts
-  const { data: alerts = [] } = usePantryAlertsQuery(activeAccountId || undefined);
+  const { data: alerts = [] } = usePantryAlertsQuery(
+    activeAccountId || undefined,
+  );
 
   // Mutations
   const deleteMutation = useDeletePantryMutation();
@@ -163,7 +167,10 @@ const PantryPage: React.FC = () => {
     if (!itemToDelete) return;
 
     try {
-      await deleteMutation.mutateAsync({ id: itemToDelete, accountId: activeAccountId || undefined });
+      await deleteMutation.mutateAsync({
+        id: itemToDelete,
+        accountId: activeAccountId || undefined,
+      });
       toast({
         title: "Success",
         description: "Pantry item deleted successfully",
@@ -210,7 +217,7 @@ const PantryPage: React.FC = () => {
     const today = new Date();
     const expDate = new Date(expirationDate);
     const daysUntilExpiry = Math.ceil(
-      (expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+      (expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
     );
 
     if (daysUntilExpiry < 0)
@@ -272,7 +279,7 @@ const PantryPage: React.FC = () => {
   // Use visible items for now.
   const totalValue = pantryItems?.reduce(
     (sum: number, item: any) => sum + (parseFloat(item.costPaid) || 0),
-    0
+    0,
   );
 
   if (!activeAccountId) {
@@ -286,7 +293,6 @@ const PantryPage: React.FC = () => {
   return (
     <TooltipProvider>
       <div className="min-h-screen bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] pb-8 relative overflow-hidden font-sans">
-
         {/* Background Patterns */}
         <Image
           src={pattern1}
@@ -304,7 +310,6 @@ const PantryPage: React.FC = () => {
         />
 
         <div className="max-w-8xl mx-auto px-4 md:px-6 relative z-10 py-8">
-
           {/* Header Section */}
           <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between mb-8 gap-6 animate-fade-in">
             <div>
@@ -352,8 +357,12 @@ const PantryPage: React.FC = () => {
               <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#F3F0FD] to-transparent rounded-full -mr-8 -mt-8 transition-transform duration-500 group-hover:scale-125" />
               <div className="relative z-10 flex items-center justify-between">
                 <div>
-                  <p className="text-gray-500 font-bold text-xs uppercase tracking-wide mb-1">Total Items</p>
-                  <h3 className="text-3xl font-extrabold text-[#313131]">{isLoading ? '...' : pagination.total}</h3>
+                  <p className="text-gray-500 font-bold text-xs uppercase tracking-wide mb-1">
+                    Total Items
+                  </p>
+                  <h3 className="text-3xl font-extrabold text-[#313131]">
+                    {isLoading ? "..." : pagination.total}
+                  </h3>
                 </div>
                 <div className="h-12 w-12 bg-[#F3F0FD] rounded-xl flex items-center justify-center text-[#7661d3]">
                   <Package size={24} />
@@ -366,8 +375,12 @@ const PantryPage: React.FC = () => {
               <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-orange-50 to-transparent rounded-full -mr-8 -mt-8 transition-transform duration-500 group-hover:scale-125" />
               <div className="relative z-10 flex items-center justify-between">
                 <div>
-                  <p className="text-gray-500 font-bold text-xs uppercase tracking-wide mb-1">Alerts</p>
-                  <h3 className="text-3xl font-extrabold text-orange-600">{activeAlerts.length}</h3>
+                  <p className="text-gray-500 font-bold text-xs uppercase tracking-wide mb-1">
+                    Alerts
+                  </p>
+                  <h3 className="text-3xl font-extrabold text-orange-600">
+                    {activeAlerts.length}
+                  </h3>
                 </div>
                 <div className="h-12 w-12 bg-orange-50 rounded-xl flex items-center justify-center text-orange-600">
                   <Bell size={24} />
@@ -380,8 +393,12 @@ const PantryPage: React.FC = () => {
               <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#e8f5e0] to-transparent rounded-full -mr-8 -mt-8 transition-transform duration-500 group-hover:scale-125" />
               <div className="relative z-10 flex items-center justify-between">
                 <div>
-                  <p className="text-gray-500 font-bold text-xs uppercase tracking-wide mb-1">Value (Visible)</p>
-                  <h3 className="text-3xl font-extrabold text-[#7dab4f]">${totalValue.toFixed(0)}</h3>
+                  <p className="text-gray-500 font-bold text-xs uppercase tracking-wide mb-1">
+                    Value (Visible)
+                  </p>
+                  <h3 className="text-3xl font-extrabold text-[#7dab4f]">
+                    ${totalValue.toFixed(0)}
+                  </h3>
                 </div>
                 <div className="h-12 w-12 bg-[#e8f5e0] rounded-xl flex items-center justify-center text-[#7dab4f]">
                   <TrendingUp size={24} />
@@ -395,7 +412,9 @@ const PantryPage: React.FC = () => {
               <div className="absolute bottom-0 left-0 w-20 h-20 bg-[#7dab4f]/10 rounded-full -ml-6 -mb-6" />
               <div className="relative z-10 flex items-center justify-between">
                 <div>
-                  <p className="text-white/70 font-bold text-xs uppercase tracking-wide mb-1">Locations</p>
+                  <p className="text-white/70 font-bold text-xs uppercase tracking-wide mb-1">
+                    Locations
+                  </p>
                   <h3 className="text-3xl font-extrabold text-white">5</h3>
                 </div>
                 <div className="h-12 w-12 bg-white/10 rounded-xl flex items-center justify-center text-white backdrop-blur-sm">
@@ -409,7 +428,10 @@ const PantryPage: React.FC = () => {
           {activeAlerts.length > 0 && (
             <div className="mb-6 animate-fade-in-up">
               <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-100 rounded-2xl p-4 shadow-sm">
-                <div className="flex items-center justify-between cursor-pointer" onClick={() => setShowAlerts(!showAlerts)}>
+                <div
+                  className="flex items-center justify-between cursor-pointer"
+                  onClick={() => setShowAlerts(!showAlerts)}
+                >
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-orange-100 rounded-lg text-orange-600">
                       <AlertTriangle size={20} />
@@ -423,20 +445,33 @@ const PantryPage: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  <ChevronRight size={20} className={`text-orange-400 transition-transform ${showAlerts ? 'rotate-90' : ''}`} />
+                  <ChevronRight
+                    size={20}
+                    className={`text-orange-400 transition-transform ${showAlerts ? "rotate-90" : ""}`}
+                  />
                 </div>
                 {showAlerts && (
                   <div className="mt-4 space-y-2 border-t border-orange-100 pt-3">
                     {activeAlerts.map((alert: any) => (
-                      <div key={alert.id} className="flex justify-between items-start bg-white p-3 rounded-lg border border-orange-100 shadow-sm">
+                      <div
+                        key={alert.id}
+                        className="flex justify-between items-start bg-white p-3 rounded-lg border border-orange-100 shadow-sm"
+                      >
                         <div className="flex gap-3">
                           {getAlertIcon(alert.alertType)}
                           <div>
-                            <p className="text-sm font-medium text-gray-800">{alert.message}</p>
-                            <p className="text-xs text-gray-500">{new Date(alert.createdAt).toLocaleDateString()}</p>
+                            <p className="text-sm font-medium text-gray-800">
+                              {alert.message}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {new Date(alert.createdAt).toLocaleDateString()}
+                            </p>
                           </div>
                         </div>
-                        <button onClick={() => handleDismissAlert(alert.id)} className="text-gray-400 hover:text-gray-600">
+                        <button
+                          onClick={() => handleDismissAlert(alert.id)}
+                          className="text-gray-400 hover:text-gray-600"
+                        >
                           <X size={16} />
                         </button>
                       </div>
@@ -538,88 +573,150 @@ const PantryPage: React.FC = () => {
                   </Select>
                 </div>
               </div>
-
             </div>
 
             {/* Table */}
             <div className="p-0">
               {isLoading ? (
                 <div className="flex flex-col items-center justify-center py-20">
-                  <Loader2 className="animate-spin text-[#7661d3] mb-4" size={48} />
+                  <Loader2
+                    className="animate-spin text-[#7661d3] mb-4"
+                    size={48}
+                  />
                   <p className="text-gray-500">Loading pantry items...</p>
                 </div>
               ) : isError ? (
                 <div className="text-center py-20">
-                  <AlertCircle size={48} className="text-red-500 mx-auto mb-4" />
-                  <p className="text-gray-800 font-medium">Failed to load items</p>
-                  <Button onClick={() => refetch()} variant="outline" className="mt-4">Try Again</Button>
+                  <AlertCircle
+                    size={48}
+                    className="text-red-500 mx-auto mb-4"
+                  />
+                  <p className="text-gray-800 font-medium">
+                    Failed to load items
+                  </p>
+                  <Button
+                    onClick={() => refetch()}
+                    variant="outline"
+                    className="mt-4"
+                  >
+                    Try Again
+                  </Button>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-gray-50/50 border-b border-gray-100">
-                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Ingredient</th>
-                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Quantity</th>
-                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Location</th>
-                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Expiration</th>
-                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Cost</th>
-                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Actions</th>
+                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                          Ingredient
+                        </th>
+                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                          Quantity
+                        </th>
+                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                          Location
+                        </th>
+                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                          Expiration
+                        </th>
+                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                          Cost
+                        </th>
+                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">
+                          Actions
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                       {pantryItems.length > 0 ? (
                         pantryItems.map((item: any) => {
-                          const expStatus = getExpirationStatus(item.expirationDate);
+                          const expStatus = getExpirationStatus(
+                            item.expirationDate,
+                          );
                           return (
-                            <tr key={item.id} className="hover:bg-gray-50/50 transition-colors group">
+                            <tr
+                              key={item.id}
+                              className="hover:bg-gray-50/50 transition-colors group"
+                            >
                               <td className="px-6 py-4">
                                 <div className="flex items-center gap-3">
                                   <div className="w-10 h-10 rounded-lg bg-[#F3F0FD] flex items-center justify-center text-[#7661d3] font-bold text-lg">
                                     {item.ingredientName.charAt(0)}
                                   </div>
                                   <div>
-                                    <div className="font-bold text-[#313131] text-sm">{item.ingredientName}</div>
-                                    <div className="text-gray-400 text-xs capitalize">{item.category}</div>
+                                    <div className="font-bold text-[#313131] text-sm">
+                                      {item.ingredientName}
+                                    </div>
+                                    <div className="text-gray-400 text-xs capitalize">
+                                      {item.category}
+                                    </div>
                                   </div>
                                 </div>
                               </td>
                               <td className="px-6 py-4">
                                 <span className="font-semibold text-gray-700 text-sm">
-                                  {item.quantity} <span className="text-gray-400 text-xs ml-0.5">{item.unit}</span>
+                                  {item.quantity}{" "}
+                                  <span className="text-gray-400 text-xs ml-0.5">
+                                    {item.unit}
+                                  </span>
                                 </span>
                               </td>
                               <td className="px-6 py-4">
-                                <Badge variant="outline" className={`capitalize font-medium border ${getLocationBadgeColor(item.location)}`}>
+                                <Badge
+                                  variant="outline"
+                                  className={`capitalize font-medium border ${getLocationBadgeColor(item.location)}`}
+                                >
                                   {item.location}
                                 </Badge>
                               </td>
                               <td className="px-6 py-4">
-                                <div className={`px-2.5 py-1 rounded-md inline-block ${expStatus.bgColor}`}>
+                                <div
+                                  className={`px-2.5 py-1 rounded-md inline-block ${expStatus.bgColor}`}
+                                >
                                   <div className="flex items-center gap-1.5">
-                                    <div className={`w-1.5 h-1.5 rounded-full ${expStatus.color.replace('text', 'bg')}`}></div>
-                                    <span className={`text-xs font-bold ${expStatus.color}`}>{expStatus.status}</span>
+                                    <div
+                                      className={`w-1.5 h-1.5 rounded-full ${expStatus.color.replace("text", "bg")}`}
+                                    ></div>
+                                    <span
+                                      className={`text-xs font-bold ${expStatus.color}`}
+                                    >
+                                      {expStatus.status}
+                                    </span>
                                   </div>
                                   {item.expirationDate && (
-                                    <div className="text-[10px] text-gray-400 mt-0.5 ml-3">{item.expirationDate}</div>
+                                    <div className="text-[10px] text-gray-400 mt-0.5 ml-3">
+                                      {item.expirationDate}
+                                    </div>
                                   )}
                                 </div>
                               </td>
                               <td className="px-6 py-4">
-                                {item.costPaid ? <span className="font-bold text-[#7dab4f] text-sm">${item.costPaid}</span> : <span className="text-gray-300">—</span>}
+                                {item.costPaid ? (
+                                  <span className="font-bold text-[#7dab4f] text-sm">
+                                    ${item.costPaid}
+                                  </span>
+                                ) : (
+                                  <span className="text-gray-300">—</span>
+                                )}
                               </td>
                               <td className="px-6 py-4 text-right">
                                 <div className="flex items-center justify-end gap-2">
-                                  <button onClick={() => handleEdit(item)} className="p-2 hover:bg-[#F3F0FD] rounded-lg text-gray-400 hover:text-[#7661d3] transition-colors">
+                                  <button
+                                    onClick={() => handleEdit(item)}
+                                    className="p-2 hover:bg-[#F3F0FD] rounded-lg text-gray-400 hover:text-[#7661d3] transition-colors"
+                                  >
                                     <Edit2 size={16} />
                                   </button>
-                                  <button onClick={() => handleDeleteItem(item.id)} className="p-2 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500 transition-colors">
+                                  <button
+                                    onClick={() => handleDeleteItem(item.id)}
+                                    className="p-2 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500 transition-colors"
+                                  >
                                     <Trash2 size={16} />
                                   </button>
                                 </div>
                               </td>
                             </tr>
-                          )
+                          );
                         })
                       ) : (
                         <tr>
@@ -628,12 +725,19 @@ const PantryPage: React.FC = () => {
                               <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-2">
                                 <Package size={24} className="text-gray-300" />
                               </div>
-                              <h3 className="text-gray-800 font-bold">No items found</h3>
+                              <h3 className="text-gray-800 font-bold">
+                                No items found
+                              </h3>
                               <p className="text-gray-500 text-sm max-w-xs mx-auto">
-                                {debouncedSearch || filterLocation !== 'all' ? 'Try adjusting your filters.' : 'Your pantry is empty. Add some items to get started.'}
+                                {debouncedSearch || filterLocation !== "all"
+                                  ? "Try adjusting your filters."
+                                  : "Your pantry is empty. Add some items to get started."}
                               </p>
-                              {(!debouncedSearch && filterLocation === 'all') && (
-                                <Button onClick={() => setIsAddModalOpen(true)} className="mt-4 bg-[#313131] hover:bg-black text-white px-6">
+                              {!debouncedSearch && filterLocation === "all" && (
+                                <Button
+                                  onClick={() => setIsAddModalOpen(true)}
+                                  className="mt-4 bg-[#313131] hover:bg-black text-white px-6"
+                                >
                                   Add First Item
                                 </Button>
                               )}
@@ -657,7 +761,7 @@ const PantryPage: React.FC = () => {
                       variant="outline"
                       size="sm"
                       disabled={currentPage === 1}
-                      onClick={() => setCurrentPage(p => p - 1)}
+                      onClick={() => setCurrentPage((p) => p - 1)}
                       className="h-8 w-8 p-0"
                     >
                       <ChevronLeft size={14} />
@@ -666,7 +770,7 @@ const PantryPage: React.FC = () => {
                       variant="outline"
                       size="sm"
                       disabled={currentPage === pagination.totalPages}
-                      onClick={() => setCurrentPage(p => p + 1)}
+                      onClick={() => setCurrentPage((p) => p + 1)}
                       className="h-8 w-8 p-0"
                     >
                       <ChevronRight size={14} />

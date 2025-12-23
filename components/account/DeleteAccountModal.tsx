@@ -32,7 +32,7 @@ export default function DeleteAccountModal({
         toast.success("Account deleted successfully!");
         onClose();
         router.push("/account");
-      }
+      },
     });
   };
 

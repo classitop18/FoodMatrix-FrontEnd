@@ -83,10 +83,10 @@ const getActiveBudget = (account: any): ActiveBudget | null => {
   const active = budgets.find((b) => b.value !== null);
   return active
     ? {
-      type: active.type as BudgetType,
-      label: active.label,
-      amount: Number(active.value),
-    }
+        type: active.type as BudgetType,
+        label: active.label,
+        amount: Number(active.value),
+      }
     : null;
 };
 

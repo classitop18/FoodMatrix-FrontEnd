@@ -21,7 +21,7 @@ export default function DeleteMemberModal({
 
   const handleDelete = () => {
     deleteMemberMutation.mutate(member.id, {
-      onSuccess: () => onClose()
+      onSuccess: () => onClose(),
     });
   };
 

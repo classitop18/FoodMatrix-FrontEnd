@@ -3,13 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store.redux";
-import {
-  User,
-  Building2,
-  ChevronDown,
-  LogOut,
-  Settings,
-} from "lucide-react";
+import { User, Building2, ChevronDown, LogOut, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useLogout } from "@/services/auth/auth.mutation";
@@ -24,14 +18,12 @@ export default function ProtectedHeader() {
   const logoutMutation = useLogout();
 
   const handleLogout = async () => {
-
     await logoutMutation.mutateAsync();
     toast({
       variant: "default",
       title: "Logout",
       description: "You have been logged out.",
-    })
-
+    });
 
     router.push("/");
   };
@@ -81,12 +73,17 @@ export default function ProtectedHeader() {
                   {initials || <User size={14} />}
                 </div>
                 <div className="hidden sm:block text-left">
-                  <p className="text-[10px] uppercase tracking-wide text-gray-400">Welcome</p>
+                  <p className="text-[10px] uppercase tracking-wide text-gray-400">
+                    Welcome
+                  </p>
                   <p className="text-sm font-semibold text-gray-900 leading-tight">
                     {user?.firstName} {user?.lastName}
                   </p>
                 </div>
-                <ChevronDown size={14} className="hidden sm:block text-gray-400" />
+                <ChevronDown
+                  size={14}
+                  className="hidden sm:block text-gray-400"
+                />
               </button>
 
               {open && (
@@ -95,9 +92,15 @@ export default function ProtectedHeader() {
                   className="absolute right-0 mt-2 w-64 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl"
                 >
                   <div className="border-b border-gray-100 px-4 py-3">
-                    <p className="text-[10px] uppercase tracking-wide text-gray-400">Signed in as</p>
-                    <p className="mt-0.5 text-sm font-semibold text-gray-900">{user?.email}</p>
-                    <p className="mt-1 text-xs text-gray-500">@{user?.username}</p>
+                    <p className="text-[10px] uppercase tracking-wide text-gray-400">
+                      Signed in as
+                    </p>
+                    <p className="mt-0.5 text-sm font-semibold text-gray-900">
+                      {user?.email}
+                    </p>
+                    <p className="mt-1 text-xs text-gray-500">
+                      @{user?.username}
+                    </p>
                   </div>
 
                   <div className="py-2">
@@ -110,8 +113,12 @@ export default function ProtectedHeader() {
                         <User size={16} className="text-[#7661d3]" />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-gray-900">Profile</p>
-                        <p className="text-[10px] text-gray-500">View your profile</p>
+                        <p className="text-sm font-semibold text-gray-900">
+                          Profile
+                        </p>
+                        <p className="text-[10px] text-gray-500">
+                          View your profile
+                        </p>
                       </div>
                     </Link>
 
@@ -124,8 +131,12 @@ export default function ProtectedHeader() {
                         <Settings size={16} className="text-[#7661d3]" />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-gray-900">Account Settings</p>
-                        <p className="text-[10px] text-gray-500">Manage your account</p>
+                        <p className="text-sm font-semibold text-gray-900">
+                          Account Settings
+                        </p>
+                        <p className="text-[10px] text-gray-500">
+                          Manage your account
+                        </p>
                       </div>
                     </Link>
                   </div>
@@ -139,7 +150,9 @@ export default function ProtectedHeader() {
                         <LogOut size={16} className="text-red-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-red-600">Logout</p>
+                        <p className="text-sm font-semibold text-red-600">
+                          Logout
+                        </p>
                         <p className="text-[10px] text-red-400">Sign out</p>
                       </div>
                     </button>

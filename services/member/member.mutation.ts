@@ -21,7 +21,7 @@ export const useCreateMember = () => {
 export const useUpdateMember = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ memberId, data }: { memberId: string, data: any }) =>
+    mutationFn: ({ memberId, data }: { memberId: string; data: any }) =>
       memberService.updateMember(memberId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["members"] });

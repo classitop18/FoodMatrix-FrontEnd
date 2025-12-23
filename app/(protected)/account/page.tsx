@@ -58,7 +58,10 @@ import { useAccount, useMyAccounts } from "@/services/account/account.query";
 import Loader from "@/components/common/Loader";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux/store.redux";
-import { fetchAccountDetail, setActiveAccountId } from "@/redux/features/account/account.slice";
+import {
+  fetchAccountDetail,
+  setActiveAccountId,
+} from "@/redux/features/account/account.slice";
 import { useMembers } from "@/services/member/member.query";
 import { useGetHealthProfile } from "@/services/health-profile/health-profile.query";
 import { useRouter } from "next/navigation";
@@ -70,8 +73,17 @@ import EditAccountModal from "@/components/account/EditAccountModal";
 import NavigationMenu from "@/components/common/navigation-menu";
 import { InvitationService } from "@/services/invitation/invitation.service";
 import { toast } from "sonner";
-import { useAccountInvitations, useMyInvitations } from "@/services/invitation/invitation.query";
-import { useAcceptInvitation, useApproveInvitation, useCancelInvitation, useRejectInvitation, useResendInvitation } from "@/services/invitation/invitation.mutation";
+import {
+  useAccountInvitations,
+  useMyInvitations,
+} from "@/services/invitation/invitation.query";
+import {
+  useAcceptInvitation,
+  useApproveInvitation,
+  useCancelInvitation,
+  useRejectInvitation,
+  useResendInvitation,
+} from "@/services/invitation/invitation.mutation";
 import { queryClient } from "@/lib/react-query";
 import InputModal from "@/components/common/InputModal";
 import ConfirmationModal from "@/components/common/ConfirmationModal";
@@ -146,7 +158,9 @@ export default function AccountPage() {
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
-  const [selectedInvitationId, setSelectedInvitationId] = useState<string | null>(null);
+  const [selectedInvitationId, setSelectedInvitationId] = useState<
+    string | null
+  >(null);
 
   const dispatch = useDispatch();
 
@@ -165,13 +179,28 @@ export default function AccountPage() {
   const user = useSelector((state: RootState) => state.auth.user);
 
   // Fetch Queries
-  const { data: myInvitationsData, isLoading: isMyInvLoading, refetch: refetchMyInv } = useMyInvitations();
-  const { data: accountInvitationsData, isLoading: isAccInvLoading, refetch: refetchAccInv } = useAccountInvitations(activeAccountId!);
+  const {
+    data: myInvitationsData,
+    isLoading: isMyInvLoading,
+    refetch: refetchMyInv,
+  } = useMyInvitations();
+  const {
+    data: accountInvitationsData,
+    isLoading: isAccInvLoading,
+    refetch: refetchAccInv,
+  } = useAccountInvitations(activeAccountId!);
 
   const receivedInvitations = myInvitationsData?.data || [];
-  const sentInvitations = accountInvitationsData || { data: [], pagination: {} };
+  const sentInvitations = accountInvitationsData || {
+    data: [],
+    pagination: {},
+  };
 
-  const { data: members, isLoading: isMemberLoading, refetch: refetchMembers } = useMembers({
+  const {
+    data: members,
+    isLoading: isMemberLoading,
+    refetch: refetchMembers,
+  } = useMembers({
     accountId: activeAccountId!,
     page: currentPage,
     limit: 10,
@@ -189,12 +218,26 @@ export default function AccountPage() {
     await acceptInvMutation.mutateAsync(token);
   };
 
-  const handleApproveInvitation = async (invitationId: string, role: string) => {
-    await approveInvMutation.mutateAsync({ invitationId, role, accountId: activeAccountId! });
+  const handleApproveInvitation = async (
+    invitationId: string,
+    role: string,
+  ) => {
+    await approveInvMutation.mutateAsync({
+      invitationId,
+      role,
+      accountId: activeAccountId!,
+    });
   };
 
-  const handleRejectInvitation = async (invitationId: string, reason?: string) => {
-    await rejectInvMutation.mutateAsync({ invitationId, reason, accountId: activeAccountId! });
+  const handleRejectInvitation = async (
+    invitationId: string,
+    reason?: string,
+  ) => {
+    await rejectInvMutation.mutateAsync({
+      invitationId,
+      reason,
+      accountId: activeAccountId!,
+    });
   };
 
   const handleResendInvitation = async (invitationId: string) => {
@@ -208,7 +251,10 @@ export default function AccountPage() {
 
   const confirmCancelInvitation = async () => {
     if (!selectedInvitationId) return;
-    await cancelInvMutation.mutateAsync({ invitationId: selectedInvitationId, accountId: activeAccountId! });
+    await cancelInvMutation.mutateAsync({
+      invitationId: selectedInvitationId,
+      accountId: activeAccountId!,
+    });
     setIsCancelConfirmOpen(false);
     setSelectedInvitationId(null);
   };
@@ -336,7 +382,6 @@ export default function AccountPage() {
                       <SelectItem
                         key={acc.id}
                         value={acc.id}
-
                         className="rounded-lg p-3 focus:bg-[#F3F0FD] cursor-pointer transition-colors  data-[state=checked]:text-white"
                       >
                         <div className="flex items-center justify-between w-full min-w-[240px]">
@@ -361,7 +406,10 @@ export default function AccountPage() {
                             </div>
                           </div>
                           {!acc.isOwner && (
-                            <Badge variant="outline" className="text-[9px] h-4 px-1 py-0 font-medium text-gray-400 border-gray-200">
+                            <Badge
+                              variant="outline"
+                              className="text-[9px] h-4 px-1 py-0 font-medium text-gray-400 border-gray-200"
+                            >
                               Invited
                             </Badge>
                           )}
@@ -402,7 +450,9 @@ export default function AccountPage() {
 
               <div className="relative z-10">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs font-medium text-gray-500">Budget Usage</span>
+                  <span className="text-xs font-medium text-gray-500">
+                    Budget Usage
+                  </span>
                   <span className="text-xs font-bold text-[#7dab4f]">
                     {Math.round(usagePercent)}% Used
                   </span>
@@ -432,9 +482,9 @@ export default function AccountPage() {
                   <h3 className="text-3xl font-extrabold text-white tracking-tight">
                     {activeBudget
                       ? `$${Math.max(
-                        activeBudget.amount - spent,
-                        0,
-                      ).toLocaleString()}`
+                          activeBudget.amount - spent,
+                          0,
+                        ).toLocaleString()}`
                       : "—"}
                   </h3>
                 </div>
@@ -471,10 +521,11 @@ export default function AccountPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-5 py-2 rounded-full font-bold text-sm transition-all duration-300 whitespace-nowrap ${activeTab === tab.id
-                  ? "bg-[var(--primary)] text-white shadow-lg"
-                  : "bg-white text-gray-600 hover:bg-gray-100"
-                  }`}
+                className={`px-5 py-2 rounded-full font-bold text-sm transition-all duration-300 whitespace-nowrap ${
+                  activeTab === tab.id
+                    ? "bg-[var(--primary)] text-white shadow-lg"
+                    : "bg-white text-gray-600 hover:bg-gray-100"
+                }`}
               >
                 <div className="flex items-center gap-2">
                   <Icon className="w-4 h-4" />
@@ -499,7 +550,9 @@ export default function AccountPage() {
                   </h3>
                   <div className="flex items-center gap-3">
                     <button
-                      onClick={() => dispatch(fetchAccountDetail(activeAccountId!) as any)}
+                      onClick={() =>
+                        dispatch(fetchAccountDetail(activeAccountId!) as any)
+                      }
                       className="bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all"
                       title="Refetch Details"
                     >
@@ -517,7 +570,6 @@ export default function AccountPage() {
 
                 {/* Card Content */}
                 <div className="p-6 space-y-6 bg-white">
-
                   {/* Account Details */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
                     {[
@@ -533,7 +585,7 @@ export default function AccountPage() {
                         label: "Account Type",
                         value: account?.accountType
                           ? account.accountType.charAt(0).toUpperCase() +
-                          account.accountType.slice(1)
+                            account.accountType.slice(1)
                           : null,
                       },
                       {
@@ -559,98 +611,97 @@ export default function AccountPage() {
                   {(account?.formattedAddress ||
                     account?.addressLine1 ||
                     account?.city) && (
-                      <div className="mt-8">
-                        <div className="flex items-center gap-2 mb-4">
-                          <MapPin size={18} className="text-[#7661d3]" />
-                          <h4 className="font-bold text-[#313131] text-sm">
-                            Account Address
-                          </h4>
-                        </div>
-                        <div className="bg-[#F8F7FC] rounded-xl p-5 border border-gray-100">
-                          <div className="space-y-3">
-                            {account?.formattedAddress && (
+                    <div className="mt-8">
+                      <div className="flex items-center gap-2 mb-4">
+                        <MapPin size={18} className="text-[#7661d3]" />
+                        <h4 className="font-bold text-[#313131] text-sm">
+                          Account Address
+                        </h4>
+                      </div>
+                      <div className="bg-[#F8F7FC] rounded-xl p-5 border border-gray-100">
+                        <div className="space-y-3">
+                          {account?.formattedAddress && (
+                            <div>
+                              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                                Full Address
+                              </label>
+                              <p className="text-sm font-medium text-[#313131]">
+                                {account.formattedAddress}
+                              </p>
+                            </div>
+                          )}
+
+                          <div className="grid grid-cols-2 gap-4">
+                            {account?.addressLine1 && (
                               <div>
                                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
-                                  Full Address
+                                  Address Line 1
                                 </label>
-                                <p className="text-sm font-medium text-[#313131]">
-                                  {account.formattedAddress}
+                                <p className="text-sm font-medium text-gray-700">
+                                  {account.addressLine1}
                                 </p>
                               </div>
                             )}
 
-                            <div className="grid grid-cols-2 gap-4">
-                              {account?.addressLine1 && (
-                                <div>
-                                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
-                                    Address Line 1
-                                  </label>
-                                  <p className="text-sm font-medium text-gray-700">
-                                    {account.addressLine1}
-                                  </p>
-                                </div>
-                              )}
+                            {account?.addressLine2 && (
+                              <div>
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                                  Address Line 2
+                                </label>
+                                <p className="text-sm font-medium text-gray-700">
+                                  {account.addressLine2}
+                                </p>
+                              </div>
+                            )}
 
-                              {account?.addressLine2 && (
-                                <div>
-                                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
-                                    Address Line 2
-                                  </label>
-                                  <p className="text-sm font-medium text-gray-700">
-                                    {account.addressLine2}
-                                  </p>
-                                </div>
-                              )}
+                            {account?.city && (
+                              <div>
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                                  City
+                                </label>
+                                <p className="text-sm font-medium text-gray-700">
+                                  {account.city}
+                                </p>
+                              </div>
+                            )}
 
-                              {account?.city && (
-                                <div>
-                                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
-                                    City
-                                  </label>
-                                  <p className="text-sm font-medium text-gray-700">
-                                    {account.city}
-                                  </p>
-                                </div>
-                              )}
+                            {account?.state && (
+                              <div>
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                                  State
+                                </label>
+                                <p className="text-sm font-medium text-gray-700">
+                                  {account.state}
+                                </p>
+                              </div>
+                            )}
 
-                              {account?.state && (
-                                <div>
-                                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
-                                    State
-                                  </label>
-                                  <p className="text-sm font-medium text-gray-700">
-                                    {account.state}
-                                  </p>
-                                </div>
-                              )}
+                            {account?.zipCode && (
+                              <div>
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                                  ZIP Code
+                                </label>
+                                <p className="text-sm font-medium text-gray-700">
+                                  {account.zipCode}
+                                </p>
+                              </div>
+                            )}
 
-                              {account?.zipCode && (
-                                <div>
-                                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
-                                    ZIP Code
-                                  </label>
-                                  <p className="text-sm font-medium text-gray-700">
-                                    {account.zipCode}
-                                  </p>
-                                </div>
-                              )}
-
-                              {account?.country && (
-                                <div>
-                                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
-                                    Country
-                                  </label>
-                                  <p className="text-sm font-medium text-gray-700">
-                                    {account.country}
-                                  </p>
-                                </div>
-                              )}
-                            </div>
+                            {account?.country && (
+                              <div>
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                                  Country
+                                </label>
+                                <p className="text-sm font-medium text-gray-700">
+                                  {account.country}
+                                </p>
+                              </div>
+                            )}
                           </div>
                         </div>
-
                       </div>
-                    )}
+                    </div>
+                  )}
 
                   {/* Preferences */}
                   <div className="bg-[#F8F7FC] rounded-xl p-5 mt-4">
@@ -672,16 +723,18 @@ export default function AccountPage() {
                         </div>
 
                         <div
-                          className={`w-10 h-6 rounded-full relative transition-colors ${account?.requiresAdminApprovalForOverrides
-                            ? "bg-[#7dab4f]"
-                            : "bg-gray-200"
-                            }`}
+                          className={`w-10 h-6 rounded-full relative transition-colors ${
+                            account?.requiresAdminApprovalForOverrides
+                              ? "bg-[#7dab4f]"
+                              : "bg-gray-200"
+                          }`}
                         >
                           <div
-                            className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all shadow-sm ${account?.requiresAdminApprovalForOverrides
-                              ? "left-5"
-                              : "left-1"
-                              }`}
+                            className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all shadow-sm ${
+                              account?.requiresAdminApprovalForOverrides
+                                ? "left-5"
+                                : "left-1"
+                            }`}
                           />
                         </div>
                       </div>
@@ -698,16 +751,18 @@ export default function AccountPage() {
                         </div>
 
                         <div
-                          className={`w-10 h-6 rounded-full relative transition-colors ${account?.autoGenerateGroceryLists
-                            ? "bg-[#7dab4f]"
-                            : "bg-gray-200"
-                            }`}
+                          className={`w-10 h-6 rounded-full relative transition-colors ${
+                            account?.autoGenerateGroceryLists
+                              ? "bg-[#7dab4f]"
+                              : "bg-gray-200"
+                          }`}
                         >
                           <div
-                            className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all shadow-sm ${account?.autoGenerateGroceryLists
-                              ? "left-5"
-                              : "left-1"
-                              }`}
+                            className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all shadow-sm ${
+                              account?.autoGenerateGroceryLists
+                                ? "left-5"
+                                : "left-1"
+                            }`}
                           />
                         </div>
                       </div>
@@ -724,7 +779,8 @@ export default function AccountPage() {
                           Danger Zone
                         </h3>
                         <p className="text-sm text-red-700 leading-relaxed mb-4">
-                          Permanently delete this account and all associated data. This action cannot be undone.
+                          Permanently delete this account and all associated
+                          data. This action cannot be undone.
                         </p>
                         <button
                           onClick={() => setIsDeleteAccountModalOpen(true)}
@@ -752,7 +808,9 @@ export default function AccountPage() {
                     Budget Overview
                   </h3>
                   <button
-                    onClick={() => dispatch(fetchAccountDetail(activeAccountId!) as any)}
+                    onClick={() =>
+                      dispatch(fetchAccountDetail(activeAccountId!) as any)
+                    }
                     className="bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all"
                     title="Refetch Budget Stats"
                   >
@@ -882,9 +940,6 @@ export default function AccountPage() {
             </div>
           )}
 
-
-
-
           {activeTab === "invitations" && (
             <div className="space-y-6">
               {/* RECEIVED INVITATIONS SECTION */}
@@ -904,7 +959,7 @@ export default function AccountPage() {
                     <div className="flex items-center gap-3">
                       <button
                         onClick={() => refetchMyInv()}
-                        className={`bg-gray-200 hover:bg-gray-300 text-gray-700 p-2 rounded-full transition-all ${isMyInvLoading ? 'animate-spin' : ''}`}
+                        className={`bg-gray-200 hover:bg-gray-300 text-gray-700 p-2 rounded-full transition-all ${isMyInvLoading ? "animate-spin" : ""}`}
                         title="Refetch Received Invitations"
                       >
                         <RefreshCw size={16} />
@@ -943,20 +998,30 @@ export default function AccountPage() {
                           </div>
 
                           <div className="col-span-6 md:col-span-3">
-                            <div className="md:hidden text-[10px] font-bold text-gray-400 uppercase mb-1">Invited By</div>
+                            <div className="md:hidden text-[10px] font-bold text-gray-400 uppercase mb-1">
+                              Invited By
+                            </div>
                             <div className="text-sm font-semibold text-gray-700">
                               {inv.inviter?.firstName} {inv.inviter?.lastName}
                             </div>
                           </div>
 
                           <div className="col-span-6 md:col-span-2">
-                            <div className="md:hidden text-[10px] font-bold text-gray-400 uppercase mb-1">Status</div>
-                            <Badge className={`border-0 font-bold capitalize px-2.5 py-0.5 h-6 text-[10px] ${inv.status === 'pending' ? 'bg-amber-100 text-amber-700' :
-                              inv.status === 'user_accepted' ? 'bg-blue-100 text-blue-700' :
-                                inv.status === 'approved' ? 'bg-green-100 text-green-700' :
-                                  'bg-red-100 text-red-700'
-                              }`}>
-                              {inv.status.replace('_', ' ')}
+                            <div className="md:hidden text-[10px] font-bold text-gray-400 uppercase mb-1">
+                              Status
+                            </div>
+                            <Badge
+                              className={`border-0 font-bold capitalize px-2.5 py-0.5 h-6 text-[10px] ${
+                                inv.status === "pending"
+                                  ? "bg-amber-100 text-amber-700"
+                                  : inv.status === "user_accepted"
+                                    ? "bg-blue-100 text-blue-700"
+                                    : inv.status === "approved"
+                                      ? "bg-green-100 text-green-700"
+                                      : "bg-red-100 text-red-700"
+                              }`}
+                            >
+                              {inv.status.replace("_", " ")}
                             </Badge>
                           </div>
 
@@ -964,13 +1029,20 @@ export default function AccountPage() {
                             {inv.status === "pending" && (
                               <>
                                 <button
-                                  onClick={() => handleAcceptInvitation(inv.token)}
+                                  onClick={() =>
+                                    handleAcceptInvitation(inv.token)
+                                  }
                                   className="h-8 px-4 bg-[#7dab4f] hover:bg-[#6a9642] text-white font-bold rounded-lg text-xs transition-shadow shadow-sm hover:shadow"
                                 >
                                   Accept
                                 </button>
                                 <button
-                                  onClick={() => handleRejectInvitation(inv.id, "Rejected by user")}
+                                  onClick={() =>
+                                    handleRejectInvitation(
+                                      inv.id,
+                                      "Rejected by user",
+                                    )
+                                  }
                                   className="h-8 px-4 bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 font-bold rounded-lg text-xs transition-colors"
                                 >
                                   Decline
@@ -978,7 +1050,9 @@ export default function AccountPage() {
                               </>
                             )}
                             {inv.status === "user_accepted" && (
-                              <span className="text-[10px] italic text-gray-400 font-medium">Awaiting admin approval</span>
+                              <span className="text-[10px] italic text-gray-400 font-medium">
+                                Awaiting admin approval
+                              </span>
                             )}
                           </div>
                         </div>
@@ -997,14 +1071,15 @@ export default function AccountPage() {
                       Sent Invitations
                     </h3>
                     <p className="text-sm">
-                      Manage invitations for {account?.accountName || 'this account'}
+                      Manage invitations for{" "}
+                      {account?.accountName || "this account"}
                     </p>
                   </div>
 
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => refetchAccInv()}
-                      className={`bg-gray-200 hover:bg-gray-300 text-gray-700 p-2 rounded-full transition-all ${isAccInvLoading ? 'animate-spin' : ''}`}
+                      className={`bg-gray-200 hover:bg-gray-300 text-gray-700 p-2 rounded-full transition-all ${isAccInvLoading ? "animate-spin" : ""}`}
                       title="Refetch Sent Invitations"
                     >
                       <RefreshCw size={16} />
@@ -1016,8 +1091,6 @@ export default function AccountPage() {
                       Invite New
                     </button>
                   </div>
-
-
                 </div>
 
                 <div className="p-4 bg-[#F8F7FC] min-h-[100px]">
@@ -1033,12 +1106,16 @@ export default function AccountPage() {
                     {isAccInvLoading ? (
                       <div className="h-32 flex flex-col items-center justify-center text-gray-400">
                         <RefreshCw className="animate-spin mb-2" size={24} />
-                        <span className="text-xs font-medium">Fetching invitations...</span>
+                        <span className="text-xs font-medium">
+                          Fetching invitations...
+                        </span>
                       </div>
                     ) : sentInvitations.data?.length === 0 ? (
                       <div className="h-32 flex flex-col items-center justify-center text-gray-400">
                         <Mail size={24} className="mb-2 opacity-20" />
-                        <span className="text-xs font-medium">No invitations sent yet</span>
+                        <span className="text-xs font-medium">
+                          No invitations sent yet
+                        </span>
                       </div>
                     ) : (
                       sentInvitations.data?.map((inv: any) => (
@@ -1058,33 +1135,49 @@ export default function AccountPage() {
                           </div>
 
                           <div className="col-span-6 md:col-span-2">
-                            <div className="md:hidden text-[10px] font-bold text-gray-400 uppercase mb-1">Role</div>
+                            <div className="md:hidden text-[10px] font-bold text-gray-400 uppercase mb-1">
+                              Role
+                            </div>
                             <div className="flex items-center gap-1.5 bg-gray-50 w-fit px-2 py-1 rounded text-[10px] font-extrabold text-gray-600 uppercase border border-gray-100">
                               <ShieldCheck size={10} />
-                              {inv.role || 'Member'}
+                              {inv.role || "Member"}
                             </div>
                           </div>
 
                           <div className="col-span-6 md:col-span-2">
-                            <div className="md:hidden text-[10px] font-bold text-gray-400 uppercase mb-1">Date</div>
+                            <div className="md:hidden text-[10px] font-bold text-gray-400 uppercase mb-1">
+                              Date
+                            </div>
                             <div className="text-xs text-gray-600 font-medium">
-                              {new Date(inv.createdAt).toLocaleDateString(undefined, {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric'
-                              })}
+                              {new Date(inv.createdAt).toLocaleDateString(
+                                undefined,
+                                {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                },
+                              )}
                             </div>
                           </div>
 
                           <div className="col-span-6 md:col-span-2">
-                            <div className="md:hidden text-[10px] font-bold text-gray-400 uppercase mb-1">Status</div>
-                            <Badge className={`border-0 font-bold capitalize px-2.5 py-0.5 h-6 text-[10px] ${inv.status === 'pending' ? 'bg-amber-100 text-amber-700' :
-                              inv.status === 'user_accepted' ? 'bg-blue-100 text-blue-700' :
-                                inv.status === 'approved' ? 'bg-green-100 text-green-700' :
-                                  inv.status === 'expired' ? 'bg-gray-100 text-gray-500' :
-                                    'bg-red-100 text-red-700'
-                              }`}>
-                              {inv.status.replace('_', ' ')}
+                            <div className="md:hidden text-[10px] font-bold text-gray-400 uppercase mb-1">
+                              Status
+                            </div>
+                            <Badge
+                              className={`border-0 font-bold capitalize px-2.5 py-0.5 h-6 text-[10px] ${
+                                inv.status === "pending"
+                                  ? "bg-amber-100 text-amber-700"
+                                  : inv.status === "user_accepted"
+                                    ? "bg-blue-100 text-blue-700"
+                                    : inv.status === "approved"
+                                      ? "bg-green-100 text-green-700"
+                                      : inv.status === "expired"
+                                        ? "bg-gray-100 text-gray-500"
+                                        : "bg-red-100 text-red-700"
+                              }`}
+                            >
+                              {inv.status.replace("_", " ")}
                             </Badge>
                           </div>
 
@@ -1133,7 +1226,9 @@ export default function AccountPage() {
                               </>
                             )}
 
-                            {(inv.status === "approved" || inv.status === "rejected" || inv.status === "expired") && (
+                            {(inv.status === "approved" ||
+                              inv.status === "rejected" ||
+                              inv.status === "expired") && (
                               <button
                                 onClick={() => handleCancelInvitation(inv.id)}
                                 className="h-8 w-8 rounded-lg bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-500 flex items-center justify-center transition-all"
@@ -1156,17 +1251,13 @@ export default function AccountPage() {
             <div className="border-0 shadow-xl bg-white gap-0 rounded-xl overflow-hidden">
               <div className="flex items-center justify-between mb-4 bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] border-b-2 border-gray-200 p-4 flex justify-between items-center">
                 <div className="text-white">
-                  <h3 className="text-xl font-extrabold">
-                    Family Members
-                  </h3>
-                  <p className="text-sm">
-                    Manage account members and roles
-                  </p>
+                  <h3 className="text-xl font-extrabold">Family Members</h3>
+                  <p className="text-sm">Manage account members and roles</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => refetchMembers()}
-                    className={`bg-gray-200 hover:bg-gray-300 text-gray-700 p-2 rounded-full transition-all ${isMemberLoading ? 'animate-spin' : ''}`}
+                    className={`bg-gray-200 hover:bg-gray-300 text-gray-700 p-2 rounded-full transition-all ${isMemberLoading ? "animate-spin" : ""}`}
                     title="Refetch Members"
                   >
                     <RefreshCw size={16} />
@@ -1174,19 +1265,21 @@ export default function AccountPage() {
                   <div className="flex items-center bg-gray-100 rounded-lg p-1">
                     <button
                       onClick={() => setViewMode("card")}
-                      className={`p-1.5 rounded transition-all ${viewMode === "card"
-                        ? "bg-white shadow-sm"
-                        : "text-gray-400"
-                        }`}
+                      className={`p-1.5 rounded transition-all ${
+                        viewMode === "card"
+                          ? "bg-white shadow-sm"
+                          : "text-gray-400"
+                      }`}
                     >
                       <Grid3x3 size={16} />
                     </button>
                     <button
                       onClick={() => setViewMode("table")}
-                      className={`p-1.5 rounded transition-all ${viewMode === "table"
-                        ? "bg-white shadow-sm"
-                        : "text-gray-400"
-                        }`}
+                      className={`p-1.5 rounded transition-all ${
+                        viewMode === "table"
+                          ? "bg-white shadow-sm"
+                          : "text-gray-400"
+                      }`}
                     >
                       <List size={16} />
                     </button>
@@ -1265,10 +1358,11 @@ export default function AccountPage() {
                     <button
                       disabled={!pagination.hasPrev}
                       onClick={() => setCurrentPage((p) => p - 1)}
-                      className={`h-9 w-9 rounded-lg flex items-center justify-center transition-all ${pagination.hasPrev
-                        ? "bg-white border border-gray-200 hover:bg-gray-50 text-gray-600"
-                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        }`}
+                      className={`h-9 w-9 rounded-lg flex items-center justify-center transition-all ${
+                        pagination.hasPrev
+                          ? "bg-white border border-gray-200 hover:bg-gray-50 text-gray-600"
+                          : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      }`}
                     >
                       <ChevronLeft size={16} />
                     </button>
@@ -1279,10 +1373,11 @@ export default function AccountPage() {
                       <button
                         key={page}
                         onClick={() => setCurrentPage(page)}
-                        className={`h-9 px-3 rounded-lg font-bold text-sm transition-all ${page === pagination.page
-                          ? "bg-[#313131] text-white shadow-md"
-                          : "bg-white border border-gray-200 hover:bg-gray-50 text-gray-600"
-                          }`}
+                        className={`h-9 px-3 rounded-lg font-bold text-sm transition-all ${
+                          page === pagination.page
+                            ? "bg-[#313131] text-white shadow-md"
+                            : "bg-white border border-gray-200 hover:bg-gray-50 text-gray-600"
+                        }`}
                       >
                         {page}
                       </button>
@@ -1290,10 +1385,11 @@ export default function AccountPage() {
                     <button
                       disabled={!pagination.hasNext}
                       onClick={() => setCurrentPage((p) => p + 1)}
-                      className={`h-9 w-9 rounded-lg flex items-center justify-center transition-all ${pagination.hasNext
-                        ? "bg-white border border-gray-200 hover:bg-gray-50 text-gray-600"
-                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        }`}
+                      className={`h-9 w-9 rounded-lg flex items-center justify-center transition-all ${
+                        pagination.hasNext
+                          ? "bg-white border border-gray-200 hover:bg-gray-50 text-gray-600"
+                          : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      }`}
                     >
                       <ChevronRight size={16} />
                     </button>
@@ -1322,9 +1418,6 @@ export default function AccountPage() {
               </div>
             )}
         </div>
-
-
-
       </div>
       {/* Danger Zone - At Bottom */}
 
@@ -1406,7 +1499,10 @@ export default function AccountPage() {
         }}
         onSubmit={async (reason) => {
           if (selectedInvitationId) {
-            await handleRejectInvitation(selectedInvitationId, reason || "Rejected by admin");
+            await handleRejectInvitation(
+              selectedInvitationId,
+              reason || "Rejected by admin",
+            );
             setIsRejectModalOpen(false);
             setSelectedInvitationId(null);
           }
@@ -1452,16 +1548,9 @@ export default function AccountPage() {
           }
         }
       `}</style>
-
     </div>
-  )
+  );
 }
-
-
-
-
-
-
 
 const MemberCard = ({
   member,
@@ -1512,19 +1601,22 @@ const MemberCard = ({
               </div>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <div
-                  className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wide leading-none ${member.role === "super_admin"
-                    ? "bg-amber-50 text-amber-700"
-                    : member.role === "admin"
-                      ? "bg-blue-50 text-blue-700"
-                      : member.role === "member"
-                        ? "bg-purple-50 text-purple-700"
-                        : "bg-gray-50 text-gray-600"
-                    }`}
+                  className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wide leading-none ${
+                    member.role === "super_admin"
+                      ? "bg-amber-50 text-amber-700"
+                      : member.role === "admin"
+                        ? "bg-blue-50 text-blue-700"
+                        : member.role === "member"
+                          ? "bg-purple-50 text-purple-700"
+                          : "bg-gray-50 text-gray-600"
+                  }`}
                 >
                   {member.role === "super_admin" ? "Super" : member.role}
                 </div>
                 {member.userId && member.user?.username && (
-                  <span className="text-[10px] text-gray-400 truncate">@{member.user.username}</span>
+                  <span className="text-[10px] text-gray-400 truncate">
+                    @{member.user.username}
+                  </span>
                 )}
               </div>
             </div>
@@ -1536,24 +1628,43 @@ const MemberCard = ({
           {member.userId && member.user?.email ? (
             <div className="flex items-center gap-2 text-xs">
               <Mail size={10} className="text-[#7661d3] shrink-0" />
-              <span className="text-gray-600 font-medium truncate text-[10px]">{member.user.email}</span>
+              <span className="text-gray-600 font-medium truncate text-[10px]">
+                {member.user.email}
+              </span>
             </div>
           ) : (
             <div className="flex items-center justify-between">
-              {member.age && <span className="text-[10px] text-gray-600 font-bold">Age: {member.age}</span>}
-              {member.sex && <span className="text-[10px] text-gray-600 capitalize">{member.sex}</span>}
+              {member.age && (
+                <span className="text-[10px] text-gray-600 font-bold">
+                  Age: {member.age}
+                </span>
+              )}
+              {member.sex && (
+                <span className="text-[10px] text-gray-600 capitalize">
+                  {member.sex}
+                </span>
+              )}
             </div>
           )}
 
           <div className="flex items-center justify-between pt-1 border-t border-gray-100/50">
-            <span className="text-[9px] text-gray-400 uppercase font-semibold">Account</span>
-            <span className="text-[10px] font-bold text-gray-700 capitalize">{member.account?.accountType || 'Household'}</span>
+            <span className="text-[9px] text-gray-400 uppercase font-semibold">
+              Account
+            </span>
+            <span className="text-[10px] font-bold text-gray-700 capitalize">
+              {member.account?.accountType || "Household"}
+            </span>
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="text-[9px] text-gray-400 uppercase font-semibold">Joined</span>
+            <span className="text-[9px] text-gray-400 uppercase font-semibold">
+              Joined
+            </span>
             <span className="text-[10px] font-bold text-gray-700">
-              {new Date(member.createdAt).toLocaleDateString("en-US", { month: "short", year: "2-digit" })}
+              {new Date(member.createdAt).toLocaleDateString("en-US", {
+                month: "short",
+                year: "2-digit",
+              })}
             </span>
           </div>
         </div>
@@ -1631,7 +1742,9 @@ const MemberTableRow = ({ member }: { member: any }) => (
             : member.name || "Unnamed Member"}
         </p>
         {member.userId && member.user?.username && (
-          <p className="text-xs text-gray-500 truncate">@{member.user.username}</p>
+          <p className="text-xs text-gray-500 truncate">
+            @{member.user.username}
+          </p>
         )}
         {!member.userId && (
           <p className="text-xs text-[#7661d3] font-bold">In-house Member</p>
@@ -1640,9 +1753,13 @@ const MemberTableRow = ({ member }: { member: any }) => (
     </div>
 
     <div className="col-span-6 md:col-span-3">
-      <div className="md:hidden text-[10px] font-bold text-gray-400 uppercase mb-1">Email</div>
+      <div className="md:hidden text-[10px] font-bold text-gray-400 uppercase mb-1">
+        Email
+      </div>
       {member.userId && member.user?.email ? (
-        <p className="text-xs text-gray-600 font-medium truncate">{member.user.email}</p>
+        <p className="text-xs text-gray-600 font-medium truncate">
+          {member.user.email}
+        </p>
       ) : (
         <div className="space-y-0.5">
           {member.age && (
@@ -1658,28 +1775,35 @@ const MemberTableRow = ({ member }: { member: any }) => (
     </div>
 
     <div className="col-span-6 md:col-span-2">
-      <div className="md:hidden text-[10px] font-bold text-gray-400 uppercase mb-1">Role</div>
+      <div className="md:hidden text-[10px] font-bold text-gray-400 uppercase mb-1">
+        Role
+      </div>
       <div
-        className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border ${member.role === "super_admin"
-          ? "bg-amber-50 text-amber-600 border-amber-100"
-          : member.role === "admin"
-            ? "bg-blue-50 text-blue-600 border-blue-100"
-            : "bg-purple-50 text-purple-600 border-purple-100"
-          }`}
+        className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border ${
+          member.role === "super_admin"
+            ? "bg-amber-50 text-amber-600 border-amber-100"
+            : member.role === "admin"
+              ? "bg-blue-50 text-blue-600 border-blue-100"
+              : "bg-purple-50 text-purple-600 border-purple-100"
+        }`}
       >
         {member.role === "super_admin" ? "Super Admin" : member.role}
       </div>
     </div>
 
     <div className="col-span-6 md:col-span-1">
-      <div className="md:hidden text-[10px] font-bold text-gray-400 uppercase mb-1">Account</div>
+      <div className="md:hidden text-[10px] font-bold text-gray-400 uppercase mb-1">
+        Account
+      </div>
       <p className="text-xs text-gray-600 font-medium capitalize truncate">
         {member.account?.accountType || "Household"}
       </p>
     </div>
 
     <div className="col-span-6 md:col-span-2">
-      <div className="md:hidden text-[10px] font-bold text-gray-400 uppercase mb-1">Joined</div>
+      <div className="md:hidden text-[10px] font-bold text-gray-400 uppercase mb-1">
+        Joined
+      </div>
       <p className="text-xs text-gray-600 font-medium">
         {new Date(member.createdAt).toLocaleDateString("en-US", {
           month: "short",

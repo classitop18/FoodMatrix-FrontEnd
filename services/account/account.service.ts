@@ -22,7 +22,10 @@ export class AccountService {
     return response.data;
   }
 
-  async updateAccount(accountId: string, payload: Partial<CreateAccountPayload>) {
+  async updateAccount(
+    accountId: string,
+    payload: Partial<CreateAccountPayload>,
+  ) {
     const response = await apiClient.put(
       API_ENDPOINTS.ACCOUNT.UPDATE_ACCOUNT(accountId),
       payload,
