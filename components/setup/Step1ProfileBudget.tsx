@@ -229,6 +229,7 @@ export default function Step1ProfileBudget({
                       className="pl-7 sm:pl-8 h-11 sm:h-12 border-2 border-[#7dab4f]/30 focus:border-[#7dab4f] rounded-lg sm:rounded-xl text-sm sm:text-base"
                       placeholder={budget.placeholder}
                       min={budget.min}
+                      max="10000000"
                       step={budget.step}
                       {...form.register(budget.field)}
                       // On change, allow the user to type freely
@@ -325,6 +326,11 @@ export default function Step1ProfileBudget({
                       className="h-10 sm:h-11 pl-6 sm:pl-8 rounded-lg text-sm sm:text-base font-semibold bg-gray-100 text-[#3d326d]  cursor-not-allowed focus-visible:ring-0 focus-visible:ring-offset-0"
                     />
                   </div>
+                  {form.formState.errors[category.field] && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {String(form.formState.errors[category.field]?.message)}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>

@@ -178,6 +178,9 @@ export default function AccountPage() {
   } = useSelector((state: RootState) => state.account);
   const user = useSelector((state: RootState) => state.auth.user);
 
+
+  console.log({ activeBudget })
+
   // Fetch Queries
   const {
     data: myInvitationsData,

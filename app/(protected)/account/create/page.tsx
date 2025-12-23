@@ -127,13 +127,52 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
         });
       }
 
+      let calculatedDaily = "0";
+      let calculatedWeekly = "0";
+      let calculatedMonthly = "0";
+      let calculatedAnnual = "0";
+
+      const alloc = data.currentAllocation || "weekly";
+
+      if (alloc === "annual" && data.annualBudget) {
+        const annual = Number(data.annualBudget);
+        calculatedAnnual = annual.toString();
+        calculatedMonthly = (annual / 12).toFixed(2);
+        calculatedWeekly = (annual / 52).toFixed(2);
+        calculatedDaily = (annual / 365).toFixed(2);
+      } else if (alloc === "monthly" && data.monthlyBudget) {
+        const monthly = Number(data.monthlyBudget);
+        calculatedMonthly = monthly.toString();
+        calculatedAnnual = (monthly * 12).toFixed(2);
+        calculatedWeekly = (monthly * 12 / 52).toFixed(2);
+        calculatedDaily = (monthly * 12 / 365).toFixed(2);
+      } else if (alloc === "weekly" && data.weeklyBudget) {
+        const weekly = Number(data.weeklyBudget);
+        calculatedWeekly = weekly.toString();
+        calculatedAnnual = (weekly * 52).toFixed(2);
+        calculatedMonthly = (weekly * 52 / 12).toFixed(2);
+        calculatedDaily = (weekly / 7).toFixed(2);
+      } else if (alloc === "daily" && data.dailyBudget) {
+        const daily = Number(data.dailyBudget);
+        calculatedDaily = daily.toString();
+        calculatedWeekly = (daily * 7).toFixed(2);
+        calculatedMonthly = (daily * 30.44).toFixed(2); // Avg days in month
+        calculatedAnnual = (daily * 365).toFixed(2);
+      } else {
+        // Fallback default if nothing valid is provided
+        calculatedWeekly = "300";
+        calculatedMonthly = (300 * 52 / 12).toFixed(2);
+        calculatedAnnual = (300 * 52).toFixed(2);
+        calculatedDaily = (300 / 7).toFixed(2);
+      }
+
       const accountData = {
         accountType: "family",
         accountName: data.accountName,
-        dailyBudget: data.dailyBudget?.toString(),
-        weeklyBudget: data.weeklyBudget?.toString() || "300",
-        monthlyBudget: data.monthlyBudget?.toString(),
-        annualBudget: data.annualBudget?.toString(),
+        dailyBudget: calculatedDaily,
+        weeklyBudget: calculatedWeekly,
+        monthlyBudget: calculatedMonthly,
+        annualBudget: calculatedAnnual,
         currentAllocation: data.currentAllocation,
         groceriesPercentage: data.groceriesPercentage,
         diningPercentage: data.diningPercentage,
@@ -238,6 +277,9 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
       if (!budgetVal || budgetVal < minBudget) {
         errors[budgetField] = `${allocation.charAt(0).toUpperCase() + allocation.slice(1)
           } budget must be at least $${minBudget}`;
+      } else if (budgetVal > 10000000) {
+        errors[budgetField] = `${allocation.charAt(0).toUpperCase() + allocation.slice(1)
+          } budget must be less than $10,000,000`;
       }
 
       const totalPercent =
@@ -249,11 +291,11 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
     }
 
     if (step === 2) {
-      if (!values.height || Number(values.height) < 24 || Number(values.height) > 96)
-        errors.height = "Height must be between 24 and 96 inches";
+      if (!values.height || Number(values.height) < 24 || Number(values.height) > 120)
+        errors.height = "Height must be between 24 and 120 inches";
 
-      if (!values.weight || Number(values.weight) < 50 || Number(values.weight) > 600)
-        errors.weight = "Weight must be between 50 and 600 lbs";
+      if (!values.weight || Number(values.weight) < 50 || Number(values.weight) > 1000)
+        errors.weight = "Weight must be between 50 and 1000 lbs";
 
       if (!values.activityLevel)
         errors.activityLevel = "Activity level is required";

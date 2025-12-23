@@ -74,19 +74,60 @@ const calculateResetInDays = (lastReset?: string) => {
 
 const getActiveBudget = (account: any): ActiveBudget | null => {
   if (!account) return null;
+
+  // 1. Try to get budget based on currentAllocation
+  if (account?.currentAllocation) {
+    const alloc = account.currentAllocation;
+    let val = null;
+    let label = "";
+
+    switch (alloc) {
+      case "daily":
+        val = account.dailyBudget;
+        label = "Daily Budget";
+        break;
+      case "weekly":
+        val = account.weeklyBudget;
+        label = "Weekly Budget";
+        break;
+      case "monthly":
+        val = account.monthlyBudget;
+        label = "Monthly Budget";
+        break;
+      case "annual":
+        val = account.annualBudget;
+        label = "Annual Budget";
+        break;
+    }
+
+    if (val !== null && val !== undefined) {
+      return {
+        type: alloc as BudgetType,
+        label,
+        amount: Number(val),
+      };
+    }
+  }
+
+  // 2. Fallback: Find first available budget (precedence: weekly > daily > monthly > annual)
+  // Reordered to prioritize weekly as it's the default required field
+
+
+
   const budgets = [
-    { type: "daily", label: "Daily Budget", value: account?.dailyBudget },
     { type: "weekly", label: "Weekly Budget", value: account?.weeklyBudget },
+    { type: "daily", label: "Daily Budget", value: account?.dailyBudget },
     { type: "monthly", label: "Monthly Budget", value: account?.monthlyBudget },
     { type: "annual", label: "Annual Budget", value: account?.annualBudget },
   ];
-  const active = budgets.find((b) => b.value !== null);
+
+  const active = budgets.find((b) => b.value !== null && b.value !== undefined);
   return active
     ? {
-        type: active.type as BudgetType,
-        label: active.label,
-        amount: Number(active.value),
-      }
+      type: active.type as BudgetType,
+      label: active.label,
+      amount: Number(active.value),
+    }
     : null;
 };
 
@@ -108,6 +149,7 @@ const calculateSpent = (account: any, budget: ActiveBudget | null) => {
 
 const calculateAccountDerived = (account: any) => {
   const activeBudget = getActiveBudget(account);
+  console.log({ activeBudget }, "acive")
   const spent = calculateSpent(account, activeBudget);
   return {
     account,

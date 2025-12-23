@@ -94,6 +94,7 @@ export default function Step2HealthActivity({
               placeholder="68"
               min="36"
               max="96"
+              step="0.1"
               {...form.register("height")}
               data-testid="input-height"
               className="h-12 border-2 border-[#7661d3]/30 focus:border-[#7661d3] rounded-xl"
@@ -117,6 +118,7 @@ export default function Step2HealthActivity({
               placeholder="150"
               min="50"
               max="500"
+              step="0.1"
               {...form.register("weight")}
               data-testid="input-weight"
               className="h-12 border-2 border-[#7661d3]/30 focus:border-[#7661d3] rounded-xl"
