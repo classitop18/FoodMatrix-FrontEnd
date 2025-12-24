@@ -206,7 +206,7 @@ export default function EditAccountModal({
             </div>
 
             {/* Address Section */}
-            <div className="space-y-5 pt-4 border-t border-gray-100">
+            <div className="space-y-5 pt-4 border-t border-gray-200">
               <h3 className="text-sm font-bold text-gray-700 uppercase tracking-widest flex items-center gap-2">
                 <MapPin size={16} className="text-[#7661d3]" />
                 Address Information
@@ -350,7 +350,7 @@ export default function EditAccountModal({
           </div>
 
           {/* Action Buttons - Fixed at bottom */}
-          <div className="p-6 pt-0 flex-shrink-0 border-t border-gray-100">
+          <div className="p-6 pt-0 flex-shrink-0 border-t border-gray-200">
             <div className="flex gap-3">
               <button
                 type="button"

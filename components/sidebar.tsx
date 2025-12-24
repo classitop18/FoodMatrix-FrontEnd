@@ -148,7 +148,7 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
       <Button
         variant="ghost"
         className={cn(
-          "w-full gap-3 transition-all duration-300 relative overflow-hidden group mb-1",
+          "w-full gap-3 transition-all duration-300 relative overflow-hidden group mb-1 cursor-pointer",
           collapsed ? "justify-center px-2 h-10" : "justify-start h-11",
           active
             ? "bg-[var(--primary)] text-white shadow-md shadow-[var(--primary)]/30 hover:bg-[var(--primary)]/90"
@@ -286,7 +286,7 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="w-full h-10 text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors"
+                      className="w-full justify-start gap-3 text-red-500 bg-red-50 hover:text-red-600 transition-colors h-12 rounded-lg cursor-pointer"
                       disabled={logoutMutation.isPending}
                       onClick={handleLogout}
                     >
@@ -303,7 +303,7 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
               ) : (
                 <Button
                   variant="ghost"
-                  className="w-full justify-start gap-3 text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors h-12 rounded-xl"
+                  className="w-full justify-start gap-3 text-red-500 bg-red-50 hover:text-red-600 transition-colors h-12 rounded-lg cursor-pointer"
                   onClick={handleLogout}
                   disabled={logoutMutation.isPending}
                 >

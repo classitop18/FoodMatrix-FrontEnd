@@ -438,7 +438,7 @@ export default function AddToPantry({ setIsAddModalOpen, itemToEdit }: any) {
         <div className="p-6 space-y-5 overflow-y-auto custom-scrollbar flex-1">
           {/* CATEGORY FIRST (Dynamic & Creatable) */}
           <div>
-            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">
+            <label className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3 block">
               Category *
             </label>
 
@@ -459,7 +459,7 @@ export default function AddToPantry({ setIsAddModalOpen, itemToEdit }: any) {
 
           {/* INGREDIENT SEARCH */}
           <div>
-            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">
+            <label className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3 block">
               Ingredient *
             </label>
 
@@ -489,7 +489,7 @@ export default function AddToPantry({ setIsAddModalOpen, itemToEdit }: any) {
                 ✨ Creating new ingredient: <strong>{ingredient.name}</strong>
               </div>
             ) : category ? (
-              <div className="mt-2 flex items-start gap-2 text-xs text-gray-500 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
+              <div className="mt-2 flex items-start gap-2 text-xs text-gray-500 bg-gray-50 p-2.5 rounded-lg border border-gray-200">
                 <div className="mt-0.5 rounded-full bg-gray-400 w-1.5 h-1.5 shrink-0" />
                 <p className="leading-tight">
                   Showing {category} ingredients. Search or create new.
@@ -542,7 +542,7 @@ export default function AddToPantry({ setIsAddModalOpen, itemToEdit }: any) {
           {/* QUANTITY + UNIT */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">
+              <label className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3 block">
                 Quantity *
               </label>
               <Input
@@ -554,7 +554,7 @@ export default function AddToPantry({ setIsAddModalOpen, itemToEdit }: any) {
                   setFormData({ ...formData, quantity: e.target.value });
                   setErrors({ ...errors, quantity: "" });
                 }}
-                className={`bg-white rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-[#7661d3]/30 focus:border-[#7661d3] outline-none h-11 transition-all ${
+                className={`h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none ${
                   errors.quantity ? "border-red-500 focus:ring-red-500/20" : ""
                 }`}
               />
@@ -566,14 +566,14 @@ export default function AddToPantry({ setIsAddModalOpen, itemToEdit }: any) {
             </div>
 
             <div>
-              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">
+              <label className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3 block">
                 Unit *
               </label>
               <Select
                 value={formData.unit}
                 onValueChange={(v) => setFormData({ ...formData, unit: v })}
               >
-                <SelectTrigger className="bg-white rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-[#7661d3]/30 focus:border-[#7661d3] outline-none h-11 transition-all">
+                <SelectTrigger className="h-11 rounded-lg !border !border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-sm font-medium shadow-none">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-white border border-gray-200 rounded-xl shadow-xl">
@@ -589,7 +589,7 @@ export default function AddToPantry({ setIsAddModalOpen, itemToEdit }: any) {
 
           {/* STORAGE LOCATION */}
           <div>
-            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">
+            <label className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3 block">
               Storage Location *
             </label>
             <div className="relative">
@@ -597,7 +597,7 @@ export default function AddToPantry({ setIsAddModalOpen, itemToEdit }: any) {
                 value={formData.location}
                 onValueChange={(v) => setFormData({ ...formData, location: v })}
               >
-                <SelectTrigger className="bg-white rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-[#7661d3]/30 focus:border-[#7661d3] outline-none h-11 pl-10 transition-all">
+                <SelectTrigger className="h-11 rounded-lg !border !border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-sm font-medium shadow-none">
                   <SelectValue />
                 </SelectTrigger>
                 <MapPin
@@ -618,7 +618,7 @@ export default function AddToPantry({ setIsAddModalOpen, itemToEdit }: any) {
           {/* OPTIONAL FIELDS */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">
+              <label className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3 block">
                 Expiration
               </label>
               <div className="relative">
@@ -628,7 +628,7 @@ export default function AddToPantry({ setIsAddModalOpen, itemToEdit }: any) {
                   onChange={(e) =>
                     setFormData({ ...formData, expirationDate: e.target.value })
                   }
-                  className="bg-white rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-[#7661d3]/30 focus:border-[#7661d3] outline-none h-11 pl-10 block w-full transition-all"
+                  className="bh-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none ps-8"
                 />
                 <Calendar
                   size={16}
@@ -638,7 +638,7 @@ export default function AddToPantry({ setIsAddModalOpen, itemToEdit }: any) {
             </div>
 
             <div>
-              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">
+              <label className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3 block">
                 Cost
               </label>
               <div className="relative">
@@ -650,7 +650,7 @@ export default function AddToPantry({ setIsAddModalOpen, itemToEdit }: any) {
                   onChange={(e) =>
                     setFormData({ ...formData, costPaid: e.target.value })
                   }
-                  className="bg-white rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-[#7661d3]/30 focus:border-[#7661d3] outline-none h-11 pl-10 transition-all"
+                  className="h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none ps-8"
                 />
                 <DollarSign
                   size={16}

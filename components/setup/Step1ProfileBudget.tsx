@@ -49,7 +49,7 @@ export default function Step1ProfileBudget({
       className="space-y-6 sm:space-y-8"
     >
       {/* Profile Section */}
-      <div className="bg-white border-2 border-[#7661d3]/20 shadow-2xl rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-[#7661d3]/20">
+      <div className="bg-white border-2 border-[#7661d3]/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-[#7661d3]/20">
         <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 flex items-center text-[#3d326d]">
           <div className="bg-gradient-to-br from-[#7661d3] to-[#3d326d] p-2 sm:p-3 rounded-lg sm:rounded-xl mr-2 sm:mr-3 shadow-md">
             <UserCog className="text-white w-5 h-5 sm:w-6 sm:h-6" />
@@ -60,13 +60,13 @@ export default function Step1ProfileBudget({
           {/* Account Name & Type */}
           <div className="grid grid-cols-3 sm:grid-cols-2 gap-4">
             <div>
-              <Label className="font-semibold text-[#3d326d] mb-1 block">
+              <Label className="font-semibold text-[#3d326d] mb-3 block">
                 Account Name <span className="text-[#7dab4f]">*</span>
               </Label>
               <Input
                 placeholder="Enter account name"
                 {...form.register("accountName")}
-                className="h-10 sm:h-11 border-2 border-[#7661d3]/30 rounded-lg sm:rounded-xl"
+                className="h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none "
               />
               {form.formState.errors.accountName && (
                 <p className="text-sm text-red-500 mt-1">
@@ -74,8 +74,8 @@ export default function Step1ProfileBudget({
                 </p>
               )}
             </div>
-            <div className="max-w-[260px] w-full">
-              <Label className="font-semibold text-[#3d326d] mb-1 block">
+            <div className="">
+              <Label className="font-semibold text-[#3d326d] mb-3 block">
                 Account Type <span className="text-[#7dab4f]">*</span>
               </Label>
 
@@ -83,7 +83,7 @@ export default function Step1ProfileBudget({
                 value={accountType}
                 onValueChange={(value) => form.setValue("accountType", value)}
               >
-                <SelectTrigger className="h-10 sm:h-11 w-full border-2 border-[#7661d3]/30 rounded-lg sm:rounded-xl">
+                <SelectTrigger className="h-11 rounded-lg !border !border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-sm font-medium shadow-none">
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
 
@@ -98,13 +98,13 @@ export default function Step1ProfileBudget({
 
           {/* Description */}
           <div>
-            <Label className="font-semibold text-[#3d326d] mb-1 block">
+            <Label className="font-semibold text-[#3d326d] mb-3 block">
               Description
             </Label>
             <Input
               placeholder="Short description of this account"
               {...form.register("description")}
-              className="h-10 sm:h-11 border-2 border-[#7661d3]/30 rounded-lg sm:rounded-xl"
+              className="h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none "
             />
           </div>
         </div>
@@ -113,7 +113,7 @@ export default function Step1ProfileBudget({
           <div className="sm:col-span-2">
             <Label
               htmlFor="groupName"
-              className="text-[#3d326d] font-semibold mb-2 block text-sm sm:text-base"
+              className="text-[#3d326d] font-semibold mb-3 block text-sm sm:text-base"
             >
               Group Name
             </Label>
@@ -122,14 +122,14 @@ export default function Step1ProfileBudget({
               placeholder="e.g., Beach House, Office Team"
               {...form.register("accountName")}
               data-testid="input-group-name"
-              className="h-11 sm:h-12 border-2 border-[#7661d3]/30 focus:border-[#7661d3] rounded-lg sm:rounded-xl text-sm sm:text-base"
+              className="h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none"
             />
           </div>
         )}
       </div>
 
       {/* Budget Section */}
-      <div className="bg-white border-2 border-[#7661d3]/20 shadow-2xl rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-[#7dab4f]/20">
+      <div className="bg-white border-2 border-[#7661d3]/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-[#7dab4f]/20">
         <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 flex items-center text-[#3d326d]">
           <div className="bg-gradient-to-br from-[#7dab4f] to-[#9bc76d] p-2 sm:p-3 rounded-lg sm:rounded-xl mr-2 sm:mr-3 shadow-md">
             <Wallet className="text-white w-5 h-5 sm:w-6 sm:h-6" />
@@ -140,7 +140,7 @@ export default function Step1ProfileBudget({
         <div className="space-y-4 sm:space-y-6">
           {/* Budget Period Selection */}
           <div>
-            <Label className="text-[#3d326d] font-semibold mb-2 block text-sm sm:text-base">
+            <Label className="text-[#3d326d] font-semibold mb-2 block text-sm">
               Primary Budget Period
             </Label>
             <Select
@@ -157,7 +157,7 @@ export default function Step1ProfileBudget({
             >
               <SelectTrigger
                 data-testid="select-budget-period"
-                className="h-11 sm:h-12 border-2 border-[#7dab4f]/30 focus:border-[#7dab4f] rounded-lg sm:rounded-xl text-sm sm:text-base"
+                className="h-11 rounded-lg !border !border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-sm font-medium shadow-none"
               >
                 <SelectValue placeholder="Select budget period" />
               </SelectTrigger>
@@ -226,7 +226,7 @@ export default function Step1ProfileBudget({
                     <Input
                       id={budget.id}
                       type="number"
-                      className="pl-7 sm:pl-8 h-11 sm:h-12 border-2 border-[#7dab4f]/30 focus:border-[#7dab4f] rounded-lg sm:rounded-xl text-sm sm:text-base"
+                      className="h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none ps-8"
                       placeholder={budget.placeholder}
                       min={budget.min}
                       max="10000000"
@@ -314,17 +314,14 @@ export default function Step1ProfileBudget({
                     step="5"
                     {...form.register(category.field)}
                     data-testid={`input-${category.id}-percentage`}
-                    className="h-10 sm:h-11 border-2 border-[#7661d3]/30 focus:border-[#7661d3] rounded-lg text-sm sm:text-base"
+                    className="h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none"
                   />
                   <div className="relative">
-                    <span className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 text-white font-bold text-sm">
-                      $
-                    </span>
                     <Input
                       value={`$${category.budget.toFixed(0)}`}
                       readOnly
                       data-testid={`text-${category.id}-budget`}
-                      className="h-10 sm:h-11 pl-6 sm:pl-8 rounded-lg text-sm sm:text-base font-semibold bg-gray-100 text-[#3d326d]  cursor-not-allowed focus-visible:ring-0 focus-visible:ring-offset-0"
+                      className="h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none cursor-not-allowed"
                     />
                   </div>
                   {form.formState.errors[category.field] && (

@@ -187,7 +187,7 @@ export const InvitationsTab: React.FC<InvitationsTabProps> = ({
               {receivedInvitations.map((inv: any) => (
                 <div
                   key={inv.id}
-                  className="group bg-white rounded-xl p-4 md:py-3 md:px-5 border border-gray-100 shadow-sm hover:shadow-md hover:border-[#7661d3]/30 transition-all grid grid-cols-1 md:grid-cols-12 gap-4 items-center"
+                  className="group bg-white rounded-xl p-4 md:py-3 md:px-5 border border-gray-200 shadow-sm hover:shadow-md hover:border-[#7661d3]/30 transition-all grid grid-cols-1 md:grid-cols-12 gap-4 items-center"
                 >
                   <div className="col-span-12 md:col-span-4 flex items-center gap-3">
                     <div className="h-10 w-10 rounded-lg bg-[#F3F0FD] flex items-center justify-center text-[#7661d3] font-bold text-sm shrink-0">
@@ -324,7 +324,7 @@ export const InvitationsTab: React.FC<InvitationsTabProps> = ({
               sentInvitations?.data?.map((inv: any) => (
                 <div
                   key={inv.id}
-                  className="group bg-white rounded-xl p-4 md:py-3 md:px-5 border border-gray-100 shadow-sm hover:shadow-md hover:border-[#7661d3]/30 transition-all grid grid-cols-1 md:grid-cols-12 gap-4 items-center"
+                  className="group bg-white rounded-xl p-4 md:py-3 md:px-5 border border-gray-200 shadow-sm hover:shadow-md hover:border-[#7661d3]/30 transition-all grid grid-cols-1 md:grid-cols-12 gap-4 items-center"
                 >
                   <div className="col-span-12 md:col-span-4">
                     <div className="font-bold text-[#313131] text-sm break-all">
@@ -341,7 +341,7 @@ export const InvitationsTab: React.FC<InvitationsTabProps> = ({
                     <div className="md:hidden text-[10px] font-bold text-gray-400 uppercase mb-1">
                       Role
                     </div>
-                    <div className="flex items-center gap-1.5 bg-gray-50 w-fit px-2 py-1 rounded text-[10px] font-extrabold text-gray-600 uppercase border border-gray-100">
+                    <div className="flex items-center gap-1.5 bg-gray-50 w-fit px-2 py-1 rounded text-[10px] font-extrabold text-gray-600 uppercase border border-gray-200">
                       <ShieldCheck size={10} />
                       {inv.role || "Member"}
                     </div>

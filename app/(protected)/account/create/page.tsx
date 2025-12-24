@@ -375,24 +375,9 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
   const isLastStep = currentStep === 4;
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-[#F3F0FD] via-white to-[#E8F5E0]">
+    <div className="min-h-screen relative overflow-hidden bg-gray-100">
       {/* Animated Background Patterns */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <Image
-          src={pattern1}
-          className="absolute -top-64 -left-32 opacity-30"
-          width={818}
-          height={818}
-          alt="Pattern-1"
-        />
-        <Image
-          src={pattern2}
-          className="absolute -bottom-64 -right-32 opacity-30"
-          width={818}
-          height={818}
-          alt="Pattern-2"
-        />
-
         {/* Animated Gradient Orbs - Using CSS variables for theme colors */}
         <motion.div
           className="absolute top-1/4 right-1/4 w-96 h-96 bg-[var(--primary)]/20 rounded-full blur-3xl"
@@ -412,14 +397,14 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
       </div>
 
       {/* Main Content */}
-      <main className="relative z-10 mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-10">
+      <main className="relative z-10 mx-auto px-6 py-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           className="mb-8 text-center"
         >
-          <div className="mb-6 animate-slide-up">
+          <div className="animate-slide-up">
             <div className="flex flex-col items-start justify-between">
               <h1 className="text-2xl lg:text-3xl font-extrabold text-[var(--primary)] mb-1">
                 Account Setup
@@ -432,13 +417,13 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
         </motion.div>
 
         <motion.div
-          className="rounded-2xl sm:rounded-3xl overflow-hidden"
+          className="rounded-2xl overflow-hidden bg-white"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           {/* Step Indicator */}
-          <div className="px-5 py-3 border-b-2 border-[var(--primary)]/20">
+          <div className="px-5 py-8 border-b border-[var(--primary)]/10">
             <StepIndicator
               currentStep={currentStep}
               totalSteps={4}
@@ -496,7 +481,7 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
                     transition={{ duration: 0.3 }}
                     className="mt-6 space-y-4"
                   >
-                    <div className="border-t-2 border-[var(--primary)]/20 pt-6">
+                    <div className="border-t-2 border-[var(--primary)]/10 pt-6">
                       <h3 className="text-lg font-bold text-[var(--primary)] mb-4">
                         Account Address (Optional)
                       </h3>
@@ -506,6 +491,7 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
                         }}
                         label="Primary Address"
                         placeholder="Start typing your address..."
+                        className="mb-3"
                       />
                       <p className="text-xs text-gray-500 mt-2">
                         This will be used for delivery and location-based
@@ -535,7 +521,7 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
             </AnimatePresence>
 
             {/* Navigation Buttons */}
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8 mt-8 border-t-2 border-[var(--primary)]/20">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8 mt-8 border-t-2 border-[var(--primary)]/10">
               <Button
                 type="button"
                 variant="outline"
@@ -543,7 +529,7 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
                 className="w-full sm:w-auto h-12 px-8 rounded-xl border-2 border-[var(--primary)]/30 hover:bg-[#F3F0FD] hover:border-[var(--primary)] transition-all duration-300 font-semibold"
                 data-testid="button-previous"
               >
-                <ArrowLeft className="mr-2 h-5 w-5" />
+                <ArrowLeft className=" h-5 w-5" />
                 {currentStep === 1 ? "Back to Account" : "Previous"}
               </Button>
 
@@ -560,7 +546,7 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
                   {createAccountMutation.isPending
                     ? "Creating Account..."
                     : "Create Account"}
-                  <ShoppingCart className="ml-2 w-5 h-5" />
+                  <ShoppingCart className=" w-5 h-5" />
                 </Button>
               ) : (
                 <Button
@@ -570,7 +556,7 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
                   data-testid="button-next"
                 >
                   Next Step
-                  <ArrowRight className="ml-2 w-5 h-5" />
+                  <ArrowRight className=" w-5 h-5" />
                 </Button>
               )}
             </div>

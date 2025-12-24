@@ -294,22 +294,6 @@ const PantryPage: React.FC = () => {
   return (
     <TooltipProvider>
       <div className="min-h-screen bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] pb-8 relative overflow-hidden font-sans">
-        {/* Background Patterns */}
-        <Image
-          src={pattern1}
-          className="absolute -top-64 -left-32 opacity-30 pointer-events-none"
-          width={818}
-          height={818}
-          alt="Pattern-1"
-        />
-        <Image
-          src={pattern2}
-          className="absolute right-0 -top-48 opacity-30 pointer-events-none"
-          width={818}
-          height={600}
-          alt="Pattern-2"
-        />
-
         <div className="max-w-8xl mx-auto px-4 md:px-6 relative z-10 py-8">
           {/* Header Section */}
           <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between mb-8 gap-6 animate-fade-in">
@@ -333,7 +317,7 @@ const PantryPage: React.FC = () => {
               <Button
                 variant="outline"
                 onClick={() => refetch()}
-                className="bg-white hover:bg-gray-50 text-[#313131] font-bold py-2.5 px-4 rounded-xl shadow-sm border border-gray-100 transition-all flex items-center gap-2 text-sm h-auto"
+                className="bg-white hover:bg-gray-50 text-[#313131] font-bold py-2.5 px-4 rounded-xl shadow-sm border border-gray-200 transition-all flex items-center gap-2 text-sm h-auto"
               >
                 <RefreshCw
                   size={18}
@@ -357,7 +341,7 @@ const PantryPage: React.FC = () => {
           {/* Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
             {/* Total Items */}
-            <div className="bg-white rounded-2xl p-6 shadow-md relative overflow-hidden group border border-gray-100 hover:shadow-lg hover:border-[#7661d3]/20 transition-all">
+            <div className="bg-white rounded-2xl p-6 shadow-md relative overflow-hidden group border border-gray-200 hover:shadow-lg hover:border-[#7661d3]/20 transition-all">
               <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#F3F0FD] to-transparent rounded-full -mr-8 -mt-8 transition-transform duration-500 group-hover:scale-125" />
               <div className="relative z-10 flex items-center justify-between">
                 <div>
@@ -375,7 +359,7 @@ const PantryPage: React.FC = () => {
             </div>
 
             {/* Expiring Soon */}
-            <div className="bg-white rounded-2xl p-6 shadow-md relative overflow-hidden group border border-gray-100 hover:shadow-lg hover:border-orange-200 transition-all">
+            <div className="bg-white rounded-2xl p-6 shadow-md relative overflow-hidden group border border-gray-200 hover:shadow-lg hover:border-orange-200 transition-all">
               <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-orange-50 to-transparent rounded-full -mr-8 -mt-8 transition-transform duration-500 group-hover:scale-125" />
               <div className="relative z-10 flex items-center justify-between">
                 <div>
@@ -393,7 +377,7 @@ const PantryPage: React.FC = () => {
             </div>
 
             {/* Total Value */}
-            <div className="bg-white rounded-2xl p-6 shadow-md relative overflow-hidden group border border-gray-100 hover:shadow-lg hover:border-[#7dab4f]/20 transition-all">
+            <div className="bg-white rounded-2xl p-6 shadow-md relative overflow-hidden group border border-gray-200 hover:shadow-lg hover:border-[#7dab4f]/20 transition-all">
               <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#e8f5e0] to-transparent rounded-full -mr-8 -mt-8 transition-transform duration-500 group-hover:scale-125" />
               <div className="relative z-10 flex items-center justify-between">
                 <div>
@@ -528,23 +512,11 @@ const PantryPage: React.FC = () => {
                       setCurrentPage(1);
                     }}
                   >
-                    <SelectTrigger
-                      className="
-          w-full py-3 px-4
-          rounded-xl border-2 border-[#7661d3]/30
-          bg-gradient-to-br from-[#F8F7FC] to-white
-          hover:border-[#7661d3]/50
-          focus:ring-2 focus:ring-[#7661d3]/20
-          focus:ring-offset-0
-          transition-all
-          text-sm font-medium text-[#313131]
-          shadow-sm
-        "
-                    >
+                    <SelectTrigger className="h-11 rounded-lg !border !border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-sm font-medium shadow-none">
                       <SelectValue placeholder="Location" />
                     </SelectTrigger>
 
-                    <SelectContent className="rounded-xl border border-gray-100 shadow-xl p-1 bg-white">
+                    <SelectContent className="rounded-xl border border-gray-200 shadow-xl p-1 bg-white">
                       <SelectItem
                         value="all"
                         className="
@@ -610,7 +582,7 @@ const PantryPage: React.FC = () => {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="bg-gray-50/50 border-b border-gray-100">
+                      <tr className="bg-gray-50/50 border-b border-gray-200">
                         <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
                           Ingredient
                         </th>
@@ -756,7 +728,7 @@ const PantryPage: React.FC = () => {
 
               {/* Pagination */}
               {pagination.totalPages > 1 && (
-                <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/30">
+                <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between bg-gray-50/30">
                   <span className="text-xs font-bold text-gray-400 uppercase tracking-wide">
                     Page {pagination.page} of {pagination.totalPages}
                   </span>

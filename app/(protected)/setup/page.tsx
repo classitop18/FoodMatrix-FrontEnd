@@ -306,24 +306,9 @@ export default function SetupPage() {
   const isLastStep = currentStep === 4;
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-[#F3F0FD] via-white to-[#E8F5E0]">
+    <div className="min-h-screen relative overflow-hidden bg-gray-100">
       {/* Animated Background Patterns */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <Image
-          src={pattern1}
-          className="absolute -top-64 -left-32 opacity-30"
-          width={818}
-          height={818}
-          alt="Pattern-1"
-        />
-        <Image
-          src={pattern2}
-          className="absolute -bottom-64 -right-32 opacity-30"
-          width={818}
-          height={818}
-          alt="Pattern-2"
-        />
-
         {/* Animated Gradient Orbs */}
         <motion.div
           className="absolute top-1/4 right-1/4 w-96 h-96 bg-[#7661d3]/20 rounded-full blur-3xl"
@@ -349,7 +334,7 @@ export default function SetupPage() {
           transition={{ duration: 0.5 }}
           className="mb-8 text-center"
         >
-          <div className="mb-6 animate-slide-up">
+          <div className="animate-slide-up">
             <div className="flex flex-col  items-start  justify-between ">
               <h1 className="text-2xl lg:text-3xl font-extrabold text-[var(--primary)] mb-1">
                 Account Setup
@@ -446,7 +431,7 @@ export default function SetupPage() {
                 className="w-full sm:w-auto h-12 px-8 rounded-xl border-2 border-[#7661d3]/30 hover:bg-[#F3F0FD] hover:border-[#7661d3] transition-all duration-300 font-semibold"
                 data-testid="button-previous"
               >
-                <ArrowLeft className="mr-2 h-5 w-5" />
+                <ArrowLeft className=" h-5 w-5" />
                 {currentStep === 1 ? "Back to Welcome" : "Previous"}
               </Button>
 
@@ -462,7 +447,7 @@ export default function SetupPage() {
                   {setupMutation.isPending
                     ? "Creating Account..."
                     : "Create Account"}
-                  <ShoppingCart className="ml-2 w-5 h-5" />
+                  <ShoppingCart className=" w-5 h-5" />
                 </Button>
               ) : (
                 <Button
@@ -472,7 +457,7 @@ export default function SetupPage() {
                   data-testid="button-next"
                 >
                   Next Step
-                  <ArrowRight className="ml-2 w-5 h-5" />
+                  <ArrowRight className=" w-5 h-5" />
                 </Button>
               )}
             </div>

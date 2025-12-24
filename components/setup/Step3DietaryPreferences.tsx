@@ -95,7 +95,7 @@ export default function Step3DietaryPreferences({
             {dietaryRestrictions.map((diet) => (
               <label
                 key={diet.value}
-                className="flex items-center space-x-3 p-4 border-2 border-[#7661d3]/20 rounded-xl hover:bg-[#F3F0FD] cursor-pointer transition-all duration-300 hover:border-[#7661d3] hover:shadow-md group"
+                className="flex items-center space-x-3 p-4 py-3 border-2 border-[#7661d3]/20 rounded-xl hover:bg-[#F3F0FD] cursor-pointer transition-all duration-300 hover:border-[#7661d3] hover:shadow-md group"
               >
                 <Checkbox
                   checked={form
@@ -126,7 +126,7 @@ export default function Step3DietaryPreferences({
             {cuisines.map((cuisine) => (
               <label
                 key={cuisine.value}
-                className="flex items-center space-x-3 p-4 border-2 border-[#7dab4f]/20 rounded-xl hover:bg-[#E8F5E0] cursor-pointer transition-all duration-300 hover:border-[#7dab4f] hover:shadow-md group"
+                className="flex items-center space-x-3 p-4 py-3 border-2 border-[#7dab4f]/20 rounded-xl hover:bg-[#E8F5E0] cursor-pointer transition-all duration-300 hover:border-[#7dab4f] hover:shadow-md group"
               >
                 <Checkbox
                   checked={form

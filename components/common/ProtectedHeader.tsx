@@ -45,8 +45,8 @@ export default function ProtectedHeader() {
   const initials = `${user?.firstName?.[0] ?? ""}${user?.lastName?.[0] ?? ""}`;
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur border-b border-gray-100">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur border-b border-gray-200">
+      <div className="w-full px-4 sm:px-4">
         <div className="flex h-14 items-center">
           {/* Left spacer (logo can go here later) */}
           <div className="flex-1" />
@@ -89,9 +89,9 @@ export default function ProtectedHeader() {
               {open && (
                 <div
                   role="menu"
-                  className="absolute right-0 mt-2 w-64 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl"
+                  className="absolute right-0 mt-2 w-64 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl"
                 >
-                  <div className="border-b border-gray-100 px-4 py-3">
+                  <div className="border-b border-gray-200 px-4 py-3">
                     <p className="text-[10px] uppercase tracking-wide text-gray-400">
                       Signed in as
                     </p>
@@ -141,7 +141,7 @@ export default function ProtectedHeader() {
                     </Link>
                   </div>
 
-                  <div className="border-t border-gray-100 py-2">
+                  <div className="border-t border-gray-200 py-2">
                     <button
                       onClick={handleLogout}
                       className="flex w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-red-50"

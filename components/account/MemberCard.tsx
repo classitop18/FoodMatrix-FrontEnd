@@ -19,7 +19,7 @@ export const MemberCard: React.FC<MemberCardProps> = ({
   const isCurrentUser = userId == member?.userId;
 
   return (
-    <div className="group relative bg-white rounded-xl border border-gray-100 hover:border-[#7661d3]/30 transition-all duration-300 p-3 shadow-sm hover:shadow-md h-full flex flex-col justify-between">
+    <div className="group relative bg-white rounded-xl border border-gray-200 hover:border-[#7661d3]/30 transition-all duration-300 p-3 shadow-sm hover:shadow-md h-full flex flex-col justify-between">
       {/* Decorative corner gradient */}
       <div className="absolute top-0 right-0 w-16 h-12 bg-gradient-to-br from-[#7661d3]/5 to-transparent rounded-tr-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
@@ -104,7 +104,7 @@ export const MemberCard: React.FC<MemberCardProps> = ({
             </div>
           )}
 
-          <div className="flex items-center justify-between pt-1 border-t border-gray-100/50">
+          <div className="flex items-center justify-between pt-1 border-t border-gray-200/50">
             <span className="text-[10px] text-gray-400 uppercase font-semibold">
               Account
             </span>

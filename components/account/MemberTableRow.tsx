@@ -16,7 +16,7 @@ export const MemberTableRow: React.FC<MemberTableRowProps> = ({
   onDelete,
   isCurrentUser,
 }) => (
-  <div className="group bg-white rounded-xl p-4 md:py-3 md:px-5 border border-gray-100 shadow-sm hover:shadow-md hover:border-[#7661d3]/30 transition-all grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+  <div className="group bg-white rounded-xl p-4 md:py-3 md:px-5 border border-gray-200 shadow-sm hover:shadow-md hover:border-[#7661d3]/30 transition-all grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
     <div className="col-span-12 md:col-span-3 flex items-center gap-3">
       <div className="relative shrink-0">
         {member.userId && member.user?.avatar ? (

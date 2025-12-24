@@ -134,8 +134,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
           }}
           disabled={disabled}
           placeholder={placeholder}
-          className="h-12 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900
-            focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all pr-10"
+          className="h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none"
         />
 
         {isLoading && (

@@ -40,6 +40,7 @@ import {
 import pattern1 from "@/public/hero-pattern-1.svg";
 import pattern2 from "@/public/hero-pattern-2.svg";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
 
 export default function HealthProfilePage() {
   const params = useParams();
@@ -231,23 +232,7 @@ export default function HealthProfilePage() {
   const bmi = calculateBMI();
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] relative overflow-hidden w-full font-sans">
-      {/* Background Patterns */}
-      <Image
-        src={pattern1}
-        className="absolute -top-64 -left-32 opacity-30 pointer-events-none"
-        width={818}
-        height={818}
-        alt="Pattern-1"
-      />
-      <Image
-        src={pattern2}
-        className="absolute right-0 -top-48 opacity-30 pointer-events-none"
-        width={818}
-        height={600}
-        alt="Pattern-2"
-      />
-
+    <div className="min-h-screen bg-gray-100 relative overflow-hidden w-full font-sans">
       {/* Main Container */}
       <div className="container mx-auto px-4 md:px-6 relative z-10 py-8">
         {/* Header */}
@@ -266,7 +251,7 @@ export default function HealthProfilePage() {
                 </h1>
                 <button
                   onClick={() => refetchHealth()}
-                  className={`bg-white hover:bg-gray-100 text-[#7661d3] p-2 rounded-full shadow-sm border border-gray-100 transition-all ${isHealthProfileFetching ? "animate-spin" : ""}`}
+                  className={`bg-white hover:bg-gray-100 text-[#7661d3] p-2 rounded-full shadow-sm border border-gray-200 transition-all ${isHealthProfileFetching ? "animate-spin" : ""}`}
                   title="Refetch Health Profile"
                 >
                   <RefreshCw size={16} />
@@ -286,7 +271,7 @@ export default function HealthProfilePage() {
                 {healthProfileExists && (
                   <button
                     onClick={() => setIsEditing(false)}
-                    className="bg-white hover:bg-gray-50 text-[#313131] font-bold py-2.5 px-4 rounded-xl shadow-sm border border-gray-100 transition-all flex items-center gap-2 text-sm"
+                    className="bg-white hover:bg-gray-50 text-[#313131] font-bold py-2.5 px-4 rounded-xl shadow-sm border border-gray-200 transition-all flex items-center gap-2 text-sm"
                   >
                     <X size={18} />
                     Cancel
@@ -347,7 +332,7 @@ export default function HealthProfilePage() {
         {/* Health Score & BMI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           {/* BMI Card */}
-          <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 relative overflow-hidden group">
+          <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-200 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-24 h-24 bg-[#F3F0FD] rounded-full -mr-8 -mt-8 transition-transform duration-500 group-hover:scale-110" />
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-2">
@@ -413,7 +398,7 @@ export default function HealthProfilePage() {
         </div>
 
         {/* Main Content Card */}
-        <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-[24px] shadow-sm border border-gray-200 overflow-hidden">
           {/* Tabs */}
           <div className="bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] px-6 pt-6">
             <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
@@ -461,7 +446,7 @@ export default function HealthProfilePage() {
                       <Ruler size={16} className="text-[#7661d3]" />
                       Height (inches)
                     </label>
-                    <input
+                    <Input
                       type="number"
                       value={formData.height}
                       onChange={(e) =>
@@ -469,7 +454,7 @@ export default function HealthProfilePage() {
                       }
                       disabled={!isEditing}
                       placeholder="e.g., 68"
-                      className="w-full h-12 px-4 text-base border-2 border-gray-200 focus:border-[#7661d3] rounded-xl focus:outline-none disabled:bg-gray-50 disabled:cursor-not-allowed transition-colors"
+                      className="h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none "
                     />
                   </div>
 
@@ -479,7 +464,7 @@ export default function HealthProfilePage() {
                       <Scale size={16} className="text-[#7661d3]" />
                       Weight (pounds)
                     </label>
-                    <input
+                    <Input
                       type="number"
                       value={formData.weight}
                       onChange={(e) =>
@@ -487,7 +472,7 @@ export default function HealthProfilePage() {
                       }
                       disabled={!isEditing}
                       placeholder="e.g., 150"
-                      className="w-full h-12 px-4 text-base border-2 border-gray-200 focus:border-[#7661d3] rounded-xl focus:outline-none disabled:bg-gray-50 disabled:cursor-not-allowed transition-colors"
+                      className="h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none"
                     />
                   </div>
 
@@ -506,7 +491,7 @@ export default function HealthProfilePage() {
                         })
                       }
                       disabled={!isEditing}
-                      className="w-full h-12 px-4 text-base border-2 border-gray-200 focus:border-[#7661d3] rounded-xl focus:outline-none bg-white disabled:bg-gray-50 disabled:cursor-not-allowed transition-colors"
+                      className="h-11 rounded-lg !border !border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all font-medium shadow-none text-sm"
                     >
                       <option value="">Select activity level</option>
                       <option value="sedentary">

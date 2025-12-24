@@ -99,7 +99,7 @@ export const AccountOverviewTab: React.FC<AccountOverviewTabProps> = ({
                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1.5">
                   {field.label}
                 </label>
-                <div className="flex items-center justify-between border-b border-gray-100 group-hover:border-[#7661d3]/30 transition-colors pb-1.5">
+                <div className="flex items-center justify-between border-b border-gray-200 group-hover:border-[#7661d3]/30 transition-colors pb-1.5">
                   <p className="text-base font-bold text-[#313131]">
                     {field.value || "—"}
                   </p>
@@ -119,7 +119,7 @@ export const AccountOverviewTab: React.FC<AccountOverviewTabProps> = ({
                   Account Address
                 </h4>
               </div>
-              <div className="bg-[#F8F7FC] rounded-xl p-5 border border-gray-100">
+              <div className="bg-[#F8F7FC] rounded-xl p-5 border border-gray-200">
                 <div className="space-y-3">
                   {account?.formattedAddress && (
                     <div>
@@ -213,7 +213,7 @@ export const AccountOverviewTab: React.FC<AccountOverviewTabProps> = ({
 
             <div className="space-y-3">
               {/* Budget Override */}
-              <div className="flex items-center justify-between bg-white p-3 rounded-xl shadow-sm border border-gray-100/50">
+              <div className="flex items-center justify-between bg-white p-3 rounded-xl shadow-sm border border-gray-200/50">
                 <div>
                   <p className="font-bold text-gray-800 text-sm">
                     Budget Override Approval
@@ -241,7 +241,7 @@ export const AccountOverviewTab: React.FC<AccountOverviewTabProps> = ({
               </div>
 
               {/* Auto Grocery */}
-              <div className="flex items-center justify-between bg-white p-3 rounded-xl shadow-sm border border-gray-100/50">
+              <div className="flex items-center justify-between bg-white p-3 rounded-xl shadow-sm border border-gray-200/50">
                 <div>
                   <p className="font-bold text-gray-800 text-sm">
                     Auto-Generate Grocery Lists

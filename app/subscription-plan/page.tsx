@@ -125,22 +125,6 @@ export default function SubscriptionPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] relative overflow-hidden">
-      {/* Background Patterns */}
-      <Image
-        src={pattern1}
-        className="absolute -top-64 -left-32 opacity-20 pointer-events-none"
-        width={818}
-        height={818}
-        alt="Pattern-1"
-      />
-      <Image
-        src={pattern2}
-        className="absolute right-0 -top-48 opacity-20 pointer-events-none"
-        width={818}
-        height={600}
-        alt="Pattern-2"
-      />
-
       <div className="relative z-10 xl:w-[1320px] mx-auto px-6 py-12">
         {/* Header Section */}
         <div className="text-center mb-12 animate-slide-up">

@@ -18,21 +18,21 @@ export default function StepIndicator({
     totalSteps > 1 ? ((currentStep - 1) / (totalSteps - 1)) * 100 : 0;
 
   return (
-    <div className="w-full mb-6">
+    <div className="w-full">
       {/* ================= Desktop ================= */}
       <div className="hidden md:block">
         <div className="max-w-4xl mx-auto px-4">
           <div className="relative flex items-start justify-between">
             {/* Base Line - positioned at circle center */}
             <div
-              className="absolute left-0 right-0 h-[3px] bg-gradient-to-r from-[#F3F0FD] to-[#E8F5E0] rounded-full z-0"
-              style={{ top: "20px", marginLeft: "20px", marginRight: "20px" }}
+              className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-[#F3F0FD] to-[#E8F5E0] rounded-full z-0"
+              style={{ top: "20px" }}
             />
 
             {/* Active Line - grows with progress */}
             <motion.div
-              className="absolute left-0 h-[3px] bg-gradient-to-r from-[#705CC7] to-[var(--green)] rounded-full z-0 shadow-md"
-              style={{ top: "20px", marginLeft: "20px" }}
+              className="absolute left-0 h-[3px] bg-[var(--green)] rounded-full z-0 shadow-md"
+              style={{ top: "20px" }}
               initial={{ width: 0 }}
               animate={{
                 width:
@@ -63,7 +63,7 @@ export default function StepIndicator({
                                                 ? "bg-[var(--green)] text-white shadow-[var(--green)]/30"
                                                 : isCurrent
                                                   ? "bg-[var(--primary)] text-white ring-4 ring-[var(--primary)]/20 shadow-[var(--primary)]/40"
-                                                  : "bg-white border-2 border-gray-300 text-gray-400"
+                                                  : "bg-white border border-gray-300 text-gray-400"
                                             }
                                         `}
                     animate={{ scale: isCurrent ? 1.15 : 1 }}
@@ -77,7 +77,7 @@ export default function StepIndicator({
                   </motion.div>
 
                   <motion.p
-                    className={`mt-3 text-xs text-center max-w-[100px] leading-tight
+                    className={`mt-3 text-base text-center leading-tight
                                             ${
                                               isCurrent
                                                 ? "text-[var(--primary)] font-bold"

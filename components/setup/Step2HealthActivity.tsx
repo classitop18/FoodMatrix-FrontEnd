@@ -73,7 +73,7 @@ export default function Step2HealthActivity({
       className="space-y-8"
     >
       {/* Physical Profile */}
-      <div className="bg-white border-2 border-[#7661d3]/20 shadow-2xl rounded-2xl  p-6 shadow-lg border border-[#7661d3]/20">
+      <div className="bg-white border-2 border-[#7661d3]/20 rounded-2xl p-6 border border-[#7661d3]/20">
         <h3 className="text-2xl font-bold mb-6 flex items-center text-[#3d326d]">
           <div className="bg-gradient-to-br from-[#7661d3] to-[#3d326d] p-3 rounded-xl mr-3 shadow-md">
             <Activity className="text-white w-6 h-6" />
@@ -97,7 +97,7 @@ export default function Step2HealthActivity({
               step="0.1"
               {...form.register("height")}
               data-testid="input-height"
-              className="h-12 border-2 border-[#7661d3]/30 focus:border-[#7661d3] rounded-xl"
+              className="h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none"
             />
             {form.formState.errors.height && (
               <p className="text-sm text-red-500 mt-1">
@@ -121,7 +121,7 @@ export default function Step2HealthActivity({
               step="0.1"
               {...form.register("weight")}
               data-testid="input-weight"
-              className="h-12 border-2 border-[#7661d3]/30 focus:border-[#7661d3] rounded-xl"
+              className="h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none"
             />
             {form.formState.errors.weight && (
               <p className="text-sm text-red-500 mt-1">
@@ -140,7 +140,7 @@ export default function Step2HealthActivity({
             >
               <SelectTrigger
                 data-testid="select-activity-level"
-                className="h-12 border-2 border-[#7661d3]/30 focus:border-[#7661d3] rounded-xl bg-white"
+                className="h-11 rounded-lg !border !border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-sm font-medium shadow-none"
               >
                 <SelectValue placeholder="Select activity level" />
               </SelectTrigger>
@@ -169,7 +169,7 @@ export default function Step2HealthActivity({
       </div>
 
       {/* Health Conditions & Goals */}
-      <div className="bg-white border-2 border-[#7661d3]/20 shadow-2xl rounded-2xl p-6 shadow-lg border border-[#7dab4f]/20">
+      <div className="bg-white border-2 border-[#7661d3]/20 rounded-2xl p-6 border border-[#7dab4f]/20">
         <h3 className="text-2xl font-bold mb-6 flex items-center text-[#3d326d]">
           <div className="bg-gradient-to-br from-[#7dab4f] to-[#9bc76d] p-3 rounded-xl mr-3 shadow-md">
             <Stethoscope className="text-white w-6 h-6" />
@@ -186,7 +186,7 @@ export default function Step2HealthActivity({
             {conditions.map((condition) => (
               <label
                 key={condition.value}
-                className="flex items-center space-x-3 p-4 border-2 border-[#7661d3]/20 rounded-xl hover:bg-[#F3F0FD] cursor-pointer transition-all duration-300 hover:border-[#7661d3] hover:shadow-md group"
+                className="flex items-center space-x-3 p-4 py-3 border-2 border-[#7661d3]/20 rounded-xl hover:bg-[#F3F0FD] cursor-pointer transition-all duration-300 hover:border-[#7661d3] hover:shadow-md group"
               >
                 <Checkbox
                   checked={form.watch("conditions")?.includes(condition.value)}
@@ -214,7 +214,7 @@ export default function Step2HealthActivity({
             {allergies.map((allergy) => (
               <label
                 key={allergy.value}
-                className="flex items-center space-x-3 p-4 border-2 border-[#7dab4f]/20 rounded-xl hover:bg-[#E8F5E0] cursor-pointer transition-all duration-300 hover:border-[#7dab4f] hover:shadow-md group"
+                className="flex items-center space-x-3 p-4 py-3 border-2 border-[#7dab4f]/20 rounded-xl hover:bg-[#E8F5E0] cursor-pointer transition-all duration-300 hover:border-[#7dab4f] hover:shadow-md group"
               >
                 <Checkbox
                   checked={form.watch("allergies")?.includes(allergy.value)}
@@ -243,7 +243,7 @@ export default function Step2HealthActivity({
             {goals.map((goal) => (
               <label
                 key={goal.value}
-                className="flex items-center space-x-3 p-4 border-2 border-[#7661d3]/20 rounded-xl hover:bg-gradient-to-r hover:from-[#F3F0FD] hover:to-[#E8F5E0] cursor-pointer transition-all duration-300 hover:border-[#7661d3] hover:shadow-md group"
+                className="flex items-center space-x-3 p-4 py-3 border-2 border-[#7661d3]/20 rounded-xl hover:bg-gradient-to-r hover:from-[#F3F0FD] hover:to-[#E8F5E0] cursor-pointer transition-all duration-300 hover:border-[#7661d3] hover:shadow-md group"
               >
                 <Checkbox
                   checked={form.watch("goals")?.includes(goal.value)}

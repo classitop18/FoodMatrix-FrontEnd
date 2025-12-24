@@ -89,23 +89,7 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] relative overflow-hidden w-full font-sans">
-      {/* Background Patterns */}
-      <Image
-        src={pattern1}
-        className="absolute -top-64 -left-32 opacity-30 pointer-events-none"
-        width={818}
-        height={818}
-        alt="Pattern-1"
-      />
-      <Image
-        src={pattern2}
-        className="absolute right-0 -top-48 opacity-30 pointer-events-none"
-        width={818}
-        height={600}
-        alt="Pattern-2"
-      />
-
+    <div className="min-h-screen bg-gray-100 relative overflow-hidden w-full font-sans">
       {/* Main Container */}
       <div className="container mx-auto px-4 md:px-6 relative z-10 py-8">
         {/* Header Section */}
@@ -128,7 +112,7 @@ export default function AccountPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="bg-white hover:bg-gray-50 text-[#313131] font-bold py-2.5 px-4 rounded-xl shadow-sm border border-gray-100 transition-all flex items-center gap-2 text-sm">
+            <button className="bg-white hover:bg-gray-50 text-[#313131] font-bold py-2.5 px-4 rounded-xl shadow-sm border border-gray-200 transition-all flex items-center gap-2 text-sm">
               <Settings size={18} className="text-[#7661d3]" />
               Settings
             </button>
@@ -145,7 +129,7 @@ export default function AccountPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
           {/* Account Selector - Takes 4 columns */}
           <div className="lg:col-span-4">
-            <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 relative overflow-hidden group h-full hover:shadow-lg transition-all">
+            <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200 relative overflow-hidden group h-full hover:shadow-lg transition-all">
               <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-[#F3F0FD] to-transparent rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110 duration-500" />
 
               <div className="relative z-10">
@@ -179,7 +163,7 @@ export default function AccountPage() {
                       </div>
                     </div>
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl border border-gray-100 shadow-xl p-1 bg-white">
+                  <SelectContent className="rounded-xl border border-gray-200 shadow-xl p-1 bg-white">
                     {accountsList?.map((acc: any) => (
                       <SelectItem
                         key={acc.id}
@@ -227,7 +211,7 @@ export default function AccountPage() {
           {/* Budget Cards - Takes 8 columns */}
           <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* Budget Card */}
-            <div className="bg-white rounded-2xl p-6 shadow-md relative overflow-hidden group border border-gray-100 hover:shadow-lg hover:border-[#7661d3]/20 transition-all">
+            <div className="bg-white rounded-2xl p-6 shadow-md relative overflow-hidden group border border-gray-200 hover:shadow-lg hover:border-[#7661d3]/20 transition-all">
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#F3F0FD] to-transparent rounded-full -mr-12 -mt-12 transition-transform duration-500 group-hover:scale-125" />
 
               <div className="relative z-10 flex items-center justify-between mb-4">

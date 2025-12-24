@@ -60,7 +60,7 @@ export const BudgetOverviewTab: React.FC<BudgetOverviewTabProps> = ({
         {/* Card Content */}
         <div className="p-6 space-y-6 bg-white">
           {/* HEADER */}
-          <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+          <div className="flex items-center justify-between border-b border-gray-200 pb-4">
             <h3 className="text-xl font-extrabold text-[#313131]">
               Budget Overview
             </h3>
@@ -68,7 +68,7 @@ export const BudgetOverviewTab: React.FC<BudgetOverviewTabProps> = ({
 
           {/* ACTIVE BUDGET CARD */}
           {activeBudget && (
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <p className="text-gray-500 font-bold text-xs uppercase">

@@ -214,7 +214,7 @@ export default function ProfileEditPage() {
                         placeholder="68"
                         value={height}
                         onChange={(e) => setHeight(e.target.value)}
-                        className="w-full h-12 px-4 border-2 border-gray-200 focus:border-[#705CC7] rounded-xl focus:outline-none"
+                        className="h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none"
                       />
                     </div>
                     <div>
@@ -226,7 +226,7 @@ export default function ProfileEditPage() {
                         placeholder="150"
                         value={weight}
                         onChange={(e) => setWeight(e.target.value)}
-                        className="w-full h-12 px-4 border-2 border-gray-200 focus:border-[#705CC7] rounded-xl focus:outline-none"
+                        className="h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none"
                       />
                     </div>
                   </div>
@@ -512,7 +512,7 @@ export default function ProfileEditPage() {
           </div>
 
           {/* Footer Actions */}
-          <div className="border-t-2 border-gray-100 bg-gray-50 px-8 py-6 flex justify-end gap-4">
+          <div className="border-t-2 border-gray-200 bg-gray-50 px-8 py-6 flex justify-end gap-4">
             <button
               onClick={() => window.history.back()}
               className="px-6 py-3 border-2 border-gray-300 hover:bg-gray-100 rounded-xl font-bold transition-colors"

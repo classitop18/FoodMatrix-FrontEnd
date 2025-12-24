@@ -41,11 +41,11 @@ export function AccountSetupRequiredDialog({
       }}
     >
       <DialogContent
-        className="sm:max-w-md bg-white border border-gray-100 shadow-2xl rounded-2xl p-0 overflow-hidden"
+        className="sm:max-w-md bg-white border border-gray-200 shadow-2xl rounded-2xl p-0 overflow-hidden"
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
-        <div className="bg-[#F3F0FD] p-6 text-center border-b border-gray-100">
+        <div className="bg-[#F3F0FD] p-6 text-center border-b border-gray-200">
           <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm text-3xl">
             🚀
           </div>

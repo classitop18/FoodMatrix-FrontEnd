@@ -1,5 +1,3 @@
-import React from "react";
-
 export default function MealPlanningPage() {
-  return <div></div>;
+  return <div>Meal Plannig is under developement</div>;
 }
