@@ -32,34 +32,52 @@ export default function ConfirmationModal({
     await onConfirm();
   };
 
+  const handleClose = () => {
+    if (!isLoading) {
+      onClose();
+    }
+  };
+
   const variantStyles = {
     danger: {
       icon: AlertTriangle,
-      iconBg: "bg-red-100",
-      iconColor: "text-red-600",
-      headerBg: "from-red-600 to-red-700",
-      buttonBg: "bg-red-600 hover:bg-red-700",
+      iconBg: "bg-white/20",
+      iconColor: "text-white",
+      headerBg: "from-[#7661d3] to-[#3d326d]",
+      buttonBg: "from-[#7661d3] to-[#3d326d]",
+      contentBg: "bg-[#F3F0FD]",
+      contentBorder: "border-[#7661d3]/20",
+      contentText: "text-[#313131]",
     },
     success: {
       icon: CheckCircle,
-      iconBg: "bg-green-100",
-      iconColor: "text-green-600",
-      headerBg: "from-green-600 to-green-700",
-      buttonBg: "bg-green-600 hover:bg-green-700",
+      iconBg: "bg-white/20",
+      iconColor: "text-white",
+      headerBg: "from-[#7661d3] to-[#3d326d]",
+      buttonBg: "from-[#7661d3] to-[#3d326d]",
+      contentBg: "bg-[#F3F0FD]",
+      contentBorder: "border-[#7661d3]/20",
+      contentText: "text-[#313131]",
     },
     warning: {
       icon: AlertTriangle,
-      iconBg: "bg-amber-100",
-      iconColor: "text-amber-600",
-      headerBg: "from-amber-600 to-amber-700",
-      buttonBg: "bg-amber-600 hover:bg-amber-700",
+      iconBg: "bg-white/20",
+      iconColor: "text-white",
+      headerBg: "from-[#7661d3] to-[#3d326d]",
+      buttonBg: "from-[#7661d3] to-[#3d326d]",
+      contentBg: "bg-[#F3F0FD]",
+      contentBorder: "border-[#7661d3]/20",
+      contentText: "text-[#313131]",
     },
     info: {
       icon: Info,
-      iconBg: "bg-blue-100",
-      iconColor: "text-blue-600",
+      iconBg: "bg-white/20",
+      iconColor: "text-white",
       headerBg: "from-[#7661d3] to-[#3d326d]",
-      buttonBg: "bg-[#7661d3] hover:bg-[#3d326d]",
+      buttonBg: "from-[#7661d3] to-[#3d326d]",
+      contentBg: "bg-[#F3F0FD]",
+      contentBorder: "border-[#7661d3]/20",
+      contentText: "text-[#313131]",
     },
   };
 
@@ -68,20 +86,22 @@ export default function ConfirmationModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full animate-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className={`bg-gradient-to-r ${style.headerBg} text-white p-6`}>
+        <div
+          className={`bg-gradient-to-r ${style.headerBg} text-white p-6 rounded-t-2xl`}
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div
-                className={`h-10 w-10 ${style.iconBg} rounded-xl flex items-center justify-center`}
+                className={`h-10 w-10 ${style.iconBg} rounded-xl flex items-center justify-center backdrop-blur-sm`}
               >
                 <Icon size={20} className={style.iconColor} />
               </div>
               <h2 className="text-xl font-extrabold">{title}</h2>
             </div>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               disabled={isLoading}
               className="h-8 w-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -91,33 +111,41 @@ export default function ConfirmationModal({
         </div>
 
         {/* Content */}
-        <div className="p-6">
-          <p className="text-gray-700 text-sm leading-relaxed">{message}</p>
-        </div>
+        <div className="p-6 space-y-5">
+          <div
+            className={`${style.contentBg} border ${style.contentBorder} rounded-xl p-4`}
+          >
+            <p
+              className={`text-sm leading-relaxed font-medium ${style.contentText}`}
+            >
+              {message}
+            </p>
+          </div>
 
-        {/* Actions */}
-        <div className="px-6 pb-6 flex gap-3">
-          <button
-            onClick={onClose}
-            disabled={isLoading}
-            className="flex-1 py-3 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {cancelText}
-          </button>
-          <button
-            onClick={handleConfirm}
-            disabled={isLoading}
-            className={`flex-1 py-3 rounded-xl ${style.buttonBg} text-white font-bold text-sm shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
-          >
-            {isLoading ? (
-              <>
-                <Loader2 size={16} className="animate-spin" />
-                Processing...
-              </>
-            ) : (
-              confirmText
-            )}
-          </button>
+          {/* Action Buttons */}
+          <div className="flex gap-3">
+            <button
+              onClick={handleClose}
+              disabled={isLoading}
+              className="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-gray-700 font-bold text-sm hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {cancelText}
+            </button>
+            <button
+              onClick={handleConfirm}
+              disabled={isLoading}
+              className={`flex-1 px-4 py-3 rounded-xl bg-gradient-to-r ${style.buttonBg} text-white font-bold text-sm hover:shadow-lg hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                confirmText
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

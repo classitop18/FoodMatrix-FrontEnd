@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, Lock, Eye, EyeOff, LogIn, UserCheck } from "lucide-react";
 import { useLogin } from "@/services/auth/auth.mutation";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "@/redux/features/auth/auth.slice";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -27,8 +27,8 @@ type LoginFormData = {
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
 
-  // Hookes
-
+  // Hooks
+  const { toast } = useToast();
   const dispatch = useDispatch();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -47,6 +47,47 @@ export default function LoginPage() {
       password: "",
     },
   });
+
+  // Email verification toast notification with security
+  useEffect(() => {
+    const verified = searchParams.get("verified");
+    const error = searchParams.get("error");
+    const timestamp = searchParams.get("t");
+
+    // Security check: Only show toast if there's a timestamp (from backend redirect)
+    // and it hasn't been shown before (using sessionStorage as one-time flag)
+    if (verified && timestamp) {
+      const storageKey = `email_verification_${timestamp}`;
+      const alreadyShown = sessionStorage.getItem(storageKey);
+
+      if (!alreadyShown) {
+        if (verified === "true") {
+          toast({
+            title: "Email verified successfully!",
+            description: "You can now log in to your account.",
+            variant: "default",
+          });
+        } else if (verified === "false" && error) {
+          toast({
+            title: "Email verification failed",
+            description: decodeURIComponent(error),
+            variant: "destructive",
+          });
+        }
+
+        // Mark as shown so it won't show again even if user refreshes
+        sessionStorage.setItem(storageKey, "true");
+
+        // Clean URL after a short delay to ensure toast is visible
+        setTimeout(() => {
+          window.history.replaceState({}, "", "/login");
+        }, 100);
+      } else {
+        // Already shown, just clean the URL immediately
+        window.history.replaceState({}, "", "/login");
+      }
+    }
+  }, [searchParams]);
 
   const onSubmit = async (data: LoginFormData) => {
     console.log("Form Data:", data);
@@ -72,6 +113,7 @@ export default function LoginPage() {
       toast({
         title: "Login Successful",
         description: "Welcome back!",
+        variant: "default",
       });
       router.push(returnUrl || "/dashboard");
     } catch (error: any) {
@@ -85,7 +127,7 @@ export default function LoginPage() {
       toast({
         title: "Login Failed",
         description: errorMessage,
-        variant: "destructive", // "destructive" usually shows red/error toast
+        variant: "destructive",
       });
     }
   };

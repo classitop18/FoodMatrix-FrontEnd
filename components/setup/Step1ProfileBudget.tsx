@@ -241,8 +241,8 @@ export default function Step1ProfileBudget({
                     />
                   </div>
                   <p className="text-xs text-gray-400 mt-2 ml-1">
-                    Enter your target {budget.allocation} spending limit for food
-                    and beverages.
+                    Enter your target {budget.allocation} spending limit for
+                    food and beverages.
                   </p>
                   {form.formState.errors[budget.field] && (
                     <p className="text-sm text-red-500 mt-1">
@@ -262,10 +262,11 @@ export default function Step1ProfileBudget({
                 Food Budget Allocation
               </Label>
               <span
-                className={`text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-bold text-center ${isPercentageValid
-                  ? "bg-gradient-to-r from-[#7dab4f] to-[#9bc76d] text-white"
-                  : "bg-gradient-to-r from-red-500 to-red-600 text-white"
-                  }`}
+                className={`text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-bold text-center ${
+                  isPercentageValid
+                    ? "bg-gradient-to-r from-[#7dab4f] to-[#9bc76d] text-white"
+                    : "bg-gradient-to-r from-red-500 to-red-600 text-white"
+                }`}
               >
                 Total: {totalPercentage}%
               </span>

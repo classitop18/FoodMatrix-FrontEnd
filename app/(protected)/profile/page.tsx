@@ -59,14 +59,9 @@ const ProfilePage = () => {
   const { user } = useSelector((state: RootState) => state.auth);
   const { account, activeBudget } = useSelector(
     (state: RootState) => state.account,
-
-
-
   );
 
-
-
-  console.log({ activeBudget })
+  console.log({ activeBudget });
 
   const [isMfaUpdating, setIsMfaUpdating] = useState(false);
 
@@ -467,10 +462,11 @@ const ProfilePage = () => {
         <div className="flex gap-3 mb-6 overflow-x-auto pb-2 animate-fade-in">
           <button
             onClick={() => setActiveTab("account")}
-            className={`px-5 py-2 rounded-full font-bold text-sm transition-all duration-300 whitespace-nowrap ${activeTab === "account"
-              ? "bg-[var(--primary)] text-white shadow-lg"
-              : "bg-white text-gray-600 hover:bg-gray-100"
-              }`}
+            className={`px-5 py-2 rounded-full font-bold text-sm transition-all duration-300 whitespace-nowrap ${
+              activeTab === "account"
+                ? "bg-[var(--primary)] text-white shadow-lg"
+                : "bg-white text-gray-600 hover:bg-gray-100"
+            }`}
           >
             <div className="flex items-center gap-2">
               <UserCircle className="w-4 h-4" />
@@ -480,10 +476,11 @@ const ProfilePage = () => {
 
           <button
             onClick={() => setActiveTab("settings")}
-            className={`px-5 py-2 rounded-full font-bold text-sm transition-all duration-300 whitespace-nowrap ${activeTab === "settings"
-              ? "bg-[var(--primary)] text-white shadow-lg"
-              : "bg-white text-gray-600 hover:bg-gray-100"
-              }`}
+            className={`px-5 py-2 rounded-full font-bold text-sm transition-all duration-300 whitespace-nowrap ${
+              activeTab === "settings"
+                ? "bg-[var(--primary)] text-white shadow-lg"
+                : "bg-white text-gray-600 hover:bg-gray-100"
+            }`}
           >
             <div className="flex items-center gap-2">
               <Settings className="w-4 h-4" />
@@ -705,17 +702,18 @@ const ProfilePage = () => {
                           setEditData({ ...editData, username: e.target.value })
                         }
                         disabled={!isEditing}
-                        className={`h-11 rounded-lg border text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none pr-10 ${isEditing &&
+                        className={`h-11 rounded-lg border text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none pr-10 ${
+                          isEditing &&
                           editData?.username !== accountData.username
-                          ? validation.username.exists ||
-                            !validation.username.isValid
-                            ? "border-red-500 focus:border-red-500"
-                            : validation.username.isValid &&
-                              validation.username.message
-                              ? "border-green-500 focus:border-green-500"
-                              : "border-[#BCBCBC]"
-                          : "border-[#BCBCBC]"
-                          }`}
+                            ? validation.username.exists ||
+                              !validation.username.isValid
+                              ? "border-red-500 focus:border-red-500"
+                              : validation.username.isValid &&
+                                  validation.username.message
+                                ? "border-green-500 focus:border-green-500"
+                                : "border-[#BCBCBC]"
+                            : "border-[#BCBCBC]"
+                        }`}
                       />
                       {isEditing &&
                         editData?.username !== accountData.username &&

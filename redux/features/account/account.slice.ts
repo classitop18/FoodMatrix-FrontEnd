@@ -112,8 +112,6 @@ const getActiveBudget = (account: any): ActiveBudget | null => {
   // 2. Fallback: Find first available budget (precedence: weekly > daily > monthly > annual)
   // Reordered to prioritize weekly as it's the default required field
 
-
-
   const budgets = [
     { type: "weekly", label: "Weekly Budget", value: account?.weeklyBudget },
     { type: "daily", label: "Daily Budget", value: account?.dailyBudget },
@@ -124,10 +122,10 @@ const getActiveBudget = (account: any): ActiveBudget | null => {
   const active = budgets.find((b) => b.value !== null && b.value !== undefined);
   return active
     ? {
-      type: active.type as BudgetType,
-      label: active.label,
-      amount: Number(active.value),
-    }
+        type: active.type as BudgetType,
+        label: active.label,
+        amount: Number(active.value),
+      }
     : null;
 };
 
@@ -149,7 +147,7 @@ const calculateSpent = (account: any, budget: ActiveBudget | null) => {
 
 const calculateAccountDerived = (account: any) => {
   const activeBudget = getActiveBudget(account);
-  console.log({ activeBudget }, "acive")
+  console.log({ activeBudget }, "acive");
   const spent = calculateSpent(account, activeBudget);
   return {
     account,

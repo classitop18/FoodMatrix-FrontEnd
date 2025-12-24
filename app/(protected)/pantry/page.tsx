@@ -108,6 +108,7 @@ const PantryPage: React.FC = () => {
     isError,
     error,
     refetch,
+    isFetching,
   } = usePantryQuery({
     page: currentPage,
     limit: itemsPerPage,
@@ -334,7 +335,10 @@ const PantryPage: React.FC = () => {
                 onClick={() => refetch()}
                 className="bg-white hover:bg-gray-50 text-[#313131] font-bold py-2.5 px-4 rounded-xl shadow-sm border border-gray-100 transition-all flex items-center gap-2 text-sm h-auto"
               >
-                <RefreshCw size={18} className="text-[#7661d3]" />
+                <RefreshCw
+                  size={18}
+                  className={`text-[#7661d3] ${isFetching ? "animate-spin" : ""}`}
+                />
                 Refresh
               </Button>
               <Button
