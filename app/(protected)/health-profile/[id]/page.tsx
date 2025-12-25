@@ -112,7 +112,7 @@ export default function HealthProfilePage() {
   const handleEditProfile = () => {
     if (isEditDisabled) {
       toast({
-        variant: "destructive",
+        variant: "info",
         title: "Edit not allowed",
         description: "Invited user's health profile cannot be edited.",
       });
