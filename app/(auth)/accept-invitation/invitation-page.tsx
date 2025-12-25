@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { InvitationService } from "@/services/invitation/invitation.service";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import { Loader2, CheckCircle2, XCircle, Mail, ArrowRight } from "lucide-react";
 import ThemeButton from "@/components/common/buttons/theme-button";
 import { useSelector } from "react-redux";
@@ -45,7 +45,11 @@ export default function InvitationPage() {
           if (user.email.toLowerCase() === details.email.toLowerCase()) {
             await InvitationService.acceptInvitation(token);
             setStatus("success");
-            toast.success("Invitation accepted successfully!");
+            toast({
+              variant: "success",
+              title: "Invitation accepted",
+              description: "Invitation accepted successfully!",
+            });
           } else {
             setStatus("error");
             setErrorMessage(

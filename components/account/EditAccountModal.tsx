@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { X, Home, MapPin, Loader2 } from "lucide-react";
 import { AddressAutocomplete } from "@/components/profile/address-autocomplete";
 import { useUpdateAccount } from "@/services/account/account.mutation";
-import { toast as sonnerToast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 
 interface EditAccountModalProps {
   isOpen: boolean;
@@ -53,7 +53,11 @@ export default function EditAccountModal({
     e.preventDefault();
 
     if (!formData.accountName.trim()) {
-      sonnerToast.error("Account name is required");
+      toast({
+        variant: "destructive",
+        title: "Provide valid information",
+        description: "Account name is required",
+      });
       return;
     }
 
@@ -106,7 +110,11 @@ export default function EditAccountModal({
 
     // If nothing changed, just close
     if (Object.keys(updateData).length === 0) {
-      sonnerToast.info("No changes detected");
+      toast({
+        variant: "info",
+        title: "Update Alert",
+        description: "No changes detected.",
+      });
       onClose();
       return;
     }
@@ -115,7 +123,11 @@ export default function EditAccountModal({
       { accountId: account.id, data: updateData },
       {
         onSuccess: () => {
-          sonnerToast.success("Account updated successfully!");
+          toast({
+            variant: "success",
+            title: "Update successful",
+            description: "Account updated successfully!",
+          });
           onClose();
         },
       },

@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { X, AlertTriangle, Loader2, Trash2 } from "lucide-react";
 import { useDeleteAccount } from "@/services/account/account.mutation";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 
 interface DeleteAccountModalProps {
@@ -23,13 +23,21 @@ export default function DeleteAccountModal({
 
   const handleDelete = async () => {
     if (confirmText !== "DELETE") {
-      toast.error("Please type DELETE to confirm");
+      toast({
+        variant: "destructive",
+        title: "Confirmation Required",
+        description: "Please type DELETE to confirm.",
+      });
       return;
     }
 
     deleteAccountMutation.mutate(account.id, {
       onSuccess: () => {
-        toast.success("Account deleted successfully!");
+        toast({
+          variant: "success",
+          title: "Delete successful",
+          description: "Account deleted successfully!",
+        });
         onClose();
         router.push("/account");
       },

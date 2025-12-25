@@ -84,7 +84,7 @@ export default function Register() {
     usernameFormat: true,
     username: { checked: false, available: false },
     email: { checked: false, available: false },
-  });
+  }); 
 
   const checkAvailability = async (
     field: "username" | "email",

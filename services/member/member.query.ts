@@ -11,3 +11,13 @@ export const useMembers = (params: GetMembersParams, options?: any) => {
     ...options,
   });
 };
+
+export const useGetMember = (memberId: string) => {
+  return useQuery({
+    queryKey: ["member", memberId],
+    queryFn: () => memberSerice.getMemberById(memberId),
+    enabled: !!memberId,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+};

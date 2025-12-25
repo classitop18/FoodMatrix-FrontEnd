@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 
 interface RetriableRequestConfig extends AxiosRequestConfig {
   _retry?: boolean;
@@ -113,8 +113,10 @@ class ApiClient {
               !originalRequest._silentRefresh &&
               typeof window !== "undefined"
             ) {
-              toast.success("Session refreshed successfully", {
-                duration: 2000,
+              toast({
+                variant: "success",
+                title: "Session Refreshed",
+                description: "Session refreshed successfully",
               });
             }
 
@@ -138,21 +140,31 @@ class ApiClient {
             errorCode === "REFRESH_TOKEN_MISSING" ||
             errorCode === "SESSION_EXPIRED"
           ) {
-            toast.error("Your session has expired. Please login again.", {
-              duration: 4000,
+            toast({
+              variant: "destructive",
+              title: "Session Expired",
+
+              description: "Your session has expired. Please login again."
             });
             this.handleLogout();
           } else if (
             errorCode === "INVALID_REFRESH_TOKEN" ||
+
             errorCode === "SESSION_INVALID"
           ) {
-            toast.error("Invalid session. Please login again.", {
-              duration: 4000,
+            toast({
+              variant: "destructive",
+              title: "Invalid Session",
+
+              description: "Invalid session. Please login again."
             });
             this.handleLogout();
           } else if (errorMessage) {
-            toast.error(errorMessage, {
-              duration: 3000,
+            toast({
+              variant: "destructive",
+              title: "Something went wrong",
+
+              description: errorMessage
             });
           }
         }
@@ -183,24 +195,39 @@ class ApiClient {
       const errorMessage = error.response?.data?.message;
 
       if (errorCode === "REFRESH_TOKEN_MISSING") {
-        toast.error("Session expired. Please login again.", {
-          duration: 4000,
+        toast({
+          variant: "destructive",
+          title: "Session Expired",
+
+          description: "Your session has expired. Please login again."
         });
       } else if (errorCode === "SESSION_EXPIRED") {
-        toast.error("Your session has expired. Please login again.", {
-          duration: 4000,
+        toast({
+          variant: "destructive",
+          title: "Session Expired",
+
+          description: "Your session has expired. Please login again."
         });
       } else if (errorCode === "INVALID_REFRESH_TOKEN") {
-        toast.error("Invalid session. Please login again.", {
-          duration: 4000,
+        toast({
+          variant: "destructive",
+          title: "Invalid Session",
+
+          description: "Invalid session. Please login again."
         });
       } else if (errorMessage) {
-        toast.error(errorMessage, {
-          duration: 3000,
+        toast({
+          variant: "destructive",
+          title: "Something went wrong",
+
+          description: errorMessage
         });
       } else {
-        toast.error("Failed to refresh session. Please login again.", {
-          duration: 4000,
+        toast({
+          variant: "destructive",
+          title: "Something went wrong",
+
+          description: "Failed to refresh session. Please login again."
         });
       }
 
@@ -220,8 +247,10 @@ class ApiClient {
 
     // Show logout toast
     if (typeof window !== "undefined") {
-      toast.info("You have been logged out. Redirecting to login...", {
-        duration: 3000,
+      toast({
+        variant: "info",
+        title: "Logged out",
+        description: "You have been logged out. Redirecting to login...",
       });
 
       // Redirect after a short delay
@@ -256,8 +285,10 @@ class ApiClient {
   public async manualRefreshToken(): Promise<string> {
     try {
       const newToken = await this.refreshAccessToken();
-      toast.success("Session refreshed successfully", {
-        duration: 2000,
+      toast({
+        variant: "success",
+        title: "Session Refreshed",
+        description: "Session refreshed successfully",
       });
       return newToken;
     } catch (error) {

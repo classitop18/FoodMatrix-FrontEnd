@@ -12,7 +12,7 @@ import {
   Info,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import { useCreateMember } from "@/services/member/member.mutation";
 import { useSendInvitation } from "@/services/invitation/invitation.mutation";
 
@@ -60,7 +60,11 @@ export default function AddMemberModal({
   const handleInternalSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!internalData.name.trim()) {
-      toast.error("Name is required");
+      toast({
+        variant: "destructive",
+        title: "Provide valid information",
+        description: "Name is required.",
+      });
       return;
     }
     createMemberMutation.mutate(
@@ -84,7 +88,11 @@ export default function AddMemberModal({
   const handleInviteSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inviteData.email.trim()) {
-      toast.error("Email is required");
+      toast({
+        variant: "destructive",
+        title: "Provide valid information",
+        description: "Email is required.",
+      });
       return;
     }
     sendInviteMutation.mutate(
