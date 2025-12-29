@@ -18,35 +18,60 @@ export class InvitationService {
   }
 
   // ============ APPROVE INVITATION (ADMIN) ============
-  static async approveInvitation(invitationId: string, role: string) {
-    const response = await apiClient.post("/invitations/approve", {
-      invitationId,
-      role,
-    });
+  static async approveInvitation(
+    invitationId: string,
+    role: string,
+    accountId?: string,
+  ) {
+    const config = accountId ? { headers: { "x-account-id": accountId } } : {};
+    const response = await apiClient.post(
+      "/invitations/approve",
+      {
+        invitationId,
+        role,
+      },
+      config,
+    );
     return response.data;
   }
 
   // ============ REJECT INVITATION (ADMIN) ============
-  static async rejectInvitation(invitationId: string, reason?: string) {
-    const response = await apiClient.post("/invitations/reject", {
-      invitationId,
-      reason,
-    });
+  static async rejectInvitation(
+    invitationId: string,
+    reason?: string,
+    accountId?: string,
+  ) {
+    const config = accountId ? { headers: { "x-account-id": accountId } } : {};
+    const response = await apiClient.post(
+      "/invitations/reject",
+      {
+        invitationId,
+        reason,
+      },
+      config,
+    );
     return response.data;
   }
 
   // ============ RESEND INVITATION ============
-  static async resendInvitation(invitationId: string) {
-    const response = await apiClient.post("/invitations/resend", {
-      invitationId,
-    });
+  static async resendInvitation(invitationId: string, accountId?: string) {
+    const config = accountId ? { headers: { "x-account-id": accountId } } : {};
+    const response = await apiClient.post(
+      "/invitations/resend",
+      {
+        invitationId,
+      },
+      config,
+    );
     return response.data;
   }
 
   // ============ CANCEL INVITATION ============
-  static async cancelInvitation(invitationId: string) {
+  static async cancelInvitation(invitationId: string, accountId?: string) {
+    const config = accountId ? { headers: { "x-account-id": accountId } } : {};
     const response = await apiClient.delete("/invitations/cancel", {
       data: { invitationId },
+      ...config,
     });
     return response.data;
   }

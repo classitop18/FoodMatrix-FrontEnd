@@ -1,5 +1,7 @@
 import React from "react";
 import { Crown, User, Edit, X } from "lucide-react";
+import { ProtectedAction } from "@/components/common/protected-action";
+import { PERMISSIONS } from "@/lib/permissions";
 
 interface MemberTableRowProps {
   member: any;
@@ -82,13 +84,12 @@ export const MemberTableRow: React.FC<MemberTableRowProps> = ({
         Role
       </div>
       <div
-        className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border ${
-          member.role === "super_admin"
-            ? "bg-amber-50 text-amber-600 border-amber-100"
-            : member.role === "admin"
-              ? "bg-blue-50 text-blue-600 border-blue-100"
-              : "bg-purple-50 text-purple-600 border-purple-100"
-        }`}
+        className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border ${member.role === "super_admin"
+          ? "bg-amber-50 text-amber-600 border-amber-100"
+          : member.role === "admin"
+            ? "bg-blue-50 text-blue-600 border-blue-100"
+            : "bg-purple-50 text-purple-600 border-purple-100"
+          }`}
       >
         {member.role === "super_admin" ? "Super Admin" : member.role}
       </div>
@@ -117,31 +118,37 @@ export const MemberTableRow: React.FC<MemberTableRowProps> = ({
     </div>
 
     <div className="col-span-12 md:col-span-1 flex items-center justify-end gap-1 mt-2 md:mt-0 pt-2 md:pt-0 border-t md:border-t-0 border-gray-50">
-      <button
-        onClick={onViewProfile}
-        className="h-8 w-8 rounded-lg bg-[#F3F0FD] hover:bg-[#7661d3] text-[#7661d3] hover:text-white flex items-center justify-center transition-all shadow-sm"
-        title="View Profile"
-      >
-        <User size={14} />
-      </button>
+      <ProtectedAction permission={PERMISSIONS.HEALTH_PROFILE_VIEW}>
+        <button
+          onClick={onViewProfile}
+          className="h-8 w-8 rounded-lg bg-[#F3F0FD] hover:bg-[#7661d3] text-[#7661d3] hover:text-white flex items-center justify-center transition-all shadow-sm"
+          title="View Profile"
+        >
+          <User size={14} />
+        </button>
+      </ProtectedAction>
       {!isCurrentUser && (
         <div className="flex items-center gap-1">
-          <button
-            onClick={onEdit}
-            className="h-8 w-8 rounded-lg bg-gray-50 hover:bg-gray-600 text-gray-600 hover:text-white flex items-center justify-center transition-all shadow-sm"
-            title="Edit"
-          >
-            <Edit size={14} />
-          </button>
+          <ProtectedAction permission={PERMISSIONS.MEMBER_UPDATE}>
+            <button
+              onClick={onEdit}
+              className="h-8 w-8 rounded-lg bg-gray-50 hover:bg-gray-600 text-gray-600 hover:text-white flex items-center justify-center transition-all shadow-sm"
+              title="Edit"
+            >
+              <Edit size={14} />
+            </button>
+          </ProtectedAction>
 
           {member.role !== "super_admin" && (
-            <button
-              onClick={onDelete}
-              className="h-8 w-8 rounded-lg bg-red-50 hover:bg-red-600 text-red-600 hover:text-white flex items-center justify-center transition-all shadow-sm"
-              title="Remove"
-            >
-              <X size={14} />
-            </button>
+            <ProtectedAction permission={PERMISSIONS.MEMBER_DELETE}>
+              <button
+                onClick={onDelete}
+                className="h-8 w-8 rounded-lg bg-red-50 hover:bg-red-600 text-red-600 hover:text-white flex items-center justify-center transition-all shadow-sm"
+                title="Remove"
+              >
+                <X size={14} />
+              </button>
+            </ProtectedAction>
           )}
         </div>
       )}

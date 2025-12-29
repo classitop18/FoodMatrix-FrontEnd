@@ -1,5 +1,9 @@
 "use client";
 import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { usePermissions } from "@/hooks/use-permissions";
+import { PERMISSIONS } from "@/lib/permissions";
+import { ProtectedAction } from "@/components/common/protected-action";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -206,6 +210,9 @@ export default function MealPlanning() {
   >({});
   const [selectedRecipes, setSelectedRecipes] = useState<any[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>("date");
+
+  const { can } = usePermissions();
+  const isReadOnly = !can(PERMISSIONS.MEAL_CREATE);
 
   const { dates: cleanedDates, plan: cleanedPlan } = useMemo(
     () => validateAndCleanDates(),
@@ -458,8 +465,20 @@ export default function MealPlanning() {
 
   const totalCost = costs.groceries + costs.takeout + costs.dining;
 
+  const router = useRouter();
+
   const handleContinueToRecipes = () => {
-    // Navigate logic
+    // Ensure data is saved before navigating
+    localStorage.setItem(LS_KEYS.WEEK_PLAN, JSON.stringify(weekPlan));
+    if (selectedDates.length > 0) {
+      const serial = selectedDates.map((d) => ({
+        ...d,
+        actualDate: d.actualDate.toISOString(),
+      }));
+      localStorage.setItem(LS_KEYS.SELECTED_DATES, JSON.stringify(serial));
+    }
+
+    router.push("/recipe-selection");
   };
 
   const today = startOfDay(new Date());
@@ -640,7 +659,7 @@ export default function MealPlanning() {
         </div>
 
         {/* Date Selection Control */}
-        {viewMode === "date" && (
+        {viewMode === "date" && !isReadOnly && (
           <div className="mb-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
             <div className="bg-white rounded-xl p-3 border border-blue-100/50 shadow-sm flex flex-col sm:flex-row gap-3 items-center justify-between">
               <div className="flex-1 w-full flex items-center gap-3 pl-2">
@@ -785,17 +804,21 @@ export default function MealPlanning() {
                 <CalendarIcon className="w-10 h-10 text-[#7dab4f]" />
               </div>
               <h3 className="text-2xl font-black text-[#1a1a1a] mb-3">
-                Start Planning
+                {isReadOnly ? "No Plans Yet" : "Start Planning"}
               </h3>
               <p className="text-gray-500 mb-8 max-w-md mx-auto leading-relaxed text-lg">
-                Select a date to begin your nutritional journey.
+                {isReadOnly
+                  ? "No meal plans have been created for this period."
+                  : "Select a date to begin your nutritional journey."}
               </p>
-              <Button
-                onClick={() => setIsDateDialogOpen(true)}
-                className="text-white bg-(--primary) hover:bg-(--primary) text-white rounded-xl h-14 px-10 shadow-xl shadow-[#7dab4f]/20 hover:shadow-2xl hover:-translate-y-1 transition-all font-bold text-lg"
-              >
-                Add First Day
-              </Button>
+              {!isReadOnly && (
+                <Button
+                  onClick={() => setIsDateDialogOpen(true)}
+                  className="text-white bg-(--primary) hover:bg-(--primary) text-white rounded-xl h-14 px-10 shadow-xl shadow-[#7dab4f]/20 hover:shadow-2xl hover:-translate-y-1 transition-all font-bold text-lg"
+                >
+                  Add First Day
+                </Button>
+              )}
             </div>
           )}
 
@@ -843,7 +866,8 @@ export default function MealPlanning() {
                 )}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                {viewMode === "date" && (
+
+                {viewMode === "date" && !isReadOnly && (
                   <button
                     onClick={() => {
                       setSelectedDates((prev) =>
@@ -956,11 +980,11 @@ export default function MealPlanning() {
                               >
                                 <Select
                                   value={mealSlot.type}
-                                  onValueChange={(val:MealType) =>
+                                  onValueChange={(val: MealType) =>
                                     !isDisabled &&
                                     updateMealSlot(d.key, meal, val)
                                   }
-                                  disabled={isDisabled}
+                                  disabled={isDisabled || isReadOnly}
                                 >
                                   <SelectTrigger
                                     className={cn(
@@ -1046,7 +1070,7 @@ export default function MealPlanning() {
             );
           })}
 
-          {viewMode === "date" && selectedDates.length > 0 && (
+          {viewMode === "date" && selectedDates.length > 0 && !isReadOnly && (
             <div className="flex justify-center pt-8">
               <Button
                 onClick={addNextDay}
@@ -1070,7 +1094,8 @@ export default function MealPlanning() {
         </div>
 
         {/* Floating Action Footer (Island Design) */}
-        {selectedDates.length > 0 && (
+        {/* Floating Action Footer (Island Design) */}
+        {selectedDates.length > 0 && !isReadOnly && (
           <div className="fixed bottom-8 left-0 right-0 z-50 flex justify-center px-4 animate-in slide-in-from-bottom-10 duration-700 pointer-events-none">
             <div className="bg-[#1a1a1a]/95 backdrop-blur-xl rounded-xl p-2 pl-8 pr-2 shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/10 flex items-center gap-12 w-full max-w-lg pointer-events-auto ring-1 ring-white/10">
               <div className="flex flex-col">

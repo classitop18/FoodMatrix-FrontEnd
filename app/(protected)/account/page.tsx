@@ -11,6 +11,7 @@ import {
   Plus,
   MailIcon,
   ChevronDown,
+  CloudCog,
 } from "lucide-react";
 import {
   Select,
@@ -40,11 +41,18 @@ import { BudgetOverviewTab } from "@/components/account/tabs/BudgetOverviewTab";
 import { MembersTab } from "@/components/account/tabs/MembersTab";
 import { InvitationsTab } from "@/components/account/tabs/InvitationsTab";
 
+import { usePermissions } from "@/hooks/use-permissions";
+import { PERMISSIONS } from "@/lib/permissions";
+import { ProtectedAction } from "@/components/common/protected-action";
+
 export default function AccountPage() {
+  const { can, isMember } = usePermissions();
   const [activeTab, setActiveTab] = useState("overview");
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(
     new Set(["overview"]),
   );
+
+  console.log({ isMember }, "isMember");
 
   // Modal states
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
@@ -62,12 +70,16 @@ export default function AccountPage() {
     accountsList,
     activeAccountId,
     account,
+    myMembership,
+
     activeBudget,
     spent,
     usagePercent,
     resetInDays,
     loading,
   } = useSelector((state: RootState) => state.account);
+
+  console.log({ account }, "account")
   const user = useSelector((state: RootState) => state.auth.user);
 
   // Handle tab change with lazy loading tracking
@@ -87,6 +99,9 @@ export default function AccountPage() {
   if (loading && !account) {
     return <Loader />;
   }
+
+
+  console.log({ myMembership }, "myMembership")
 
   return (
     <div className="min-h-screen bg-gray-100 relative overflow-hidden w-full font-sans">
@@ -112,16 +127,20 @@ export default function AccountPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="bg-white hover:bg-gray-50 text-[#313131] font-bold py-2.5 px-4 rounded-xl shadow-sm border border-gray-200 transition-all flex items-center gap-2 text-sm">
-              <Settings size={18} className="text-[#7661d3]" />
-              Settings
-            </button>
+            {!isMember && (
+              <button className="bg-white hover:bg-gray-50 text-[#313131] font-bold py-2.5 px-4 rounded-xl shadow-sm border border-gray-200 transition-all flex items-center gap-2 text-sm">
+                <Settings size={18} className="text-[#7661d3]" />
+                Settings
+              </button>
+            )}
+
             <Link href={"/account/create"}>
               <button className="bg-[#313131] hover:bg-black text-white font-bold py-2.5 px-4  rounded-xl shadow-lg transition-all flex items-center gap-2 text-sm">
                 <Plus size={18} />
                 Create New
               </button>
             </Link>
+
           </div>
         </div>
 
@@ -268,9 +287,9 @@ export default function AccountPage() {
                   <h3 className="text-3xl font-extrabold text-white tracking-tight">
                     {activeBudget
                       ? `$${Math.max(
-                          activeBudget.amount - spent,
-                          0,
-                        ).toLocaleString()}`
+                        activeBudget.amount - spent,
+                        0,
+                      ).toLocaleString()}`
                       : "—"}
                   </h3>
                 </div>
@@ -299,26 +318,32 @@ export default function AccountPage() {
             { id: "overview", label: "Account Overview", icon: User },
             { id: "budget", label: "Budget & Finance", icon: Wallet },
             { id: "members", label: "Family Members", icon: Users },
-            { id: "invitations", label: "Invitations", icon: MailIcon },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => handleTabChange(tab.id)}
-                className={`px-5 py-2 rounded-full font-bold text-sm transition-all duration-300 whitespace-nowrap ${
-                  activeTab === tab.id
+            {
+              id: "invitations",
+              label: "Invitations",
+              icon: MailIcon,
+              permission: PERMISSIONS.INVITE_VIEW
+            },
+          ]
+            .filter((tab) => !tab.permission || can(tab.permission))
+            .map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => handleTabChange(tab.id)}
+                  className={`px-5 py-2 rounded-full font-bold text-sm transition-all duration-300 whitespace-nowrap ${activeTab === tab.id
                     ? "bg-[var(--primary)] text-white shadow-lg"
                     : "bg-white text-gray-600 hover:bg-gray-100"
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Icon className="w-4 h-4" />
-                  {tab.label}
-                </div>
-              </button>
-            );
-          })}
+                    }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Icon className="w-4 h-4" />
+                    {tab.label}
+                  </div>
+                </button>
+              );
+            })}
         </div>
 
         {/* Main Content Area */}

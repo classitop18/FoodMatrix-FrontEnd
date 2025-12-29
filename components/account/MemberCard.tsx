@@ -1,5 +1,7 @@
 import React from "react";
 import { Crown, Mail, Edit, X } from "lucide-react";
+import { ProtectedAction } from "@/components/common/protected-action";
+import { PERMISSIONS } from "@/lib/permissions";
 
 interface MemberCardProps {
   member: any;
@@ -58,15 +60,14 @@ export const MemberCard: React.FC<MemberCardProps> = ({
               </div>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <div
-                  className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide leading-none ${
-                    member.role === "super_admin"
-                      ? "bg-amber-50 text-amber-700"
-                      : member.role === "admin"
-                        ? "bg-blue-50 text-blue-700"
-                        : member.role === "member"
-                          ? "bg-purple-50 text-purple-700"
-                          : "bg-gray-50 text-gray-600"
-                  }`}
+                  className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide leading-none ${member.role === "super_admin"
+                    ? "bg-amber-50 text-amber-700"
+                    : member.role === "admin"
+                      ? "bg-blue-50 text-blue-700"
+                      : member.role === "member"
+                        ? "bg-purple-50 text-purple-700"
+                        : "bg-gray-50 text-gray-600"
+                    }`}
                 >
                   {member.role === "super_admin" ? "Super" : member.role}
                 </div>
@@ -128,29 +129,35 @@ export const MemberCard: React.FC<MemberCardProps> = ({
 
         {/* Action Buttons */}
         <div className="grid grid-cols-2 gap-2 mt-auto">
-          <button
-            onClick={() => onViewProfile(member)}
-            className="col-span-2 bg-[#313131] hover:bg-black text-white font-bold text-xs py-1.5 rounded-lg transition-all shadow-sm flex items-center justify-center gap-1.5"
-          >
-            Health Profile
-          </button>
+          <ProtectedAction permission={PERMISSIONS.HEALTH_PROFILE_VIEW}>
+            <button
+              onClick={() => onViewProfile(member)}
+              className="col-span-2 bg-[#313131] hover:bg-black text-white font-bold text-xs py-1.5 rounded-lg transition-all shadow-sm flex items-center justify-center gap-1.5"
+            >
+              Health Profile
+            </button>
+          </ProtectedAction>
 
           {!isCurrentUser && (
             <>
-              <button
-                onClick={() => onEdit(member)}
-                className="bg-white hover:bg-gray-50 text-gray-700 font-bold text-xs py-1.5 rounded-lg border border-gray-200 hover:border-[#7661d3] transition-all flex items-center justify-center gap-1"
-              >
-                <Edit size={12} /> Edit
-              </button>
+              <ProtectedAction permission={PERMISSIONS.MEMBER_UPDATE}>
+                <button
+                  onClick={() => onEdit(member)}
+                  className="bg-white hover:bg-gray-50 text-gray-700 font-bold text-xs py-1.5 rounded-lg border border-gray-200 hover:border-[#7661d3] transition-all flex items-center justify-center gap-1"
+                >
+                  <Edit size={12} /> Edit
+                </button>
+              </ProtectedAction>
 
               {member.role !== "super_admin" && (
-                <button
-                  onClick={() => onDelete(member)}
-                  className="bg-white hover:bg-red-50 text-red-600 font-bold text-xs py-1.5 rounded-lg border border-red-100 hover:border-red-200 transition-all flex items-center justify-center gap-1"
-                >
-                  <X size={12} /> Remove
-                </button>
+                <ProtectedAction permission={PERMISSIONS.MEMBER_DELETE}>
+                  <button
+                    onClick={() => onDelete(member)}
+                    className="bg-white hover:bg-red-50 text-red-600 font-bold text-xs py-1.5 rounded-lg border border-red-100 hover:border-red-200 transition-all flex items-center justify-center gap-1"
+                  >
+                    <X size={12} /> Remove
+                  </button>
+                </ProtectedAction>
               )}
               {member.role === "super_admin" && (
                 <div className="bg-gray-50 rounded-lg"></div>

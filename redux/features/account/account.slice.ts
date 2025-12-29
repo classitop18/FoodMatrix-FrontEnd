@@ -1,6 +1,8 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 
 import { AccountService } from "@/services/account/account.service";
+import { MemberService } from "@/services/member/member.service";
+import { Role } from "@/lib/permissions";
 
 export type BudgetType = "daily" | "weekly" | "monthly" | "annual";
 
@@ -10,10 +12,18 @@ interface ActiveBudget {
   amount: number;
 }
 
+// Membership info for current user in active account
+export interface MyMembership {
+  id: string;
+  role: Role;
+  accountId: string;
+}
+
 interface AccountState {
   accountsList: any[];
   activeAccountId: string | null;
   account: any | null;
+  myMembership: MyMembership | null; // Current user's membership in active account
   activeBudget: ActiveBudget | null;
   spent: number;
   usagePercent: number;
@@ -55,6 +65,7 @@ const initialState: AccountState = {
   accountsList: [],
   activeAccountId: getPersistedAccountId(), // Load from localStorage on init
   account: null,
+  myMembership: null, // Current user's membership info
   activeBudget: null,
   spent: 0,
   usagePercent: 0,
@@ -122,10 +133,10 @@ const getActiveBudget = (account: any): ActiveBudget | null => {
   const active = budgets.find((b) => b.value !== null && b.value !== undefined);
   return active
     ? {
-        type: active.type as BudgetType,
-        label: active.label,
-        amount: Number(active.value),
-      }
+      type: active.type as BudgetType,
+      label: active.label,
+      amount: Number(active.value),
+    }
     : null;
 };
 
@@ -171,7 +182,44 @@ export const fetchAccountDetail = createAsyncThunk(
   "account/fetchAccountDetail",
   async (accountId: string) => {
     const res = await new AccountService().getAccountById(accountId);
+    console.log(res.data, "res.data")
     return res.data;
+  },
+);
+
+/* Async thunk to fetch current user's membership in an account */
+export const fetchMyMembership = createAsyncThunk(
+  "account/fetchMyMembership",
+  async (
+    { accountId, userId }: { accountId: string; userId: string },
+    { rejectWithValue },
+  ) => {
+    try {
+      const memberService = new MemberService();
+      const response = await memberService.getMembers({
+        accountId,
+        limit: 100, // Get all members to find current user
+      });
+
+      // Find the current user's membership
+      const myMember = response.data?.find(
+        (member: any) => member.userId === userId,
+      );
+
+      if (!myMember) {
+        return rejectWithValue("User is not a member of this account");
+      }
+
+      return {
+        id: myMember.id,
+        role: myMember.role as Role,
+        accountId: myMember.accountId,
+      };
+    } catch (error: any) {
+      return rejectWithValue(
+        error.message || "Failed to fetch membership info",
+      );
+    }
   },
 );
 
@@ -191,7 +239,11 @@ export const accountSlice = createSlice({
     },
     setActiveAccountId(state, action: PayloadAction<string>) {
       state.activeAccountId = action.payload;
+      state.myMembership = null; // Clear membership when switching accounts
       persistAccountId(action.payload); // Persist to localStorage
+    },
+    setMyMembership(state, action: PayloadAction<MyMembership | null>) {
+      state.myMembership = action.payload;
     },
     clearAccount(state) {
       persistAccountId(null); // Clear from localStorage on logout
@@ -207,6 +259,11 @@ export const accountSlice = createSlice({
       .addCase(fetchAccountDetail.fulfilled, (state, action) => {
         const derived = calculateAccountDerived(action.payload);
         state.account = derived.account;
+        state.myMembership = {
+          id: action.payload.id,
+          role: action.payload.role,
+          accountId: action.payload.id,
+        };
         state.activeBudget = derived.activeBudget;
         state.spent = derived.spent;
         state.usagePercent = derived.usagePercent;
@@ -217,10 +274,25 @@ export const accountSlice = createSlice({
       .addCase(fetchAccountDetail.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to fetch account";
-      });
+      })
+    // // Membership thunk handlers
+    // .addCase(fetchMyMembership.pending, (state) => {
+    //   // Don't set loading to prevent UI flicker
+    // })
+    // .addCase(fetchMyMembership.fulfilled, (state, action) => {
+    //   state.myMembership = action.payload;
+    // })
+    // .addCase(fetchMyMembership.rejected, (state, action) => {
+    //   console.error("Failed to fetch membership:", action.payload);
+    //   state.myMembership = null;
+    // });
   },
 });
 
-export const { setAccounts, setActiveAccountId, clearAccount } =
-  accountSlice.actions;
+export const {
+  setAccounts,
+  setActiveAccountId,
+  setMyMembership,
+  clearAccount,
+} = accountSlice.actions;
 export default accountSlice.reducer;

@@ -99,9 +99,15 @@ export class PantryService {
   }
 
   // Dismiss alert
-  async dismissAlert(alertId: string): Promise<{ success: boolean }> {
+  async dismissAlert(
+    alertId: string,
+    accountId?: string,
+  ): Promise<{ success: boolean }> {
+    const config = accountId ? { headers: { "x-account-id": accountId } } : {};
     const response = await apiClient.put(
       API_ENDPOINTS.PANTRY.DISMISS_ALERT(alertId),
+      {},
+      config,
     );
     return response.data.data;
   }

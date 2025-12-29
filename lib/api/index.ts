@@ -66,6 +66,19 @@ class ApiClient {
             config.headers = config.headers || {};
             config.headers.Authorization = `Bearer ${token}`;
           }
+
+          // Inject Active Account ID if available
+          const activeAccountId = localStorage.getItem(
+            "foodmatrix_active_account_id",
+          );
+          console.log({activeAccountId},"activeAccountId")
+          if (activeAccountId) {
+            config.headers = config.headers || {};
+            // Only set if not already set (allow overriding)
+            if (!config.headers["x-account-id"]) {
+              config.headers["x-account-id"] = activeAccountId;
+            }
+          }
         }
         return config;
       },

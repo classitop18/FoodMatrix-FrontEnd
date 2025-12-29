@@ -47,24 +47,31 @@ export class MemberService {
       sex?: string;
       role?: string;
     },
+    accountId?: string,
   ) {
+    const config = accountId ? { headers: { "x-account-id": accountId } } : {};
     const response = await apiClient.patch(
       API_ENDPOINTS.MEMBER.UPDATE_MEMBER.replace(":id", memberId),
       data,
+      config,
     );
     return response.data;
   }
 
-  async deleteMember(memberId: string) {
+  async deleteMember(memberId: string, accountId?: string) {
+    const config = accountId ? { headers: { "x-account-id": accountId } } : {};
     const response = await apiClient.delete(
       API_ENDPOINTS.MEMBER.DELETE_MEMBER.replace(":id", memberId),
+      config,
     );
     return response.data;
   }
 
-  async getMemberById(memberId: string) {
+  async getMemberById(memberId: string, accountId?: string) {
+    const config = accountId ? { headers: { "x-account-id": accountId } } : {};
     const response = await apiClient.get(
       API_ENDPOINTS.MEMBER.GET_MEMBER_BY_ID.replace(":id", memberId),
+      config,
     );
     return response.data;
   }

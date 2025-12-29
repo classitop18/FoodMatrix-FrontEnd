@@ -11,10 +11,12 @@ import {
   setActiveAccountId,
   clearAccount,
   fetchAccountDetail,
+  fetchMyMembership,
 } from "@/redux/features/account/account.slice";
 import Loader from "@/components/common/Loader";
 import { AccountSetupRequiredDialog } from "@/components/account/account-setup-required-dialog";
 import { RootState } from "@/redux/store.redux";
+import { PermissionProvider } from "@/providers/permission.provider";
 
 export default function AuthProvider({
   children,
@@ -34,8 +36,9 @@ export default function AuthProvider({
 
   const [showSetupDialog, setShowSetupDialog] = useState(false);
 
-  // Get current active account from Redux (might be from localStorage)
+  // Get current active account and user from Redux
   const { activeAccountId } = useSelector((state: RootState) => state.account);
+  const { user } = useSelector((state: RootState) => state.auth);
 
   /* ---------- AUTH ---------- */
   useEffect(() => {
@@ -88,13 +91,23 @@ export default function AuthProvider({
     }
   }, [accountsData, isAccountsLoading, dispatch, pathname, activeAccountId]);
 
-  /* ---------- FETCH ACCOUNT DETAILS ---------- */
+  /* ---------- FETCH ACCOUNT DETAILS & MEMBERSHIP ---------- */
   useEffect(() => {
     // Fetch account details when activeAccountId is available
     if (activeAccountId) {
       dispatch(fetchAccountDetail(activeAccountId) as any);
+
+      // Fetch current user's membership in this account
+      if (user?.id) {
+        dispatch(
+          fetchMyMembership({
+            accountId: activeAccountId,
+            userId: user.id,
+          }) as any,
+        );
+      }
     }
-  }, [activeAccountId, dispatch]);
+  }, [activeAccountId, user?.id, dispatch]);
 
   /* ---------- LOADER ---------- */
   if (isAuthLoading || isAccountsLoading) {
@@ -111,5 +124,5 @@ export default function AuthProvider({
     return <AccountSetupRequiredDialog isOpen />;
   }
 
-  return <>{children}</>;
+  return <PermissionProvider>{children}</PermissionProvider>;
 }
