@@ -49,7 +49,6 @@ export default function AddMemberModal({
   const roleOptions = [
     { value: "admin", label: "Admin" },
     { value: "super_admin", label: "Super Admin" },
-    { value: "viewer", label: "Viewer" },
     { value: "member", label: "Member" },
   ];
 

@@ -58,4 +58,12 @@ export const API_ENDPOINTS = {
     SEARCH: "/ingredients/search",
     CATEGORIES: "/ingredients/categories",
   },
+
+  // Meal Plans
+  MEAL_PLAN: {
+    GET_MEAL_PLANS: "/meal-plans",
+    CREATE_MEAL_PLAN: "/meal-plans",
+    UPDATE_MEAL_PLAN: (id: string) => `/meal-plans/${id}`,
+    DELETE_MEAL_PLAN: (id: string) => `/meal-plans/${id}`,
+  },
 };

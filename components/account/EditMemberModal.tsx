@@ -174,8 +174,6 @@ export default function EditMemberModal({
               disabled={member.role === "super_admin"}
             >
               <option value="member">Member</option>
-              <option value="viewer">Viewer</option>
-              <option value="internal">Internal</option>
               {member.role === "super_admin" && (
                 <option value="super_admin">Super Admin</option>
               )}

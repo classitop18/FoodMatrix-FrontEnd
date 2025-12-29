@@ -144,19 +144,18 @@ class ApiClient {
               variant: "destructive",
               title: "Session Expired",
 
-              description: "Your session has expired. Please login again."
+              description: "Your session has expired. Please login again.",
             });
             this.handleLogout();
           } else if (
             errorCode === "INVALID_REFRESH_TOKEN" ||
-
             errorCode === "SESSION_INVALID"
           ) {
             toast({
               variant: "destructive",
               title: "Invalid Session",
 
-              description: "Invalid session. Please login again."
+              description: "Invalid session. Please login again.",
             });
             this.handleLogout();
           } else if (errorMessage) {
@@ -164,7 +163,7 @@ class ApiClient {
               variant: "destructive",
               title: "Something went wrong",
 
-              description: errorMessage
+              description: errorMessage,
             });
           }
         }
@@ -199,35 +198,35 @@ class ApiClient {
           variant: "destructive",
           title: "Session Expired",
 
-          description: "Your session has expired. Please login again."
+          description: "Your session has expired. Please login again.",
         });
       } else if (errorCode === "SESSION_EXPIRED") {
         toast({
           variant: "destructive",
           title: "Session Expired",
 
-          description: "Your session has expired. Please login again."
+          description: "Your session has expired. Please login again.",
         });
       } else if (errorCode === "INVALID_REFRESH_TOKEN") {
         toast({
           variant: "destructive",
           title: "Invalid Session",
 
-          description: "Invalid session. Please login again."
+          description: "Invalid session. Please login again.",
         });
       } else if (errorMessage) {
         toast({
           variant: "destructive",
           title: "Something went wrong",
 
-          description: errorMessage
+          description: errorMessage,
         });
       } else {
         toast({
           variant: "destructive",
           title: "Something went wrong",
 
-          description: "Failed to refresh session. Please login again."
+          description: "Failed to refresh session. Please login again.",
         });
       }
 

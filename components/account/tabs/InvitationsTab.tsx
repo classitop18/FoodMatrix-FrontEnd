@@ -470,7 +470,6 @@ export const InvitationsTab: React.FC<InvitationsTabProps> = ({
           { value: "member", label: "Member" },
           { value: "admin", label: "Admin" },
           { value: "super_admin", label: "Super Admin" },
-          { value: "viewer", label: "Viewer" },
         ]}
         defaultValue="member"
         submitText="Approve & Assign"
