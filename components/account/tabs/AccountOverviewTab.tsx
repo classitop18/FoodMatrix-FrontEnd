@@ -27,10 +27,10 @@ export const AccountOverviewTab: React.FC<AccountOverviewTabProps> = ({
   onEdit,
   onDelete,
 }) => {
-  const { can , isSuperAdmin, isAdmin , isMember } = usePermissions();
+  const { can, isSuperAdmin, isAdmin, isMember } = usePermissions();
   const [isRefetching, setIsRefetching] = useState(false);
 
-  console.log({isSuperAdmin, isAdmin , isMember},"isSuperAdmin")
+  console.log({ isSuperAdmin, isAdmin, isMember }, "isSuperAdmin");
 
   const handleRefetch = async () => {
     if (isRefetching || loading) return;
@@ -93,7 +93,7 @@ export const AccountOverviewTab: React.FC<AccountOverviewTabProps> = ({
                 label: "Account Type",
                 value: account?.accountType
                   ? account.accountType.charAt(0).toUpperCase() +
-                  account.accountType.slice(1)
+                    account.accountType.slice(1)
                   : null,
               },
               {
@@ -119,97 +119,97 @@ export const AccountOverviewTab: React.FC<AccountOverviewTabProps> = ({
           {(account?.formattedAddress ||
             account?.addressLine1 ||
             account?.city) && (
-              <div className="mt-8">
-                <div className="flex items-center gap-2 mb-4">
-                  <MapPin size={18} className="text-[#7661d3]" />
-                  <h4 className="font-bold text-[#313131] text-sm">
-                    Account Address
-                  </h4>
-                </div>
-                <div className="bg-[#F8F7FC] rounded-xl p-5 border border-gray-200">
-                  <div className="space-y-3">
-                    {account?.formattedAddress && (
+            <div className="mt-8">
+              <div className="flex items-center gap-2 mb-4">
+                <MapPin size={18} className="text-[#7661d3]" />
+                <h4 className="font-bold text-[#313131] text-sm">
+                  Account Address
+                </h4>
+              </div>
+              <div className="bg-[#F8F7FC] rounded-xl p-5 border border-gray-200">
+                <div className="space-y-3">
+                  {account?.formattedAddress && (
+                    <div>
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                        Full Address
+                      </label>
+                      <p className="text-sm font-medium text-[#313131]">
+                        {account.formattedAddress}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-4">
+                    {account?.addressLine1 && (
                       <div>
                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
-                          Full Address
+                          Address Line 1
                         </label>
-                        <p className="text-sm font-medium text-[#313131]">
-                          {account.formattedAddress}
+                        <p className="text-sm font-medium text-gray-700">
+                          {account.addressLine1}
                         </p>
                       </div>
                     )}
 
-                    <div className="grid grid-cols-2 gap-4">
-                      {account?.addressLine1 && (
-                        <div>
-                          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
-                            Address Line 1
-                          </label>
-                          <p className="text-sm font-medium text-gray-700">
-                            {account.addressLine1}
-                          </p>
-                        </div>
-                      )}
+                    {account?.addressLine2 && (
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                          Address Line 2
+                        </label>
+                        <p className="text-sm font-medium text-gray-700">
+                          {account.addressLine2}
+                        </p>
+                      </div>
+                    )}
 
-                      {account?.addressLine2 && (
-                        <div>
-                          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
-                            Address Line 2
-                          </label>
-                          <p className="text-sm font-medium text-gray-700">
-                            {account.addressLine2}
-                          </p>
-                        </div>
-                      )}
+                    {account?.city && (
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                          City
+                        </label>
+                        <p className="text-sm font-medium text-gray-700">
+                          {account.city}
+                        </p>
+                      </div>
+                    )}
 
-                      {account?.city && (
-                        <div>
-                          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
-                            City
-                          </label>
-                          <p className="text-sm font-medium text-gray-700">
-                            {account.city}
-                          </p>
-                        </div>
-                      )}
+                    {account?.state && (
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                          State
+                        </label>
+                        <p className="text-sm font-medium text-gray-700">
+                          {account.state}
+                        </p>
+                      </div>
+                    )}
 
-                      {account?.state && (
-                        <div>
-                          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
-                            State
-                          </label>
-                          <p className="text-sm font-medium text-gray-700">
-                            {account.state}
-                          </p>
-                        </div>
-                      )}
+                    {account?.zipCode && (
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                          ZIP Code
+                        </label>
+                        <p className="text-sm font-medium text-gray-700">
+                          {account.zipCode}
+                        </p>
+                      </div>
+                    )}
 
-                      {account?.zipCode && (
-                        <div>
-                          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
-                            ZIP Code
-                          </label>
-                          <p className="text-sm font-medium text-gray-700">
-                            {account.zipCode}
-                          </p>
-                        </div>
-                      )}
-
-                      {account?.country && (
-                        <div>
-                          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
-                            Country
-                          </label>
-                          <p className="text-sm font-medium text-gray-700">
-                            {account.country}
-                          </p>
-                        </div>
-                      )}
-                    </div>
+                    {account?.country && (
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                          Country
+                        </label>
+                        <p className="text-sm font-medium text-gray-700">
+                          {account.country}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
           {/* Preferences */}
           <div className="bg-[#F8F7FC] rounded-xl p-5 mt-4">
@@ -231,16 +231,18 @@ export const AccountOverviewTab: React.FC<AccountOverviewTabProps> = ({
                 </div>
 
                 <div
-                  className={`w-10 h-6 rounded-full relative transition-colors ${account?.requiresAdminApprovalForOverrides
-                    ? "bg-[#7dab4f]"
-                    : "bg-gray-200"
-                    }`}
+                  className={`w-10 h-6 rounded-full relative transition-colors ${
+                    account?.requiresAdminApprovalForOverrides
+                      ? "bg-[#7dab4f]"
+                      : "bg-gray-200"
+                  }`}
                 >
                   <div
-                    className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all shadow-sm ${account?.requiresAdminApprovalForOverrides
-                      ? "left-5"
-                      : "left-1"
-                      }`}
+                    className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all shadow-sm ${
+                      account?.requiresAdminApprovalForOverrides
+                        ? "left-5"
+                        : "left-1"
+                    }`}
                   />
                 </div>
               </div>
@@ -257,14 +259,16 @@ export const AccountOverviewTab: React.FC<AccountOverviewTabProps> = ({
                 </div>
 
                 <div
-                  className={`w-10 h-6 rounded-full relative transition-colors ${account?.autoGenerateGroceryLists
-                    ? "bg-[#7dab4f]"
-                    : "bg-gray-200"
-                    }`}
+                  className={`w-10 h-6 rounded-full relative transition-colors ${
+                    account?.autoGenerateGroceryLists
+                      ? "bg-[#7dab4f]"
+                      : "bg-gray-200"
+                  }`}
                 >
                   <div
-                    className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all shadow-sm ${account?.autoGenerateGroceryLists ? "left-5" : "left-1"
-                      }`}
+                    className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all shadow-sm ${
+                      account?.autoGenerateGroceryLists ? "left-5" : "left-1"
+                    }`}
                   />
                 </div>
               </div>
@@ -282,8 +286,8 @@ export const AccountOverviewTab: React.FC<AccountOverviewTabProps> = ({
                     Danger Zone
                   </h3>
                   <p className="text-sm text-red-700 leading-relaxed mb-4">
-                    Permanently delete this account and all associated data. This
-                    action cannot be undone.
+                    Permanently delete this account and all associated data.
+                    This action cannot be undone.
                   </p>
                   <button
                     onClick={onDelete}

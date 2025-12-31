@@ -133,10 +133,10 @@ const getActiveBudget = (account: any): ActiveBudget | null => {
   const active = budgets.find((b) => b.value !== null && b.value !== undefined);
   return active
     ? {
-      type: active.type as BudgetType,
-      label: active.label,
-      amount: Number(active.value),
-    }
+        type: active.type as BudgetType,
+        label: active.label,
+        amount: Number(active.value),
+      }
     : null;
 };
 
@@ -182,7 +182,7 @@ export const fetchAccountDetail = createAsyncThunk(
   "account/fetchAccountDetail",
   async (accountId: string) => {
     const res = await new AccountService().getAccountById(accountId);
-    console.log(res.data, "res.data")
+    console.log(res.data, "res.data");
     return res.data;
   },
 );
@@ -274,7 +274,7 @@ export const accountSlice = createSlice({
       .addCase(fetchAccountDetail.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to fetch account";
-      })
+      });
     // // Membership thunk handlers
     // .addCase(fetchMyMembership.pending, (state) => {
     //   // Don't set loading to prevent UI flicker

@@ -2,8 +2,8 @@
 
 import { useContext } from "react";
 import {
-    PermissionContext,
-    PermissionContextType,
+  PermissionContext,
+  PermissionContextType,
 } from "@/providers/permission.provider";
 
 /**
@@ -50,11 +50,11 @@ import {
  * ```
  */
 export function usePermissions(): PermissionContextType {
-    const context = useContext(PermissionContext);
+  const context = useContext(PermissionContext);
 
-    if (context === undefined) {
-        throw new Error("usePermissions must be used within a PermissionProvider");
-    }
+  if (context === undefined) {
+    throw new Error("usePermissions must be used within a PermissionProvider");
+  }
 
-    return context;
+  return context;
 }

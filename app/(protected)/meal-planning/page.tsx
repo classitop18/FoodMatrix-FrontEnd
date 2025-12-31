@@ -239,13 +239,13 @@ export default function MealPlanning() {
 
       const isInit = !!localStorage.getItem(LS_KEYS.INITIALIZED);
       setInitialized(isInit);
-    } catch { }
+    } catch {}
   }, []);
 
   useEffect(() => {
     try {
       localStorage.setItem(LS_KEYS.VIEW_MODE, viewMode);
-    } catch { }
+    } catch {}
   }, [viewMode]);
 
   useEffect(() => {
@@ -367,7 +367,7 @@ export default function MealPlanning() {
     try {
       localStorage.setItem(LS_KEYS.INITIALIZED, "1");
       setInitialized(true);
-    } catch { }
+    } catch {}
   };
 
   const addNextDay = () => {
@@ -866,7 +866,6 @@ export default function MealPlanning() {
                 )}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-
                 {viewMode === "date" && !isReadOnly && (
                   <button
                     onClick={() => {
@@ -1012,12 +1011,12 @@ export default function MealPlanning() {
                                               isSkipped
                                                 ? "bg-gray-200/50 text-gray-400"
                                                 : cn(
-                                                  "bg-opacity-10",
-                                                  selectedOption?.color?.replace(
-                                                    "text-",
-                                                    "bg-",
+                                                    "bg-opacity-10",
+                                                    selectedOption?.color?.replace(
+                                                      "text-",
+                                                      "bg-",
+                                                    ),
                                                   ),
-                                                ),
                                             )}
                                           >
                                             <Icon

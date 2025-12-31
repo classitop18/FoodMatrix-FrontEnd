@@ -5,18 +5,18 @@ import { usePermissions } from "@/hooks/use-permissions";
 
 // ============ PROTECTED ACTION COMPONENT ============
 interface ProtectedActionProps {
-    /** Required permission to show children */
-    permission?: string;
-    /** Alternative: require ANY of these permissions */
-    anyPermission?: string[];
-    /** Alternative: require ALL of these permissions */
-    allPermissions?: string[];
-    /** Content to show when user has permission */
-    children: ReactNode;
-    /** Optional fallback content when user doesn't have permission */
-    fallback?: ReactNode;
-    /** Show nothing instead of fallback (default: true) */
-    hideIfUnauthorized?: boolean;
+  /** Required permission to show children */
+  permission?: string;
+  /** Alternative: require ANY of these permissions */
+  anyPermission?: string[];
+  /** Alternative: require ALL of these permissions */
+  allPermissions?: string[];
+  /** Content to show when user has permission */
+  children: ReactNode;
+  /** Optional fallback content when user doesn't have permission */
+  fallback?: ReactNode;
+  /** Show nothing instead of fallback (default: true) */
+  hideIfUnauthorized?: boolean;
 }
 
 /**
@@ -54,93 +54,93 @@ interface ProtectedActionProps {
  * ```
  */
 export function ProtectedAction({
-    permission,
-    anyPermission,
-    allPermissions,
-    children,
-    fallback = null,
-    hideIfUnauthorized = true,
+  permission,
+  anyPermission,
+  allPermissions,
+  children,
+  fallback = null,
+  hideIfUnauthorized = true,
 }: ProtectedActionProps) {
-    const { can, canAny, canAll, isLoading } = usePermissions();
+  const { can, canAny, canAll, isLoading } = usePermissions();
 
-    // Don't render anything while loading
-    if (isLoading) {
-        return null;
-    }
+  // Don't render anything while loading
+  if (isLoading) {
+    return null;
+  }
 
-    let hasAccess = false;
+  let hasAccess = false;
 
-    if (permission) {
-        hasAccess = can(permission);
-    } else if (anyPermission && anyPermission.length > 0) {
-        hasAccess = canAny(anyPermission);
-    } else if (allPermissions && allPermissions.length > 0) {
-        hasAccess = canAll(allPermissions);
-    } else {
-        // No permission specified, always show
-        hasAccess = true;
-    }
+  if (permission) {
+    hasAccess = can(permission);
+  } else if (anyPermission && anyPermission.length > 0) {
+    hasAccess = canAny(anyPermission);
+  } else if (allPermissions && allPermissions.length > 0) {
+    hasAccess = canAll(allPermissions);
+  } else {
+    // No permission specified, always show
+    hasAccess = true;
+  }
 
-    if (hasAccess) {
-        return <>{children}</>;
-    }
+  if (hasAccess) {
+    return <>{children}</>;
+  }
 
-    if (hideIfUnauthorized) {
-        return null;
-    }
+  if (hideIfUnauthorized) {
+    return null;
+  }
 
-    return <>{fallback}</>;
+  return <>{fallback}</>;
 }
 
 // ============ ROLE-BASED COMPONENTS ============
 
 interface RoleBasedProps {
-    children: ReactNode;
-    fallback?: ReactNode;
+  children: ReactNode;
+  fallback?: ReactNode;
 }
 
 /**
  * Show content only to Super Admin users
  */
 export function SuperAdminOnly({ children, fallback = null }: RoleBasedProps) {
-    const { isSuperAdmin, isLoading } = usePermissions();
+  const { isSuperAdmin, isLoading } = usePermissions();
 
-    if (isLoading) return null;
-    if (!isSuperAdmin) return <>{fallback}</>;
-    return <>{children}</>;
+  if (isLoading) return null;
+  if (!isSuperAdmin) return <>{fallback}</>;
+  return <>{children}</>;
 }
 
 /**
  * Show content only to Admin or Super Admin users
  */
 export function AdminOnly({ children, fallback = null }: RoleBasedProps) {
-    const { isAdmin, isLoading } = usePermissions();
+  const { isAdmin, isLoading } = usePermissions();
 
-    if (isLoading) return null;
-    if (!isAdmin) return <>{fallback}</>;
-    return <>{children}</>;
+  if (isLoading) return null;
+  if (!isAdmin) return <>{fallback}</>;
+  return <>{children}</>;
 }
 
 /**
  * Show content to any authenticated member
  */
 export function MemberOnly({ children, fallback = null }: RoleBasedProps) {
-    const { isMember, isLoading } = usePermissions();
+  const { isMember, isLoading } = usePermissions();
 
-    if (isLoading) return null;
-    if (!isMember) return <>{fallback}</>;
-    return <>{children}</>;
+  if (isLoading) return null;
+  if (!isMember) return <>{fallback}</>;
+  return <>{children}</>;
 }
 
 // ============ DISABLED VARIANT ============
 
 interface ProtectedButtonProps {
-    /** Required permission */
-    permission: string;
-    /** Children to wrap (should be a button or clickable element) */
-    children: ReactNode;
-    /** Show tooltip explaining why disabled */
-    disabledTooltip?: string;
+  /** Required permission */
+  permission: string;
+  /** Children to wrap (should be a button or clickable element) */
+  children: ReactNode;
+  /** Show tooltip explaining why disabled */
+  disabledTooltip?: string;
 }
 
 /**
@@ -158,34 +158,34 @@ interface ProtectedButtonProps {
  * ```
  */
 export function ProtectedButton({
-    permission,
-    children,
-    disabledTooltip,
+  permission,
+  children,
+  disabledTooltip,
 }: ProtectedButtonProps) {
-    const { can, isLoading } = usePermissions();
+  const { can, isLoading } = usePermissions();
 
-    const hasPermission = can(permission);
+  const hasPermission = can(permission);
 
-    if (isLoading || hasPermission) {
-        return <>{children}</>;
+  if (isLoading || hasPermission) {
+    return <>{children}</>;
+  }
+
+  // Clone children and add disabled prop
+  const disabledChildren = React.Children.map(children, (child) => {
+    if (React.isValidElement(child)) {
+      return React.cloneElement(child as React.ReactElement<any>, {
+        disabled: true,
+        title: disabledTooltip,
+        "aria-disabled": true,
+        style: {
+          ...(child.props as any).style,
+          cursor: "not-allowed",
+          opacity: 0.5,
+        },
+      });
     }
+    return child;
+  });
 
-    // Clone children and add disabled prop
-    const disabledChildren = React.Children.map(children, (child) => {
-        if (React.isValidElement(child)) {
-            return React.cloneElement(child as React.ReactElement<any>, {
-                disabled: true,
-                title: disabledTooltip,
-                "aria-disabled": true,
-                style: {
-                    ...(child.props as any).style,
-                    cursor: "not-allowed",
-                    opacity: 0.5,
-                },
-            });
-        }
-        return child;
-    });
-
-    return <>{disabledChildren}</>;
+  return <>{disabledChildren}</>;
 }

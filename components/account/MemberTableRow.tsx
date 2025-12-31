@@ -84,12 +84,13 @@ export const MemberTableRow: React.FC<MemberTableRowProps> = ({
         Role
       </div>
       <div
-        className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border ${member.role === "super_admin"
-          ? "bg-amber-50 text-amber-600 border-amber-100"
-          : member.role === "admin"
-            ? "bg-blue-50 text-blue-600 border-blue-100"
-            : "bg-purple-50 text-purple-600 border-purple-100"
-          }`}
+        className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border ${
+          member.role === "super_admin"
+            ? "bg-amber-50 text-amber-600 border-amber-100"
+            : member.role === "admin"
+              ? "bg-blue-50 text-blue-600 border-blue-100"
+              : "bg-purple-50 text-purple-600 border-purple-100"
+        }`}
       >
         {member.role === "super_admin" ? "Super Admin" : member.role}
       </div>

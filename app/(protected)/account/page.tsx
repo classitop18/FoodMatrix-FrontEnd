@@ -43,7 +43,6 @@ import { InvitationsTab } from "@/components/account/tabs/InvitationsTab";
 
 import { usePermissions } from "@/hooks/use-permissions";
 import { PERMISSIONS } from "@/lib/permissions";
-import { ProtectedAction } from "@/components/common/protected-action";
 
 export default function AccountPage() {
   const { can, isMember } = usePermissions();
@@ -51,8 +50,6 @@ export default function AccountPage() {
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(
     new Set(["overview"]),
   );
-
-  console.log({ isMember }, "isMember");
 
   // Modal states
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
@@ -79,7 +76,7 @@ export default function AccountPage() {
     loading,
   } = useSelector((state: RootState) => state.account);
 
-  console.log({ account }, "account")
+  console.log({ account }, "account");
   const user = useSelector((state: RootState) => state.auth.user);
 
   // Handle tab change with lazy loading tracking
@@ -100,8 +97,7 @@ export default function AccountPage() {
     return <Loader />;
   }
 
-
-  console.log({ myMembership }, "myMembership")
+  console.log({ myMembership }, "myMembership");
 
   return (
     <div className="min-h-screen bg-gray-100 relative overflow-hidden w-full font-sans">
@@ -140,7 +136,6 @@ export default function AccountPage() {
                 Create New
               </button>
             </Link>
-
           </div>
         </div>
 
@@ -287,9 +282,9 @@ export default function AccountPage() {
                   <h3 className="text-3xl font-extrabold text-white tracking-tight">
                     {activeBudget
                       ? `$${Math.max(
-                        activeBudget.amount - spent,
-                        0,
-                      ).toLocaleString()}`
+                          activeBudget.amount - spent,
+                          0,
+                        ).toLocaleString()}`
                       : "—"}
                   </h3>
                 </div>
@@ -322,7 +317,7 @@ export default function AccountPage() {
               id: "invitations",
               label: "Invitations",
               icon: MailIcon,
-              permission: PERMISSIONS.INVITE_VIEW
+              permission: PERMISSIONS.INVITE_VIEW,
             },
           ]
             .filter((tab) => !tab.permission || can(tab.permission))
@@ -332,10 +327,11 @@ export default function AccountPage() {
                 <button
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
-                  className={`px-5 py-2 rounded-full font-bold text-sm transition-all duration-300 whitespace-nowrap ${activeTab === tab.id
-                    ? "bg-[var(--primary)] text-white shadow-lg"
-                    : "bg-white text-gray-600 hover:bg-gray-100"
-                    }`}
+                  className={`px-5 py-2 rounded-full font-bold text-sm transition-all duration-300 whitespace-nowrap ${
+                    activeTab === tab.id
+                      ? "bg-[var(--primary)] text-white shadow-lg"
+                      : "bg-white text-gray-600 hover:bg-gray-100"
+                  }`}
                 >
                   <div className="flex items-center gap-2">
                     <Icon className="w-4 h-4" />
@@ -451,6 +447,7 @@ export default function AccountPage() {
             transform: rotate(360deg);
           }
         }
+                                {acc.isOwner &
       `}</style>
     </div>
   );

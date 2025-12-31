@@ -60,14 +60,15 @@ export const MemberCard: React.FC<MemberCardProps> = ({
               </div>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <div
-                  className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide leading-none ${member.role === "super_admin"
-                    ? "bg-amber-50 text-amber-700"
-                    : member.role === "admin"
-                      ? "bg-blue-50 text-blue-700"
-                      : member.role === "member"
-                        ? "bg-purple-50 text-purple-700"
-                        : "bg-gray-50 text-gray-600"
-                    }`}
+                  className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide leading-none ${
+                    member.role === "super_admin"
+                      ? "bg-amber-50 text-amber-700"
+                      : member.role === "admin"
+                        ? "bg-blue-50 text-blue-700"
+                        : member.role === "member"
+                          ? "bg-purple-50 text-purple-700"
+                          : "bg-gray-50 text-gray-600"
+                  }`}
                 >
                   {member.role === "super_admin" ? "Super" : member.role}
                 </div>
