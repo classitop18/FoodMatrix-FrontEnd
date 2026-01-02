@@ -296,7 +296,7 @@ const PantryPage: React.FC = () => {
       <div className="min-h-screen bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] pb-8 relative overflow-hidden font-sans">
         <div className="max-w-8xl mx-auto px-4 md:px-6 relative z-10 py-8">
           {/* Header Section */}
-          <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between mb-8 gap-6 animate-fade-in">
+          <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between mb-6 gap-6 animate-fade-in">
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <span className="bg-[#7dab4f] font-bold text-white text-[10px] uppercase tracking-wider px-2 py-1 rounded-md flex items-center gap-1">
@@ -317,7 +317,7 @@ const PantryPage: React.FC = () => {
               <Button
                 variant="outline"
                 onClick={() => refetch()}
-                className="bg-white hover:bg-gray-50 text-[#313131] font-bold py-2.5 px-4 rounded-xl shadow-sm border border-gray-200 transition-all flex items-center gap-2 text-sm h-auto"
+                className="bg-white hover:bg-gray-50 text-[#313131] font-bold py-2.5 px-4 rounded-lg shadow-none border border-gray-200 transition-all flex items-center gap-2 text-sm h-auto"
               >
                 <RefreshCw
                   size={18}
@@ -330,7 +330,7 @@ const PantryPage: React.FC = () => {
                   setItemToEdit(null);
                   setIsAddModalOpen(true);
                 }}
-                className="bg-[#313131] hover:bg-black text-white font-bold py-2.5 px-4 rounded-xl shadow-lg transition-all flex items-center gap-2 text-sm h-auto"
+                className="bg-[#313131] hover:bg-black text-white font-bold py-2.5 px-4 rounded-lg shadow-none transition-all flex items-center gap-2 text-sm h-auto"
               >
                 <Plus size={18} />
                 Add Item
@@ -338,10 +338,12 @@ const PantryPage: React.FC = () => {
             </div>
           </div>
 
+
+<div className="rounded-2xl overflow-hidden bg-white p-6">
           {/* Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
             {/* Total Items */}
-            <div className="bg-white rounded-2xl p-6 shadow-md relative overflow-hidden group border border-gray-200 hover:shadow-lg hover:border-[#7661d3]/20 transition-all">
+            <div className="bg-white rounded-xl p-6 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] relative overflow-hidden group border border-gray-200 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] hover:border-[#7661d3]/20 transition-all">
               <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#F3F0FD] to-transparent rounded-full -mr-8 -mt-8 transition-transform duration-500 group-hover:scale-125" />
               <div className="relative z-10 flex items-center justify-between">
                 <div>
@@ -359,7 +361,7 @@ const PantryPage: React.FC = () => {
             </div>
 
             {/* Expiring Soon */}
-            <div className="bg-white rounded-2xl p-6 shadow-md relative overflow-hidden group border border-gray-200 hover:shadow-lg hover:border-orange-200 transition-all">
+            <div className="bg-white rounded-xl p-6 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] relative overflow-hidden group border border-gray-200 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] hover:border-[#7661d3]/20 transition-all">
               <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-orange-50 to-transparent rounded-full -mr-8 -mt-8 transition-transform duration-500 group-hover:scale-125" />
               <div className="relative z-10 flex items-center justify-between">
                 <div>
@@ -377,7 +379,7 @@ const PantryPage: React.FC = () => {
             </div>
 
             {/* Total Value */}
-            <div className="bg-white rounded-2xl p-6 shadow-md relative overflow-hidden group border border-gray-200 hover:shadow-lg hover:border-[#7dab4f]/20 transition-all">
+            <div className="bg-white rounded-xl p-6 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] relative overflow-hidden group border border-gray-200 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] hover:border-[#7661d3]/20 transition-all">
               <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#e8f5e0] to-transparent rounded-full -mr-8 -mt-8 transition-transform duration-500 group-hover:scale-125" />
               <div className="relative z-10 flex items-center justify-between">
                 <div>
@@ -395,7 +397,7 @@ const PantryPage: React.FC = () => {
             </div>
 
             {/* Storage Locations */}
-            <div className="bg-gradient-to-br from-[#3d326d] to-[#2d2454] rounded-2xl p-6 shadow-lg text-white relative overflow-hidden group hover:shadow-xl transition-all">
+            <div className="bg-gradient-to-br from-[#3d326d] to-[#2d2454] rounded-2xl p-6 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] text-white relative overflow-hidden group hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-all">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-10 -mt-10 group-hover:scale-110 transition-transform duration-700" />
               <div className="absolute bottom-0 left-0 w-20 h-20 bg-[#7dab4f]/10 rounded-full -ml-6 -mb-6" />
               <div className="relative z-10 flex items-center justify-between">
@@ -471,10 +473,10 @@ const PantryPage: React.FC = () => {
           )}
 
           {/* Main Content Area */}
-          <div className="border-0 shadow-xl bg-white rounded-xl overflow-hidden animate-scale-in">
+          <div className="border-gray-200 border bg-white rounded-xl overflow-hidden animate-scale-in">
             {/* Header */}
             <div className="bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white p-4 flex flex-col md:flex-row justify-between items-center gap-4">
-              <h3 className="flex items-center gap-3 text-xl font-extrabold">
+              <h3 className="flex items-center gap-3 text-xl font-bold">
                 <Package className="h-6 w-6" />
                 Inventory
               </h3>
@@ -482,7 +484,7 @@ const PantryPage: React.FC = () => {
               {/* Filters */}
               <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:gap-4 justify-end">
                 {/* Search */}
-                <div className="relative w-3xs">
+                <div className="relative">
                   <Search
                     className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                     size={16}
@@ -492,15 +494,7 @@ const PantryPage: React.FC = () => {
                     value={tableSearchQuery}
                     onChange={(e) => setTableSearchQuery(e.target.value)}
                     placeholder="Search..."
-                    className="
-        w-full pl-9 pr-3 py-2
-        bg-white/10 border border-white/20
-        rounded-lg text-white
-        placeholder-white/60
-        focus:outline-none focus:bg-white/20
-        transition-all text-sm font-medium
-      "
-                  />
+                    className="w-full pl-9 pr-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:bg-white/20 transition-all text-sm font-medium"/>
                 </div>
 
                 {/* Location Filter */}
@@ -696,7 +690,7 @@ const PantryPage: React.FC = () => {
                         })
                       ) : (
                         <tr>
-                          <td colSpan={6} className="px-6 py-16 text-center">
+                          <td colSpan={6} className="px-6 py-10 text-center">
                             <div className="flex flex-col items-center gap-3">
                               <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-2">
                                 <Package size={24} className="text-gray-300" />
@@ -755,6 +749,7 @@ const PantryPage: React.FC = () => {
                 </div>
               )}
             </div>
+          </div>
           </div>
         </div>
 

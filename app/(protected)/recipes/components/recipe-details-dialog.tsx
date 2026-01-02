@@ -48,25 +48,25 @@ export function RecipeDetailsDialog({
   // Prepare chart data
   const macrontrientsData = recipe.nutrition
     ? [
-        {
-          name: "Protein",
-          value: recipe.nutrition.protein || 0,
-          color: "#3b82f6",
-        },
-        {
-          name: "Carbs",
-          value: recipe.nutrition.carbohydrates || 0,
-          color: "#ef4444",
-        },
-        { name: "Fat", value: recipe.nutrition.fat || 0, color: "#eab308" },
-      ]
+      {
+        name: "Protein",
+        value: recipe.nutrition.protein || 0,
+        color: "#3b82f6",
+      },
+      {
+        name: "Carbs",
+        value: recipe.nutrition.carbohydrates || 0,
+        color: "#ef4444",
+      },
+      { name: "Fat", value: recipe.nutrition.fat || 0, color: "#eab308" },
+    ]
     : [];
 
   const costData = recipe.costAnalysis
     ? [
-        { name: "Total Cost", amount: recipe.costAnalysis.totalCost },
-        { name: "Per Serving", amount: recipe.costAnalysis.costPerServing },
-      ]
+      { name: "Total Cost", amount: recipe.costAnalysis.totalCost },
+      { name: "Per Serving", amount: recipe.costAnalysis.costPerServing },
+    ]
     : [];
 
   const instructions = Array.isArray(recipe.instructions)
@@ -90,9 +90,9 @@ export function RecipeDetailsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl h-[90vh] p-0 overflow-hidden flex flex-col gap-0 bg-background/95 backdrop-blur-xl">
-        <DialogHeader className="p-6 pb-2 shrink-0">
-          <div className="flex items-center justify-between">
+      <DialogContent className="!border-0 !max-w-3xl h-[90vh] !bg-white p-0 !overflow-auto flex flex-col gap-0 bg-background/95 backdrop-blur-xl">
+        <DialogHeader className="bg-gradient-to-r from-[#7661d3] to-[#3d326d] text-white p-6 shrink-0">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="space-y-1">
               <DialogTitle className="text-2xl font-bold flex items-center gap-2">
                 {recipe.name}
@@ -120,14 +120,14 @@ export function RecipeDetailsDialog({
           </div>
         </DialogHeader>
 
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-auto mt-5">
           <Tabs defaultValue="overview" className="h-full flex flex-col">
             <div className="px-6 pb-2 shrink-0">
-              <TabsList className="w-full justify-start bg-muted/50">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="ingredients">Ingredients</TabsTrigger>
-                <TabsTrigger value="instructions">Instructions</TabsTrigger>
-                <TabsTrigger value="analysis">Analytics & Cost</TabsTrigger>
+              <TabsList className="w-full justify-start bg-muted/50 !h-auto !p-0">
+                <TabsTrigger value="overview" className="h-10 px-4 data-[state=active]:bg-gradient-to-r from-[#7661d3] to-[#3d326d] data-[state=active]:text-white data-[state=active]:shadow">Overview</TabsTrigger>
+                <TabsTrigger value="ingredients" className="h-10 px-4 data-[state=active]:bg-gradient-to-r from-[#7661d3] to-[#3d326d] data-[state=active]:text-white data-[state=active]:shadow">Ingredients</TabsTrigger>
+                <TabsTrigger value="instructions" className="h-10 px-4 data-[state=active]:bg-gradient-to-r from-[#7661d3] to-[#3d326d] data-[state=active]:text-white data-[state=active]:shadow">Instructions</TabsTrigger>
+                <TabsTrigger value="analysis" className="h-10 px-4 data-[state=active]:bg-gradient-to-r from-[#7661d3] to-[#3d326d] data-[state=active]:text-white data-[state=active]:shadow">Analytics & Cost</TabsTrigger>
               </TabsList>
             </div>
 
@@ -157,9 +157,9 @@ export function RecipeDetailsDialog({
                   </div>
 
                   {/* Overlay for Text Legibility */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a]/90 via-transparent to-transparent flex items-end p-8">
-                    <div className="space-y-2">
-                      <h2 className="text-white text-4xl font-extrabold shadow-sm tracking-tight">
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a]/90 via-transparent to-transparent flex items-end p-8 text-center">
+                    <div className="space-y-2 w-full">
+                      <h2 className="text-white text-lg lg:text-3xl font-extrabold shadow-sm tracking-tight">
                         {recipe.name}
                       </h2>
                       {/* Optional: Show Image Source/URL for verification if needed by user, hidden by default unless requested */}
@@ -169,7 +169,7 @@ export function RecipeDetailsDialog({
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                  <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-accent/20 border border-border/50">
+                  <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-accent/20 border border-gray-200">
                     <Clock className="h-6 w-6 text-primary mb-2" />
                     <span className="text-sm text-muted-foreground">
                       Total Time
@@ -178,21 +178,21 @@ export function RecipeDetailsDialog({
                       {recipe.totalTimeMinutes}m
                     </span>
                   </div>
-                  <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-accent/20 border border-border/50">
+                  <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-accent/20 border border-gray-200">
                     <Flame className="h-6 w-6 text-orange-500 mb-2" />
                     <span className="text-sm text-muted-foreground">
                       Calories
                     </span>
                     <span className="font-bold">{recipe.calories}</span>
                   </div>
-                  <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-accent/20 border border-border/50">
+                  <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-accent/20 border border-gray-200">
                     <Users className="h-6 w-6 text-blue-500 mb-2" />
                     <span className="text-sm text-muted-foreground">
                       Servings
                     </span>
                     <span className="font-bold">{recipe.servings}</span>
                   </div>
-                  <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-accent/20 border border-border/50">
+                  <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-accent/20 border border-gray-200">
                     <DollarSign className="h-6 w-6 text-green-500 mb-2" />
                     <span className="text-sm text-muted-foreground">
                       $/Serving
@@ -204,8 +204,8 @@ export function RecipeDetailsDialog({
                 </div>
 
                 <div className="space-y-2">
-                  <h3 className="text-lg font-semibold">Description</h3>
-                  <p className="text-muted-foreground leading-relaxed">
+                  <h3 className="text-lg font-bold">Description</h3>
+                  <p className="text-gray-500 leading-relaxed text-base">
                     {recipe.description || "No description available."}
                   </p>
                 </div>
@@ -231,7 +231,7 @@ export function RecipeDetailsDialog({
                     {recipe.ingredients?.map((ing, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center justify-between p-3 rounded-lg bg-accent/30 border border-accent"
+                        className="flex items-center justify-between p-3 rounded-lg bg-accent/30 border border-gray-200"
                       >
                         <div className="flex items-center gap-3">
                           <div className="h-2 w-2 rounded-full bg-primary" />
@@ -247,7 +247,7 @@ export function RecipeDetailsDialog({
               </TabsContent>
 
               <TabsContent value="instructions" className="mt-0">
-                <div className="space-y-6 py-4">
+                <div className="space-y-4">
                   {instructions.map((step: any, idx: number) => {
                     // Handle if step is object or string
                     const text =
@@ -256,11 +256,11 @@ export function RecipeDetailsDialog({
                         : step.step || step.instruction || JSON.stringify(step);
                     return (
                       <div key={idx} className="flex gap-4">
-                        <div className="flex-none flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-sm">
+                        <div className="flex-none flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-sm bg-gray-100">
                           {idx + 1}
                         </div>
-                        <div className="space-y-1 pt-1">
-                          <p className="leading-relaxed">{text}</p>
+                        <div className="space-y-1">
+                          <p className="leading-relaxed text-gray-500">{text}</p>
                         </div>
                       </div>
                     );

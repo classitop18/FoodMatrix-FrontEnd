@@ -419,13 +419,13 @@ const ProfilePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 relative overflow-hidden w-full">
+    <div className="min-h-screen bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] pb-8 relative overflow-hidden font-sans">
       <div className="relative z-10 w-full mx-auto px-6 py-8">
         {/* Header Section */}
         <div className="mb-6 animate-slide-up">
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl lg:text-3xl font-extrabold text-[var(--primary)] mb-1">
+              <h1 className="text-2xl lg:text-3xl font-extrabold text-[#313131] tracking-tight">
                 Profile Management
               </h1>
               <p className="text-sm text-gray-600">
@@ -479,7 +479,7 @@ const ProfilePage = () => {
             <div className="space-y-6 animate-scale-in">
               {/* Quick Stats Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white rounded-2xl p-5 hover:shadow-lg transition-all duration-300 border-2 border-[#7661d3]/20">
+                <div className="bg-white rounded-xl p-5 hover:shadow-lg transition-all duration-300 border-2 border-[#7661d3]/20">
                   <div className="flex items-center gap-3">
                     <div className="bg-gradient-to-br from-[var(--primary)] to-[var(--primary-light)] p-3 rounded-xl">
                       <CreditCard className="w-6 h-6 text-white" />
@@ -495,7 +495,7 @@ const ProfilePage = () => {
                   </div>
                 </div>
 
-                <div className="bg-white rounded-2xl p-5 hover:shadow-lg transition-all duration-300 border-2 border-[#7661d3]/20">
+                <div className="bg-white rounded-xl p-5 hover:shadow-lg transition-all duration-300 border-2 border-[#7661d3]/20">
                   <div className="flex items-center gap-3">
                     <div className="bg-gradient-to-br from-[var(--green)] to-[var(--green-light)] p-3 rounded-xl">
                       <Wallet className="w-6 h-6 text-white" />
@@ -511,7 +511,7 @@ const ProfilePage = () => {
                   </div>
                 </div>
 
-                <div className="bg-white rounded-2xl p-5 hover:shadow-lg transition-all duration-300 border-2 border-[#7661d3]/20">
+                <div className="bg-white rounded-xl p-5 hover:shadow-lg transition-all duration-300 border-2 border-[#7661d3]/20">
                   <div className="flex items-center gap-3">
                     <div className="bg-gradient-to-br from-[var(--primary-light)] to-[var(--primary)] p-3 rounded-xl">
                       <Calendar className="w-6 h-6 text-white" />
@@ -531,7 +531,7 @@ const ProfilePage = () => {
               {/* Profile Card */}
               <Card className="bg-white rounded-2xl overflow-hidden transition-all duration-300 border-2 border-[#7661d3]/20 shadow-none">
                 <CardHeader className="bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white py-4 flex justify-between items-center">
-                  <CardTitle className="flex items-center gap-3 text-xl font-extrabold p-0">
+                  <CardTitle className="flex items-center gap-3 text-xl font-bold p-0">
                     <User className="h-6 w-6" />
                     Profile Information
                   </CardTitle>
@@ -905,7 +905,7 @@ const ProfilePage = () => {
             <div className="space-y-6 animate-scale-in">
               <Card className="border-0 shadow-xl bg-white gap-0 rounded-xl overflow-hidden">
                 <CardHeader className="bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white py-4 flex justify-between items-center">
-                  <CardTitle className="flex items-center gap-3 text-xl font-extrabold p-0">
+                  <CardTitle className="flex items-center gap-3 text-xl font-bold p-0">
                     <Shield className="h-6 w-6" />
                     Security Settings
                   </CardTitle>

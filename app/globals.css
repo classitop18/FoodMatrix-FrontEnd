@@ -300,3 +300,22 @@ button {
   position: fixed !important;
   z-index: 9999 !important;
 }
+
+button {
+  cursor: pointer;
+}
+
+[data-slot="dialog-header"] {
+    padding-right: 70px;
+}
+
+[data-slot="dialog-close"] {
+  background: rgba(255, 255, 255, 0.10);
+  color: #fff;
+  width: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  border-radius: 4px;
+}

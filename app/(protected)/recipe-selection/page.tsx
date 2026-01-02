@@ -301,7 +301,7 @@ export default function RecipeSelection() {
         <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] bg-gradient-to-tr from-blue-500/5 to-transparent rounded-full blur-[100px]" />
       </div>
 
-      <div className="container mx-auto px-4 md:px-6 relative z-10 py-12 max-w-8xl">
+      <div className="max-w-8xl mx-auto px-4 md:px-6 relative z-10 py-8">
         {/* Header */}
         <div className="text-center mb-12 animate-in fade-in slide-in-from-top-4 duration-700">
           <div className="inline-flex items-center justify-center gap-2 mb-4">

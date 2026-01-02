@@ -23,7 +23,7 @@ export function RecipeCard({ recipe, onViewDetails }: RecipeCardProps) {
     <motion.div
       whileHover={{ y: -5 }}
       transition={{ duration: 0.2 }}
-      className="group relative bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-xl hover:border-[#3d326d]/20 transition-all duration-300 overflow-hidden flex flex-col h-full"
+      className="group relative bg-white rounded-lg shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] border border-gray-200 transition-all duration-300 overflow-hidden flex flex-col h-full hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)]"
     >
       {/* Image/Gradient Header */}
       <div className="relative h-48 overflow-hidden bg-gray-100 dark:bg-gray-800">
@@ -107,10 +107,10 @@ export function RecipeCard({ recipe, onViewDetails }: RecipeCardProps) {
         {/* Action */}
         <Button
           onClick={() => onViewDetails(recipe)}
-          className="w-full bg-[#F3F0FD] hover:bg-[#3d326d] text-[#3d326d] hover:text-white border border-[#3d326d]/10 hover:border-[#3d326d] shadow-sm hover:shadow-lg rounded-xl font-bold transition-all duration-300 group/btn"
+          className="w-full h-10 bg-[#F3F0FD] hover:bg-[#3d326d] text-[#3d326d] hover:text-white border border-[#3d326d]/10 hover:border-[#3d326d] rounded-lg font-medium transition-all duration-300 group/btn"
         >
           View Details
-          <ChevronRight className="w-4 h-4 ml-2 text-[#3d326d] group-hover/btn:text-white transition-colors" />
+          <ChevronRight className="w-4 h-4 text-[#3d326d] group-hover/btn:text-white transition-colors" />
         </Button>
       </div>
     </motion.div>

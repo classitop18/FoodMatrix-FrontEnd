@@ -100,11 +100,11 @@ export default function AccountPage() {
   console.log({ myMembership }, "myMembership");
 
   return (
-    <div className="min-h-screen bg-gray-100 relative overflow-hidden w-full font-sans">
+    <div className="min-h-screen bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] pb-8 relative overflow-hidden font-sans">
       {/* Main Container */}
-      <div className="container mx-auto px-4 md:px-6 relative z-10 py-8">
+      <div className="max-w-8xl mx-auto px-4 md:px-6 relative z-10 py-8">
         {/* Header Section */}
-        <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between mb-8 gap-6 animate-fade-in">
+        <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between mb-6 gap-6 animate-fade-in">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <span className="bg-[#7dab4f] font-bold text-white text-[10px] uppercase tracking-wider px-2 py-1 rounded-md flex items-center gap-1">
@@ -225,7 +225,7 @@ export default function AccountPage() {
           {/* Budget Cards - Takes 8 columns */}
           <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* Budget Card */}
-            <div className="bg-white rounded-2xl p-6 shadow-md relative overflow-hidden group border border-gray-200 hover:shadow-lg hover:border-[#7661d3]/20 transition-all">
+            <div className="bg-white rounded-xl p-6 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] relative overflow-hidden group border border-gray-200 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] hover:border-[#7661d3]/20 transition-all">
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#F3F0FD] to-transparent rounded-full -mr-12 -mt-12 transition-transform duration-500 group-hover:scale-125" />
 
               <div className="relative z-10 flex items-center justify-between mb-4">
@@ -267,7 +267,7 @@ export default function AccountPage() {
             </div>
 
             {/* Current Balance Card */}
-            <div className="bg-gradient-to-br from-[#3d326d] to-[#2d2454] rounded-2xl p-6 shadow-lg text-white relative overflow-hidden group hover:shadow-xl transition-all">
+            <div className="bg-gradient-to-br from-[#3d326d] to-[#2d2454] rounded-xl p-6 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] text-white relative overflow-hidden group hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-all">
               <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-700" />
               <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#7dab4f]/10 rounded-full -ml-10 -mb-10" />
 
