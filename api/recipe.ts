@@ -121,7 +121,7 @@ export interface RecipesResponse {
 // Hooks
 
 export const useRecipesQuery = (filters: RecipeFilters) => {
-  return useQuery({
+  return useQuery({ 
     queryKey: ["recipes", filters],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -131,7 +131,10 @@ export const useRecipesQuery = (filters: RecipeFilters) => {
         }
       });
       const response = await apiClient.get(`/recipes?${params.toString()}`);
-      return response.data as RecipesResponse;
+      console.log({
+        data:response?.data
+      },"myreciperesponse")
+      return response.data?.data as RecipesResponse;
     },
     placeholderData: (previousData) => previousData, // Keep previous data while fetching new data
   });
