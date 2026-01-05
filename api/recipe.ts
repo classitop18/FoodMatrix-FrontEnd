@@ -156,7 +156,6 @@ export const useRecipesInfiniteQuery = (filters: RecipeFilters) => {
         }
       });
       const response = await apiClient.get(`/recipes?${params.toString()}`);
-      console.log(response?.data?.data, "reciperesponse");
       return response.data?.data as RecipesResponse;
     },
     getNextPageParam: (lastPage) => {

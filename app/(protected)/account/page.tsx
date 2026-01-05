@@ -76,7 +76,7 @@ export default function AccountPage() {
     loading,
   } = useSelector((state: RootState) => state.account);
 
-  console.log({ account }, "account");
+
   const user = useSelector((state: RootState) => state.auth.user);
 
   // Handle tab change with lazy loading tracking
@@ -97,7 +97,6 @@ export default function AccountPage() {
     return <Loader />;
   }
 
-  console.log({ myMembership }, "myMembership");
 
   return (
     <div className="min-h-screen bg-gray-100 relative overflow-hidden w-full font-sans">

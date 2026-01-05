@@ -43,7 +43,7 @@ export function RecipeCard({ recipe, onViewDetails }: RecipeCardProps) {
             className="object-cover transition-transform duration-700 group-hover:scale-110"
             sizes="(max-width: 768px) 100vw, 33vw"
             onError={(err) => {
-              console.log(err, "errerrerr");
+              // console.log(err, "");
               setHasError(true);
             }}
             unoptimized

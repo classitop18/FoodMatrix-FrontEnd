@@ -7,7 +7,6 @@ import { useSelector } from "react-redux";
 export default function DashBoardPage() {
   const user = useSelector((state: RootState) => state.auth);
 
-  console.log(user, "user");
 
   return <></>;
 }

@@ -158,7 +158,6 @@ const calculateSpent = (account: any, budget: ActiveBudget | null) => {
 
 const calculateAccountDerived = (account: any) => {
   const activeBudget = getActiveBudget(account);
-  console.log({ activeBudget }, "acive");
   const spent = calculateSpent(account, activeBudget);
   return {
     account,
@@ -182,7 +181,7 @@ export const fetchAccountDetail = createAsyncThunk(
   "account/fetchAccountDetail",
   async (accountId: string) => {
     const res = await new AccountService().getAccountById(accountId);
-    console.log(res.data, "res.data");
+ 
     return res.data;
   },
 );

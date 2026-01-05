@@ -10,7 +10,6 @@ export function useCurrentSession() {
 
   const response = useAuthMe();
 
-  console.log(response);
 
   return { loading, reloadSession: response };
 }

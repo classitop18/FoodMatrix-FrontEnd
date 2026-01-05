@@ -61,7 +61,7 @@ const ProfilePage = () => {
     (state: RootState) => state.account,
   );
 
-  console.log({ activeBudget });
+  
 
   const [isMfaUpdating, setIsMfaUpdating] = useState(false);
 

@@ -152,7 +152,6 @@ export default function RecipesPage() {
   } = useRecipesInfiniteQuery(filters);
   const { ref, inView } = useInView();
 
-  console.log({ data }, "datadatadatadata");
 
   useEffect(() => {
     if (inView && hasNextPage) {
