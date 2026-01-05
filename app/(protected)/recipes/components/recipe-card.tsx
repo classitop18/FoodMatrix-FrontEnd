@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import { Recipe } from "@/api/recipe";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,6 +14,9 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import Image from "next/image";
+
+import { getRecipeImageUrl } from "@/lib/recipe-utils";
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -19,29 +24,38 @@ interface RecipeCardProps {
 }
 
 export function RecipeCard({ recipe, onViewDetails }: RecipeCardProps) {
+  const [hasError, setHasError] = useState(false);
+  const imageUrl = getRecipeImageUrl(recipe.imageUrl);
+
   return (
     <motion.div
       whileHover={{ y: -5 }}
       transition={{ duration: 0.2 }}
-      className="group relative bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-xl hover:border-[#3d326d]/20 transition-all duration-300 overflow-hidden flex flex-col h-full"
+      className="group relative bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-xl hover:border-[#3d326d]/20 transition-all duration-300 overflow-hidden flex flex-col items-start h-full"
     >
       {/* Image/Gradient Header */}
-      <div className="relative h-48 overflow-hidden bg-gray-100 dark:bg-gray-800">
-        {recipe.imageUrl ? (
-          <img
-            src={recipe.imageUrl}
+      <div className="relative w-full h-48 overflow-hidden bg-gray-100 dark:bg-gray-800">
+        {imageUrl && !hasError ? (
+          <Image
+            src={imageUrl}
             alt={recipe.name}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-            onError={(e) => {
-              e.currentTarget.style.display = "none";
-              e.currentTarget.nextElementSibling?.classList.remove("hidden");
+            fill
+            className="object-cover transition-transform duration-700 group-hover:scale-110"
+            sizes="(max-width: 768px) 100vw, 33vw"
+            onError={(err) => {
+              console.log(err, "errerrerr");
+              setHasError(true);
             }}
+            unoptimized
+            priority={true}
           />
         ) : null}
 
         {/* Fallback Gradient (shown if no image or on error) */}
         <div
-          className={`absolute inset-0 bg-gradient-to-br from-[#3d326d] to-[#7661d3] group-hover:from-[#2d2454] group-hover:to-[#604abd] transition-colors duration-500 ${recipe.imageUrl ? "hidden" : ""}`}
+          className={`absolute inset-0 bg-gradient-to-br from-[#3d326d] to-[#7661d3] group-hover:from-[#2d2454] group-hover:to-[#604abd] transition-colors duration-500 ${
+            imageUrl && !hasError ? "hidden" : ""
+          }`}
         >
           <div className="absolute inset-0 flex items-center justify-center">
             <Utensils className="w-12 h-12 text-white/30 group-hover:scale-110 transition-transform duration-500" />

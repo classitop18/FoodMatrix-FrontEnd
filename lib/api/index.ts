@@ -21,14 +21,14 @@ class ApiClient {
   constructor() {
     this.client = axios.create({
       baseURL:
-        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api/v1",
+        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000/api/v1",
       withCredentials: true,
     });
 
     // Separate axios instance for refresh token (so it doesn't trigger interceptors)
     this.refreshClient = axios.create({
       baseURL:
-        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api/v1",
+        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000/api/v1",
       withCredentials: true,
     });
 
