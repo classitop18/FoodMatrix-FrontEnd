@@ -178,10 +178,10 @@ export default function RecipesPage() {
                       <Sparkles size={20} />
                     </div>
                     <div>
-                      <h3 className="text-lg font-extrabold text-[#313131]">
+                      <h3 className="text-lg font-bold text-[#313131]">
                         AI Chef Assist
                       </h3>
-                      <p className="text-xs text-gray-500 font-medium">
+                      <p className="text-sm text-gray-500 font-medium">
                         Generate recipes instantly
                       </p>
                     </div>
