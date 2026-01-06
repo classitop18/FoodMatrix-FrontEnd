@@ -120,7 +120,9 @@ export interface Recipe {
   description?: string;
   ingredients?: any[];
   instructions?: string[];
+  nutrition?: any;
   nutritions?: any;
+  calories?: number;
   nutritionalHighlights?: string[];
   cookingTips?: string[];
   webSourceInspirations?: string[];

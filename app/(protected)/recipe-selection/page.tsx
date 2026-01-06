@@ -61,6 +61,8 @@ import RecipeSelectionCard, {
 } from "@/components/meal-planning/recipe-selection-card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import Link from "next/link";
+import { RecipeDetailsDialog } from "../recipes/components/recipe-details-dialog";
+import { Recipe as ApiRecipe } from "@/api/recipe";
 
 interface Member {
   id: string;
@@ -93,6 +95,9 @@ export default function RecipeSelection() {
   const [isSlotProcessing, setIsSlotProcessing] = useState<SlotProcessingState>(
     {},
   );
+
+  const [detailedRecipe, setDetailedRecipe] = useState<ApiRecipe | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   // Mutations
   const generateRecipeWithAi = useGenerateAIRecipeMutation();
@@ -192,7 +197,9 @@ export default function RecipeSelection() {
         targetMembers: payload.members,
       });
 
-      const recipes = (response.recipes || []).map((r: any, idx: number) => ({
+      console.log(response, "AI Recipe Response");
+
+      const recipes = (response.data || []).map((r: any, idx: number) => ({
         ...r,
         id: r.id || `ai-${slotKey}-${idx}-${Date.now()}`,
         complementaryItems: [],
@@ -672,7 +679,7 @@ export default function RecipeSelection() {
                                       </div>
                                       <div className="flex items-center gap-1">
                                         <Flame className="size-4"></Flame>
-                                        {/* <span>{recipe?.nutritionalInfo?.calories || recipe?.calories || '250'} cal</span> */}
+                                        <span>{recipe.nutrition?.calories || recipe.calories || '250'} cal</span>
                                       </div>
                                       <div className="flex items-center gap-1">
                                         <DollarSign className="size-4"></DollarSign>
@@ -685,7 +692,8 @@ export default function RecipeSelection() {
                                       className="text-sm font-medium text-[var(--primary)] underline"
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        console.log('View recipe details:', recipe);
+                                        setDetailedRecipe(recipe as any);
+                                        setIsDetailsOpen(true);
                                       }}
                                     >
                                       See more
@@ -705,92 +713,12 @@ export default function RecipeSelection() {
           )}
         </div>
 
-
-        {/* Summary Sidebar - now integrated into the main layout */}
-        <div className="mt-8">
-          <Card className="border-0 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.08)] bg-white/80 backdrop-blur-md overflow-hidden">
-            <div className="h-2 bg-gradient-to-r from-[#7dab4f] to-[#5a8c3e]" />
-            <CardHeader>
-              <CardTitle>Selection Summary</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="bg-emerald-50 rounded-lg p-4 border border-emerald-100">
-                <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider block mb-1">
-                  Total Estimated Cost
-                </span>
-                <div className="text-3xl font-black text-[#1a1a1a]">
-                  ${calculateTotal().toFixed(2)}
-                </div>
-                <span className="text-xs text-emerald-600/80 font-medium">
-                  For {Object.keys(selections).length} meals
-                </span>
-              </div>
-
-              <ScrollArea className="h-[300px] pr-4">
-                <div className="space-y-3">
-                  {Object.entries(selections).map(([key, id]) => {
-                    // Find recipe details
-                    const all = [
-                      ...recipeDatabase,
-                      ...(generatedRecipies[key]?.recipes || []),
-                      ...(generatedCustomRecipies[key]?.recipes || []),
-                    ];
-                    const r = all.find((x) => x.id === id);
-                    if (!r) return null;
-
-                    return (
-                      <div
-                        key={key}
-                        className="flex items-start gap-3 p-3 bg-white rounded-lg border border-gray-100  relative group"
-                      >
-                        <button
-                          onClick={() => {
-                            const newSel = { ...selections };
-                            delete newSel[key];
-                            setSelections(newSel);
-                            setSelectedRecipes((prev) =>
-                              prev.filter((x) => x !== id),
-                            );
-                          }}
-                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500"
-                        >
-                          &times;
-                        </button>
-                        <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center shrink-0">
-                          <ChefHat size={16} className="text-gray-400" />
-                        </div>
-                        <div className="overflow-hidden">
-                          <h4 className="font-bold text-gray-900 text-sm truncate">
-                            {r.name}
-                          </h4>
-                          <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
-                            {key.split("-")[1]}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  {Object.keys(selections).length === 0 && (
-                    <div className="text-center text-gray-400 py-8 text-sm">
-                      No recipes selected yet
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
-
-              <Button
-                onClick={handleGenerateShoppingList}
-                className="w-full h-12 bg-[#1a1a1a] hover:bg-black text-white font-bold rounded-lg shadow-lg shadow-black/5 hover:-translate-y-0.5 transition-all"
-                disabled={Object.keys(selections).length === 0}
-              >
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                Generate Shopping List
-                <ArrowRight className="ml-2 h-4 w-4 opacity-50" />
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
       </div>
+      <RecipeDetailsDialog
+        recipe={detailedRecipe}
+        open={isDetailsOpen}
+        onOpenChange={setIsDetailsOpen}
+      />
     </div>
   );
 }

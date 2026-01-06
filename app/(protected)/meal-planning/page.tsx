@@ -21,6 +21,8 @@ import {
   Ban,
   Package,
   Soup,
+  CheckSquare,
+  CheckSquare2,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
@@ -97,8 +99,8 @@ const mealOptions = [
   {
     value: "quick-simple",
     label: "Quick & Simple",
-    icon: Clock,
-    color: "text-blue-600",
+    icon: CheckSquare2,
+    color: "text-emerald-600",
   },
   {
     value: "leftover",
@@ -1045,14 +1047,14 @@ export default function MealPlanning() {
                                         )}
                                       </SelectValue>
                                     </SelectTrigger>
-                                    <SelectContent className="rounded-lg border border-gray-200 shadow-xl p-1 bg-white">
+                                    <SelectContent className=" text-whit rounded-lg border border-gray-200 shadow-xl p-1 bg-white">
                                       {mealOptions.map((opt) => (
                                         <SelectItem
                                           key={opt.value}
                                           value={opt.value}
                                           className="cursor-pointer py-2.5 rounded-lg focus:bg-gray-50 pl-2 my-0.5"
                                         >
-                                          <span className="flex items-center gap-3 font-medium text-gray-700 text-sm">
+                                          <span className="flex items-center gap-3 font-medium text-sm">
                                             <div
                                               className={cn(
                                                 "w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center",
