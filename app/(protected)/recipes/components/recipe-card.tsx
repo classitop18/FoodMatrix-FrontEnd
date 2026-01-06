@@ -121,10 +121,10 @@ export function RecipeCard({ recipe, onViewDetails }: RecipeCardProps) {
         {/* Action */}
         <Button
           onClick={() => onViewDetails(recipe)}
-          className="w-full bg-[#F3F0FD] hover:bg-[#3d326d] text-[#3d326d] hover:text-white border border-[#3d326d]/10 hover:border-[#3d326d] shadow-sm hover:shadow-lg rounded-xl font-bold transition-all duration-300 group/btn"
+          className="w-full h-10 bg-[#F3F0FD] hover:bg-[#3d326d] text-[#3d326d] hover:text-white border border-[#3d326d]/10 hover:border-[#3d326d] rounded-lg font-medium transition-all duration-300 group/btn"
         >
           View Details
-          <ChevronRight className="w-4 h-4 ml-2 text-[#3d326d] group-hover/btn:text-white transition-colors" />
+          <ChevronRight className="w-4 h-4 text-[#3d326d] group-hover/btn:text-white transition-colors" />
         </Button>
       </div>
     </motion.div>

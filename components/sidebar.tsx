@@ -148,7 +148,7 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
       <Button
         variant="ghost"
         className={cn(
-          "w-full gap-3 transition-all duration-300 relative overflow-hidden group mb-1 cursor-pointer",
+          "w-full gap-3 transition-all duration-300 relative overflow-hidden group mb-2 cursor-pointer",
           collapsed ? "justify-center px-2 h-10" : "justify-start h-11",
           active
             ? "bg-[var(--primary)] text-white shadow-md shadow-[var(--primary)]/30 hover:bg-[var(--primary)]/90"
@@ -201,7 +201,7 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
       <aside
         className={cn(
           "h-screen bg-white  flex-shrink-0 transition-all duration-300",
-          collapsed ? "w-20" : "w-64",
+          collapsed ? "w-24" : "w-64",
         )}
       >
         <div
@@ -211,12 +211,12 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
           )}
         >
           {/* Logo */}
-          <div className="p-6 border-b border-[#EBE7F6] flex items-center justify-between bg-gradient-to-r from-white to-[var(--primary-bg)]/30">
+          <div className="p-2 border-b border-[#EBE7F6] flex items-center justify-between bg-gradient-to-r from-white to-[var(--primary-bg)]/30">
             <div
               className="flex items-center gap-3 overflow-hidden cursor-pointer"
               onClick={() => router.push("/")}
             >
-              <div className="w-10 h-10 bg-gradient-to-br from-[var(--primary)] to-[var(--primary-light)] rounded-xl flex items-center justify-center shadow-lg shadow-[var(--primary)]/20">
+              <div className="min-w-10 w-10 h-10 bg-gradient-to-br from-[var(--primary)] to-[var(--primary-light)] rounded-xl flex items-center justify-center shadow-lg shadow-[var(--primary)]/20">
                 {/* Using ChefHat as a placeholder logo icon if UtensilsCrossed is not desired, but sticking to existing icon with better style */}
                 <ChefHat className="w-6 h-6 text-white" />
               </div>
@@ -263,7 +263,7 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
                       {section.section}
                     </h2>
                   )}
-                  <nav className="space-y-1">
+                  <nav className="space-y-2">
                     {section.items.map((item) => (
                       <NavButton
                         key={item.path}
@@ -286,7 +286,7 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="w-full justify-start gap-3 text-red-500 bg-red-50 hover:text-red-600 transition-colors h-12 rounded-lg cursor-pointer"
+                      className="w-full justify-center gap-3 text-red-500 bg-red-50 hover:text-red-600 transition-colors h-12 rounded-lg cursor-pointer px-4 py-2"
                       disabled={logoutMutation.isPending}
                       onClick={handleLogout}
                     >

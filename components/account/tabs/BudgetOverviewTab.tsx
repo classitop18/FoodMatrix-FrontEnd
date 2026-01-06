@@ -40,7 +40,7 @@ export const BudgetOverviewTab: React.FC<BudgetOverviewTabProps> = ({
       <div className="border-0 shadow-xl bg-white rounded-xl overflow-hidden">
         {/* Blue Gradient Header */}
         <div className="bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white p-4 flex justify-between items-center">
-          <h3 className="flex items-center gap-3 text-xl font-extrabold">
+          <h3 className="flex items-center gap-3 text-xl font-bold">
             <Wallet className="h-6 w-6" />
             Budget Overview
           </h3>

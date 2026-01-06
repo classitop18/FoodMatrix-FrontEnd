@@ -236,19 +236,19 @@ body {
 /* Select Trigger Styling */
 button[role="combobox"] {
   background: white !important;
-  border: 2px solid rgba(118, 97, 211, 0.3) !important;
+  border: 1px solid rgba(118, 97, 211, 0.3) !important;
   transition: all 0.3s ease !important;
 }
 
 button[role="combobox"]:hover {
   border-color: rgba(118, 97, 211, 0.5) !important;
-  box-shadow: 0 2px 8px rgba(118, 97, 211, 0.1) !important;
+  box-shadow: none !important;
 }
 
 button[role="combobox"]:focus,
 button[role="combobox"][data-state="open"] {
   border-color: #7661d3 !important;
-  box-shadow: 0 0 0 3px rgba(118, 97, 211, 0.1) !important;
+  box-shadow: none !important;
   outline: none !important;
 }
 
@@ -260,7 +260,7 @@ button[role="combobox"][data-state="open"] {
 
 /* Checkbox Styling */
 button[role="checkbox"] {
-  border: 2px solid rgba(118, 97, 211, 0.4) !important;
+  border: 1px solid rgba(118, 97, 211, 0.4) !important;
   transition: all 0.2s ease !important;
 }
 
@@ -299,4 +299,23 @@ button {
 [data-radix-portal] {
   position: fixed !important;
   z-index: 9999 !important;
+}
+
+button {
+  cursor: pointer;
+}
+
+[data-slot="dialog-header"] {
+    padding-right: 70px;
+}
+
+[data-slot="dialog-close"] {
+  background: rgba(255, 255, 255, 0.10);
+  color: #fff;
+  width: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  border-radius: 4px;
 }

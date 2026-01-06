@@ -290,7 +290,7 @@ export default function SubscriptionPage() {
           <div className="mb-16 animate-fade-in">
             <Card className="border-0 shadow-2xl rounded-3xl overflow-hidden">
               <CardHeader className="bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white p-6">
-                <CardTitle className="flex items-center gap-3 text-xl font-extrabold">
+                <CardTitle className="flex items-center gap-3 text-xl font-bold">
                   <Zap className="h-6 w-6" />
                   Your Current Usage
                 </CardTitle>
