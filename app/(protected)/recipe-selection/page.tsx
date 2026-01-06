@@ -483,7 +483,7 @@ export default function RecipeSelection() {
                                             <SelectContent>
                                               <SelectGroup>
                                                 <SelectItem value="all" className="text-sm">All Members ({members.length})</SelectItem>
-                                                {members.map((member) => (
+                                                {members.map((member:any) => (
                                                   <SelectItem key={member.id} value={member.id} className="text-sm">
                                                     {member.name || member?.user?.firstName + `(${member?.user?.username})` || 'Unnamed Member'}
                                                   </SelectItem>
