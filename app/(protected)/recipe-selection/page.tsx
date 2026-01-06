@@ -36,6 +36,9 @@ import {
   Check,
 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store.redux";
+import { useMembers } from "@/services/member/member.query";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -96,11 +99,18 @@ export default function RecipeSelection() {
   const generateCustomRecipeWithAi = useGenerateAICustomRecipeMutation();
 
   // Load Members
-  const { data: members = [] } = useQuery<Member[]>({
-    queryKey: ["/api/members-with-health"],
-    // Query function would normally fetch here, assuming global fetcher or configured
-    enabled: true,
-  });
+  // Load Members
+  const { activeAccountId } = useSelector((state: RootState) => state.account);
+  const { data: membersData } = useMembers(
+    {
+      accountId: activeAccountId || "",
+      limit: 100,
+    },
+    {
+      enabled: !!activeAccountId,
+    },
+  );
+  const members: Member[] = (membersData as any)?.data?.data || [];
 
   // Initialize Slots from Local Storage
   useEffect(() => {
@@ -339,396 +349,446 @@ export default function RecipeSelection() {
         </div>
 
         <div className="flex flex-wrap lg:flex-nowrap gap-4">
-          <Accordion
-            type="single"
-            collapsible
-            className="w-full"
-            defaultValue="item-1"
-          >
-            <AccordionItem value="item-1" className="">
-              <AccordionTrigger className="p-4 hover:underline-none items-center bg-[#e9e2fe] rounded-lg">
-                <div className="flex flex-col md:justify-between w-full gap-1">
-                  <h3 className="truncate text-base font-semibold text-[#7661d3]">Monday, Dec 29, 2025</h3>
-                  <span>3 meals planned</span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="flex flex-col gap-4 text-balance border border-[#F1EEFF] rounded-lg p-4 bg-white mt-3">
-                <Accordion
-                  type="single"
-                  collapsible
-                  className="w-full"
-                  defaultValue="item-1.0"
-                >
-                  <AccordionItem value="item-1.0" className="">
-                    <AccordionTrigger className="p-0 items-center">
-                      <div className="flex flex-row md:justify-between w-full gap-2 items-center">
-                        <h3 className="truncate text-lg font-semibold text-black">Breakfast</h3>
-                        <span>Generate Recipes</span>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="flex gap-4 flex-col mt-4">
-                      <div className="border border-[#F1EEFF] rounded-lg p-4 bg-white">
-                        <div className="w-100">
-                          <h5 className="font-medium text-[#7661d3] text-base">Ai Recipe Generator</h5>
-                          <p className="font-normal text-[#313131]">Search for specific recipes or ingredients</p>
+          {mealSlots.length === 0 ? (
+            <div className="flex-1 text-center py-20 bg-white rounded-2xl border border-dashed border-gray-200">
+              <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <ChefHat className="text-gray-300" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">
+                No Meals Planned for Cooking
+              </h3>
+              <p className="text-gray-500">
+                Go back to Meal Planning to schedule some home-cooked meals.
+              </p>
+              <Button
+                onClick={() => router.push("/meal-planning")}
+                variant="outline"
+                className="mt-4"
+              >
+                Go to Meal Planning
+              </Button>
+            </div>
+          ) : (
+            <>
+              <Accordion
+                type="single"
+                collapsible
+                className="w-full"
+                defaultValue={mealSlots.length > 0 ? `date-${mealSlots[0].date}` : undefined}
+              >
+                {/* Group slots by date */}
+                {Object.entries(
+                  mealSlots.reduce((acc, slot) => {
+                    const dateKey = slot.date.toString();
+                    if (!acc[dateKey]) acc[dateKey] = [];
+                    acc[dateKey].push(slot);
+                    return acc;
+                  }, {} as Record<string, Slot[]>)
+                ).map(([date, slotsForDate], dateIndex) => {
+                  const formattedDate = new Date(date).toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                  });
+
+                  return (
+                    <AccordionItem value={`date-${date}`} key={date} className="">
+                      <AccordionTrigger className="p-4 hover:underline-none items-center bg-[#e9e2fe] rounded-lg">
+                        <div className="flex flex-col md:justify-between w-full gap-1">
+                          <h3 className="truncate text-base font-semibold text-[#7661d3]">{formattedDate}</h3>
+                          <span>{slotsForDate.length} meals planned</span>
                         </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="flex flex-col gap-4 text-balance border border-[#F1EEFF] rounded-lg p-4 bg-white mt-3">
+                        <Accordion
+                          type="single"
+                          collapsible
+                          className="w-full"
+                          defaultValue={slotsForDate.length > 0 ? `meal-${date}-${slotsForDate[0].meal}` : undefined}
+                        >
+                          {slotsForDate.map((slot, mealIndex) => {
+                            const slotKey = `${slot.date}-${slot.meal}`;
+                            const payload = recipePayload[slotKey] || {};
+                            const generatedRecipes = generatedRecipies[slotKey]?.recipes || [];
+                            const customRecipes = generatedCustomRecipies[slotKey]?.recipes || [];
+                            const allRecipesForSlot = [...generatedRecipes, ...customRecipes];
 
-                        <div className="flex flex-wrap justify-between gap-4 my-4 mb-6">
-                          <div className="flex flex-col gap-2">
-                            <label className="text-sm font-medium text-gray-700">
-                              AI Recipe Controls
-                            </label>
+                            return (
+                              <AccordionItem value={`meal-${slotKey}`} key={slotKey} className="">
+                                <AccordionTrigger className="p-0 items-center">
+                                  <div className="flex flex-row md:justify-between w-full gap-2 items-center">
+                                    <h3 className="truncate text-lg font-semibold text-black">{slot.meal}</h3>
+                                    <span>Generate Recipes</span>
+                                  </div>
+                                </AccordionTrigger>
+                                <AccordionContent className="flex gap-4 flex-col mt-4">
+                                  <div className="border border-[#F1EEFF] rounded-lg p-4 bg-white">
+                                    <div className="w-100">
+                                      <h5 className="font-medium text-[#7661d3] text-base">Ai Recipe Generator</h5>
+                                      <p className="font-normal text-[#313131]">Search for specific recipes or ingredients</p>
+                                    </div>
 
-                            <div className="flex gap-4 flex-wrap">
-                              <Select>
-                                <SelectTrigger className="w-[155px] h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-sm font-medium shadow-none">
-                                  <SelectValue placeholder="Select Cuisine" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectGroup>
-                                    <SelectItem value="Cuisine1" className="text-sm">Cuisine 1</SelectItem>
-                                    <SelectItem value="Cuisine2" className="text-sm">Cuisine 2</SelectItem>
-                                    <SelectItem value="Cuisine3" className="text-sm">Cuisine 3</SelectItem>
-                                    <SelectItem value="Cuisine4" className="text-sm">Cuisine 4</SelectItem>
-                                    <SelectItem value="Cuisine5" className="text-sm">Cuisine 5</SelectItem>
-                                  </SelectGroup>
-                                </SelectContent>
-                              </Select>
-                              <Select>
-                                <SelectTrigger className="w-[160px] h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-sm font-medium shadow-none">
-                                  <SelectValue placeholder="Select Members" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectGroup>
-                                    <SelectItem value="Members1" className="text-sm">Members 1</SelectItem>
-                                    <SelectItem value="Members2" className="text-sm">Members 2</SelectItem>
-                                    <SelectItem value="Members3" className="text-sm">Members 3</SelectItem>
-                                    <SelectItem value="Members4" className="text-sm">Members 4</SelectItem>
-                                    <SelectItem value="Members5" className="text-sm">Members 5</SelectItem>
-                                  </SelectGroup>
-                                </SelectContent>
-                              </Select>
-                              <Select>
-                                <SelectTrigger className="w-[230px] h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-sm font-medium shadow-none">
-                                  <SelectValue placeholder="Select Number of Recipes" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectGroup>
-                                    <SelectItem value="Recipes1" className="text-sm">Recipes 1</SelectItem>
-                                    <SelectItem value="Recipes2" className="text-sm">Recipes 2</SelectItem>
-                                    <SelectItem value="Recipes3" className="text-sm">Recipes 3</SelectItem>
-                                    <SelectItem value="Recipes4" className="text-sm">Recipes 4</SelectItem>
-                                    <SelectItem value="Recipes5" className="text-sm">Recipes 5</SelectItem>
-                                  </SelectGroup>
-                                </SelectContent>
-                              </Select>
+                                    <div className="flex flex-wrap justify-between gap-4 my-4 mb-6">
+                                      <div className="flex flex-col gap-2">
+                                        <label className="text-sm font-medium text-gray-700">
+                                          AI Recipe Controls
+                                        </label>
+
+                                        <div className="flex gap-4 flex-wrap">
+                                          <Select
+                                            value={payload.cuisine}
+                                            onValueChange={(value) =>
+                                              generateRecipePayload(slotKey, "cuisine", value)
+                                            }
+                                          >
+                                            <SelectTrigger className="w-[155px] h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-sm font-medium shadow-none">
+                                              <SelectValue placeholder="Select Cuisine" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              <SelectGroup>
+                                                {cuisineOptions.map((cuisine) => (
+                                                  <SelectItem key={cuisine.value} value={cuisine.value} className="text-sm">
+                                                    <span className="flex items-center gap-2">
+                                                      <span>{cuisine.icon}</span>
+                                                      <span>{cuisine.label}</span>
+                                                    </span>
+                                                  </SelectItem>
+                                                ))}
+                                              </SelectGroup>
+                                            </SelectContent>
+                                          </Select>
+
+                                          <Select
+                                            value={payload.members?.join(',') || 'all'}
+                                            onValueChange={(value) => {
+                                              if (value === 'all') {
+                                                generateRecipePayload(slotKey, "members", members.map(m => m.id));
+                                              } else {
+                                                const selectedIds = value.split(',');
+                                                generateRecipePayload(slotKey, "members", selectedIds);
+                                              }
+                                            }}
+                                          >
+                                            <SelectTrigger className="w-[160px] h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-sm font-medium shadow-none">
+                                              <SelectValue placeholder="Select Members" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              <SelectGroup>
+                                                <SelectItem value="all" className="text-sm">All Members ({members.length})</SelectItem>
+                                                {members.map((member) => (
+                                                  <SelectItem key={member.id} value={member.id} className="text-sm">
+                                                    {member.name}
+                                                  </SelectItem>
+                                                ))}
+                                              </SelectGroup>
+                                            </SelectContent>
+                                          </Select>
+
+                                          <Select
+                                            value={payload.recipeCount?.toString() || ''}
+                                            onValueChange={(value) =>
+                                              generateRecipePayload(slotKey, "recipeCount", value)
+                                            }
+                                          >
+                                            <SelectTrigger className="w-[230px] h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-sm font-medium shadow-none">
+                                              <SelectValue placeholder="Select Number of Recipes" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              <SelectGroup>
+                                                {[1, 2, 3, 4, 5].map((num) => (
+                                                  <SelectItem key={num} value={num.toString()} className="text-sm">
+                                                    {num} Recipe{num > 1 ? 's' : ''}
+                                                  </SelectItem>
+                                                ))}
+                                              </SelectGroup>
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                      </div>
+
+                                      <div className="flex flex-col gap-2">
+                                        <label className="text-sm font-medium text-gray-700 flex gap-2 items-center">
+                                          Pantry Preferences
+                                          <TooltipProvider>
+                                            <Tooltip>
+                                              <TooltipTrigger>
+                                                <Info className="w-3.5 h-3.5 text-gray-400" />
+                                              </TooltipTrigger>
+                                              <TooltipContent className="max-w-[190px] text-xs bg-black text-white p-2 rounded-md shadow-lg">
+                                                Choose how to use your pantry items in recipe generation
+                                              </TooltipContent>
+                                            </Tooltip>
+                                          </TooltipProvider>
+                                        </label>
+
+                                        <Select
+                                          value={payload.pantryOption || ''}
+                                          onValueChange={(value) =>
+                                            generateRecipePayload(slotKey, "pantryOption", value)
+                                          }
+                                        >
+                                          <SelectTrigger className="w-[180px] h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-sm font-medium shadow-none">
+                                            <SelectValue placeholder="Select Preferences" />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectGroup>
+                                              <SelectItem value="can-use" className="text-sm">Can Use Pantry</SelectItem>
+                                              <SelectItem value="only-pantry" className="text-sm">Only Pantry Items</SelectItem>
+                                              <SelectItem value="ignore" className="text-sm">Ignore Pantry</SelectItem>
+                                            </SelectGroup>
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+                                    </div>
+
+                                    <Button
+                                      className="border-[#3d326d] hover:bg-[#2d2454] text-[#2d2454] hover:text-white font-medium text-base rounded-lg h-10 transition-all"
+                                      variant={"outline"}
+                                      onClick={() => generateRecipe(slot)}
+                                      disabled={isSlotProcessing[slotKey]?.isRecipeLoading}
+                                    >
+                                      {isSlotProcessing[slotKey]?.isRecipeLoading ? 'Generating...' : 'Generate Recipes'}
+                                    </Button>
+                                  </div>
+
+                                  <div className="border border-[#DFF6C9] rounded-lg p-4 bg-gradient-to-r from-[#EFFAE4] to-[#effae450]">
+                                    <div className="w-100">
+                                      <h5 className="font-medium text-[#7661d3] text-base">Custom Recipe Search</h5>
+                                      <p className="font-normal text-[#313131]">Search for specific recipes or ingredients</p>
+                                    </div>
+                                    <div className="relative mt-3">
+                                      <Search
+                                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                                        size={16}
+                                      />
+                                      <input
+                                        type="text"
+                                        placeholder="Search for recipes, ingredients, or cuisines..."
+                                        value={payload.customRecipe || ''}
+                                        onChange={(e) =>
+                                          generateRecipePayload(slotKey, "customRecipe", e.target.value)
+                                        }
+                                        className="w-full pl-9 pr-3 py-2 bg-white/10 border border-[#E2E2E2] rounded-lg text-black placeholder-black/40 focus:outline-none focus:bg-white/20 transition-all text-sm font-normal h-13"
+                                      />
+                                      <Button
+                                        className="text-white bg-(--primary) hover:bg-(--primary) font-medium ps-3! pe-3! py-1 h-10 rounded-lg text-base transition-all duration-300 cursor-pointer group relative flex items-center inset-shadow-[5px_5px_5px_rgba(0,0,0,0.30)] hover:inset-shadow-[-5px_-5px_5px_rgba(0,0,0,0.50)] min-w-26 justify-center absolute right-2 top-1/2 -translate-y-1/2"
+                                        onClick={() => generateCustomRecipe(slot)}
+                                        disabled={isSlotProcessing[slotKey]?.isCustomRecipeLoading || !payload.customRecipe}
+                                      >
+                                        {isSlotProcessing[slotKey]?.isCustomRecipeLoading ? 'Searching...' : 'Search'}
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </AccordionContent>
+                              </AccordionItem>
+                            );
+                          })}
+                        </Accordion>
+                      </AccordionContent>
+                    </AccordionItem>
+                  );
+                })}
+              </Accordion>
+
+              <div className="lg:max-w-[400px] w-full bg-[#e9e2fe] rounded-lg overflow-hidden">
+                <div className="bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white p-4 flex justify-between items-center">
+                  AI Generated Recipes
+                  <span className="text-sm font-normal">
+                    {Object.values(generatedRecipies).reduce((acc, val) => acc + (val?.recipes?.length || 0), 0) +
+                      Object.values(generatedCustomRecipies).reduce((acc, val) => acc + (val?.recipes?.length || 0), 0)} Results
+                  </span>
+                </div>
+
+                <ScrollArea className="w-full h-[calc(100vh-300px)] p-4">
+                  <div className="space-y-2">
+                    {Object.entries(generatedRecipies).length === 0 && Object.entries(generatedCustomRecipies).length === 0 ? (
+                      <div className="text-center py-10 text-gray-500">
+                        <p className="text-sm">No recipes generated yet</p>
+                        <p className="text-xs mt-1">Select options and click Generate Recipes</p>
+                      </div>
+                    ) : (
+                      Object.entries({ ...generatedRecipies, ...generatedCustomRecipies }).map(([slotKey, data]) => {
+                        const recipes = data?.recipes || [];
+                        if (recipes.length === 0) return null;
+
+                        const [date, meal] = slotKey.split('-');
+                        const shortDate = new Date(date).toLocaleDateString('en-US', {
+                          weekday: 'short',
+                          month: 'short',
+                          day: 'numeric'
+                        });
+
+                        return (
+                          <div key={slotKey} className="space-y-2">
+                            <div className="flex justify-between items-center bg-white rounded-lg p-2 border border-[#DDD6FA] sticky top-0 z-10">
+                              <div>
+                                <p className="font-semibold text-gray-900">{shortDate}</p>
+                                <p className="text-xs text-gray-500">{recipes.length} Result{recipes.length > 1 ? 's' : ''}</p>
+                              </div>
+                              <span className="text-sm font-normal text-[var(--primary)]">{meal}</span>
                             </div>
+
+                            {recipes.map((recipe) => {
+                              const isSelected = selections[slotKey] === recipe.id;
+
+                              return (
+                                <div
+                                  key={recipe.id}
+                                  className="bg-white rounded-lg p-2 space-y-3 relative cursor-pointer hover:shadow-md transition-shadow"
+                                  onClick={() => handleRecipeSelect(recipe, slotKey)}
+                                >
+                                  <div className="flex justify-between flex-col items-start">
+                                    <h3 className="font-bold text-gray-900 relative mb-2 pr-8">
+                                      {recipe.name || 'Untitled Recipe'}
+                                    </h3>
+                                    <span
+                                      className={`w-6 h-6 ${isSelected ? 'bg-amber-500' : 'bg-[var(--primary)]'} rounded-tr-md rounded-bl-md absolute top-0 right-0 flex items-center justify-center`}
+                                    >
+                                      {isSelected ? (
+                                        <Check className="size-4 text-white m-auto"></Check>
+                                      ) : (
+                                        <Plus className="size-4 text-white m-auto"></Plus>
+                                      )}
+                                    </span>
+
+                                    <div className="flex gap-4 justify-between w-full">
+                                      <p className="text-sm font-normal text-gray-500 line-clamp-2">
+                                        {recipe.description || 'No description available'}
+                                      </p>
+                                      <div className="flex gap-3 flex-shrink-0">
+                                        <ThumbsUp className="size-4 cursor-pointer hover:text-green-600 transition-colors"></ThumbsUp>
+                                        <ThumbsDown className="size-4 cursor-pointer hover:text-red-600 transition-colors"></ThumbsDown>
+                                        <Heart className="size-4 cursor-pointer hover:text-pink-600 transition-colors"></Heart>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center gap-4 text-sm text-black justify-between flex-wrap">
+                                    <div className="flex items-center gap-4">
+                                      <div className="flex items-center gap-1">
+                                        <Clock className="size-4"></Clock>
+                                        <span>{recipe.prepTime || '30'} min</span>
+                                      </div>
+                                      <div className="flex items-center gap-1">
+                                        <Flame className="size-4"></Flame>
+                                        {/* <span>{recipe?.nutritionalInfo?.calories || recipe?.calories || '250'} cal</span> */}
+                                      </div>
+                                      <div className="flex items-center gap-1">
+                                        <DollarSign className="size-4"></DollarSign>
+                                        <span>{(recipe.price || recipe.costAnalysis?.totalCost || 5).toFixed(2)}</span>
+                                      </div>
+                                    </div>
+
+                                    <Link
+                                      href="#"
+                                      className="text-sm font-medium text-[var(--primary)] underline"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        console.log('View recipe details:', recipe);
+                                      }}
+                                    >
+                                      See more
+                                    </Link>
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </div>
-
-                          <div className="flex flex-col gap-2">
-                            <label className="text-sm font-medium text-gray-700 flex gap-2 items-center">
-                              Pantry Preferences
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <Info className="w-3.5 h-3.5 text-gray-400" />
-                                  </TooltipTrigger>
-                                  <TooltipContent className="max-w-[190px] text-xs bg-black text-white p-2 rounded-md shadow-lg">
-                                    Choose how to use your pantry items in recipe generation
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            </label>
-
-
-                            <Select>
-                              <SelectTrigger className="w-[180px] h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-sm font-medium shadow-none">
-                                <SelectValue placeholder="Select Preferences" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectGroup>
-                                  <SelectItem value="Preferences1" className="text-sm">Preferences 1</SelectItem>
-                                  <SelectItem value="Preferences2" className="text-sm">Preferences 2</SelectItem>
-                                  <SelectItem value="Preferences3" className="text-sm">Preferences 3</SelectItem>
-                                  <SelectItem value="Preferences4" className="text-sm">Preferences 4</SelectItem>
-                                  <SelectItem value="Preferences5" className="text-sm">Preferences 5</SelectItem>
-                                </SelectGroup>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-
-                        <Button className="border-[#3d326d] hover:bg-[#2d2454] text-[#2d2454] hover:text-white font-medium text-base rounded-lg h-10 transition-all" variant={"outline"}>
-                          Generate Recipes
-                        </Button>
-                      </div>
-
-                      <div className="border border-[#DFF6C9] rounded-lg p-4 bg-gradient-to-r from-[#EFFAE4] to-[#effae450]">
-                        <div className="w-100">
-                          <h5 className="font-medium text-[#7661d3] text-base">Custom Recipe Search</h5>
-                          <p className="font-normal text-[#313131]">Search for specific recipes or ingredients</p>
-                        </div>
-                        <div className="relative mt-3">
-                          <Search
-                            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                            size={16}
-                          />
-                          <input
-                            type="text"
-                            placeholder="Search for recipes, ingredients, or cuisines..."
-                            className="w-full pl-9 pr-3 py-2 bg-white/10 border border-[#E2E2E2] rounded-lg text-black placeholder-black/40 focus:outline-none focus:bg-white/20 transition-all text-sm font-normal h-13" />
-                          <Button className="text-white bg-(--primary) hover:bg-(--primary) font-medium ps-3! pe-3! py-1 h-10 rounded-lg text-base transition-all duration-300 cursor-pointer group relative flex items-center
-            inset-shadow-[5px_5px_5px_rgba(0,0,0,0.30)] hover:inset-shadow-[-5px_-5px_5px_rgba(0,0,0,0.50)] min-w-26 justify-center absolute right-2 top-1/2 -translate-y-1/2">
-                            Search
-                          </Button>
-                        </div>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-
-          <div className="lg:max-w-[400px] w-full bg-[#e9e2fe] rounded-lg overflow-hidden">
-            <div className="bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white p-4 flex justify-between items-center">
-              AI Generated Recipes
-              <span className="text-sm font-normal">2 Results</span>
-            </div>
-
-            <div className="w-full space-y-2 p-4">
-
-              <div className="flex justify-between items-center bg-white rounded-lg p-2 border border-[#DDD6FA]">
-                <div>
-                  <p className="font-semibold text-gray-900">Mon, Dec 29</p>
-                  <p className="text-xs text-gray-500">2 Results</p>
-                </div>
-                <span className="text-sm font-normal text-[var(--primary)]">Breakfast</span>
+                        );
+                      })
+                    )}
+                  </div>
+                </ScrollArea>
               </div>
-
-              <div className="bg-white rounded-lg p-2  space-y-3 relative">
-                <div className="flex justify-between flex-col items-start">
-                  <h3 className="font-bold text-gray-900 relative mb-2">
-                    Blueberry Protein Pancakes
-                  </h3>
-                  <span className="w-6 h-6 bg-amber-500 rounded-tr-md rounded-bl-md absolute top-0 right-0 flex items-center justify-center">
-                    <Check className="size-4 text-white m-auto"></Check>
-                  </span>
-
-                  <div className="flex gap-4 justify-between w-full">
-                    <p className="text-sm font-normal text-gray-500">
-                      Lorem, ipsum dolor sit amet consectetur adipisicing elit. Sit ullam quis iste eum sint itaque eos architecto voluptas pariatur officiis.
-                    </p>
-                    <div className="flex gap-3">
-                      <ThumbsUp className="size-4"></ThumbsUp>
-                      <ThumbsDown className="size-4"></ThumbsDown>
-                      <Heart className="size-4"></Heart>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4 text-sm text-black justify-between flex-wrap">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1">
-                      <Clock className="size-4"></Clock>
-                      <span>15 min</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Flame className="size-4"></Flame>
-                      <span>320 cal</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <DollarSign className="size-4"></DollarSign>
-                      <span>4.50</span>
-                    </div>
-                  </div>
-
-                  <Link href={'/'} className="text-sm font-medium text-[var(--primary)] underline">See more</Link>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg p-2  space-y-3 relative">
-                <div className="flex justify-between flex-col items-start">
-                  <h3 className="font-bold text-gray-900 relative mb-2">
-                    Blueberry Protein Pancakes
-                  </h3>
-                  <span className="w-6 h-6 bg-[var(--primary)] rounded-tr-md rounded-bl-md absolute top-0 right-0 flex items-center justify-center">
-                    <Plus className="size-4 text-white m-auto"></Plus>
-                  </span>
-
-                  <div className="flex gap-4 justify-between w-full">
-                    <p className="text-sm font-normal text-gray-500">
-                      Lorem, ipsum dolor sit amet consectetur adipisicing elit. Sit ullam quis iste eum sint itaque eos architecto voluptas pariatur officiis.
-                    </p>
-                    <div className="flex gap-3">
-                      <ThumbsUp className="size-4"></ThumbsUp>
-                      <ThumbsDown className="size-4"></ThumbsDown>
-                      <Heart className="size-4"></Heart>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4 text-sm text-black justify-between flex-wrap">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1">
-                      <Clock className="size-4"></Clock>
-                      <span>15 min</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Flame className="size-4"></Flame>
-                      <span>320 cal</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <DollarSign className="size-4"></DollarSign>
-                      <span>4.50</span>
-                    </div>
-                  </div>
-
-                  <Link href={'/'} className="text-sm font-medium text-[var(--primary)] underline">See more</Link>
-                </div>
-              </div>
-            </div>
-          </div>
+            </>
+          )}
         </div>
 
 
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-8 hidden">
-          {/* Main Content: Meal Slots */}
-          <div className="xl:col-span-3 space-y-8">
-            {mealSlots.length === 0 ? (
-              <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-gray-200">
-                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <ChefHat className="text-gray-300" />
+        {/* Summary Sidebar - now integrated into the main layout */}
+        <div className="mt-8">
+          <Card className="border-0 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.08)] bg-white/80 backdrop-blur-md overflow-hidden">
+            <div className="h-2 bg-gradient-to-r from-[#7dab4f] to-[#5a8c3e]" />
+            <CardHeader>
+              <CardTitle>Selection Summary</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="bg-emerald-50 rounded-lg p-4 border border-emerald-100">
+                <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider block mb-1">
+                  Total Estimated Cost
+                </span>
+                <div className="text-3xl font-black text-[#1a1a1a]">
+                  ${calculateTotal().toFixed(2)}
                 </div>
-                <h3 className="text-lg font-bold text-gray-900">
-                  No Meals Planned for Cooking
-                </h3>
-                <p className="text-gray-500">
-                  Go back to Meal Planning to schedule some home-cooked meals.
-                </p>
-                <Button
-                  onClick={() => router.push("/meal-planning")}
-                  variant="outline"
-                  className="mt-4"
-                >
-                  Go to Meal Planning
-                </Button>
+                <span className="text-xs text-emerald-600/80 font-medium">
+                  For {Object.keys(selections).length} meals
+                </span>
               </div>
-            ) : (
-              mealSlots.map((slot) => {
-                const slotKey = `${slot.date}-${slot.meal}`;
-                return (
-                  <div
-                    key={slotKey}
-                    className="animate-in slide-in-from-bottom-4 duration-500"
-                  >
-                    <RecipeSelectionCard
-                      slot={slot}
-                      recipePayload={recipePayload}
-                      members={members}
-                      isSlotProcessing={isSlotProcessing}
-                      recipes={generatedRecipies[slotKey]?.recipes || []}
-                      customRecipes={
-                        generatedCustomRecipies[slotKey]?.recipes || []
-                      }
-                      generateRecipePayload={generateRecipePayload}
-                      onGenerateRecipe={generateRecipe}
-                      onGenerateCustomRecipe={generateCustomRecipe}
-                      onRecipeView={(r) => console.log("View", r)}
-                      onRecipeSelect={(r) => handleRecipeSelect(r, slotKey)}
-                      selectedRecipeId={selections[slotKey]}
-                    />
-                  </div>
-                );
-              })
-            )}
-          </div>
-          {/* Sidebar: Summary */}
-          <div className="xl:col-span-1 space-y-6">
-            <div className="sticky top-8">
-              <Card className="border-0 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.08)] bg-white/80 backdrop-blur-md overflow-hidden">
-                <div className="h-2 bg-gradient-to-r from-[#7dab4f] to-[#5a8c3e]" />
-                <CardHeader>
-                  <CardTitle>Selection Summary</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="bg-emerald-50 rounded-lg p-4 border border-emerald-100">
-                    <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider block mb-1">
-                      Total Estimated Cost
-                    </span>
-                    <div className="text-3xl font-black text-[#1a1a1a]">
-                      ${calculateTotal().toFixed(2)}
-                    </div>
-                    <span className="text-xs text-emerald-600/80 font-medium">
-                      For {Object.keys(selections).length} meals
-                    </span>
-                  </div>
 
-                  <ScrollArea className="h-[300px] pr-4">
-                    <div className="space-y-3">
-                      {Object.entries(selections).map(([key, id]) => {
-                        // Find recipe details
-                        const all = [
-                          ...recipeDatabase,
-                          ...(generatedRecipies[key]?.recipes || []),
-                          ...(generatedCustomRecipies[key]?.recipes || []),
-                        ];
-                        const r = all.find((x) => x.id === id);
-                        if (!r) return null;
+              <ScrollArea className="h-[300px] pr-4">
+                <div className="space-y-3">
+                  {Object.entries(selections).map(([key, id]) => {
+                    // Find recipe details
+                    const all = [
+                      ...recipeDatabase,
+                      ...(generatedRecipies[key]?.recipes || []),
+                      ...(generatedCustomRecipies[key]?.recipes || []),
+                    ];
+                    const r = all.find((x) => x.id === id);
+                    if (!r) return null;
 
-                        return (
-                          <div
-                            key={key}
-                            className="flex items-start gap-3 p-3 bg-white rounded-lg border border-gray-100  relative group"
-                          >
-                            <button
-                              onClick={() => {
-                                const newSel = { ...selections };
-                                delete newSel[key];
-                                setSelections(newSel);
-                                setSelectedRecipes((prev) =>
-                                  prev.filter((x) => x !== id),
-                                );
-                              }}
-                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500"
-                            >
-                              &times;
-                            </button>
-                            <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center shrink-0">
-                              <ChefHat size={16} className="text-gray-400" />
-                            </div>
-                            <div className="overflow-hidden">
-                              <h4 className="font-bold text-gray-900 text-sm truncate">
-                                {r.name}
-                              </h4>
-                              <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
-                                {key.split("-")[1]}
-                              </p>
-                            </div>
-                          </div>
-                        );
-                      })}
-                      {Object.keys(selections).length === 0 && (
-                        <div className="text-center text-gray-400 py-8 text-sm">
-                          No recipes selected yet
+                    return (
+                      <div
+                        key={key}
+                        className="flex items-start gap-3 p-3 bg-white rounded-lg border border-gray-100  relative group"
+                      >
+                        <button
+                          onClick={() => {
+                            const newSel = { ...selections };
+                            delete newSel[key];
+                            setSelections(newSel);
+                            setSelectedRecipes((prev) =>
+                              prev.filter((x) => x !== id),
+                            );
+                          }}
+                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500"
+                        >
+                          &times;
+                        </button>
+                        <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center shrink-0">
+                          <ChefHat size={16} className="text-gray-400" />
                         </div>
-                      )}
+                        <div className="overflow-hidden">
+                          <h4 className="font-bold text-gray-900 text-sm truncate">
+                            {r.name}
+                          </h4>
+                          <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
+                            {key.split("-")[1]}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {Object.keys(selections).length === 0 && (
+                    <div className="text-center text-gray-400 py-8 text-sm">
+                      No recipes selected yet
                     </div>
-                  </ScrollArea>
+                  )}
+                </div>
+              </ScrollArea>
 
-                  <Button
-                    onClick={handleGenerateShoppingList}
-                    className="w-full h-12 bg-[#1a1a1a] hover:bg-black text-white font-bold rounded-lg shadow-lg shadow-black/5 hover:-translate-y-0.5 transition-all"
-                    disabled={Object.keys(selections).length === 0}
-                  >
-                    <ShoppingCart className="mr-2 h-4 w-4" />
-                    Generate Shopping List
-                    <ArrowRight className="ml-2 h-4 w-4 opacity-50" />
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+              <Button
+                onClick={handleGenerateShoppingList}
+                className="w-full h-12 bg-[#1a1a1a] hover:bg-black text-white font-bold rounded-lg shadow-lg shadow-black/5 hover:-translate-y-0.5 transition-all"
+                disabled={Object.keys(selections).length === 0}
+              >
+                <ShoppingCart className="mr-2 h-4 w-4" />
+                Generate Shopping List
+                <ArrowRight className="ml-2 h-4 w-4 opacity-50" />
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

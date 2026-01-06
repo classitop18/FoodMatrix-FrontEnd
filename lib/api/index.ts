@@ -72,6 +72,9 @@ class ApiClient {
             "foodmatrix_active_account_id",
           );
   
+
+          
+
           if (activeAccountId) {
             config.headers = config.headers || {};
             // Only set if not already set (allow overriding)

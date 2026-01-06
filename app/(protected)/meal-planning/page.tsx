@@ -23,6 +23,9 @@ import {
   Soup,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store.redux";
+import { useMembers } from "@/services/member/member.query";
 import {
   format,
   addDays,
@@ -174,7 +177,7 @@ const validateAndCleanDates = () => {
       const date = startOfDay(new Date(d.actualDate));
       return isAfter(date, today) || date.getTime() === today.getTime();
     });
-  
+
 
     const validPlan: Record<string, MealSlot> = {};
     validDates.forEach((d) => {
@@ -219,10 +222,19 @@ export default function MealPlanning() {
     [],
   );
 
-  const { data: members = [], isLoading: membersLoading } = useQuery<Member[]>({
-    queryKey: ["/api/members"],
-    enabled: true,
-  });
+  const { activeAccountId } = useSelector((state: RootState) => state.account);
+
+  const { data: membersData, isLoading: membersLoading } = useMembers(
+    {
+      accountId: activeAccountId || "",
+      limit: 100,
+    },
+    {
+      enabled: !!activeAccountId,
+    },
+  );
+
+  const members: Member[] = (membersData as any)?.data?.data || [];
 
   const [weekPlan, setWeekPlan] =
     useState<Record<string, MealSlot>>(cleanedPlan);
@@ -520,30 +532,30 @@ export default function MealPlanning() {
           </div>
 
           <div className="flex items-center gap-3">
-              <button
-                onClick={() => setViewMode("date")}
-                className={cn(
-                  "px-5 py-3 rounded-lg text-sm font-bold flex items-center gap-2.5 transition-all duration-300",
-                  viewMode === "date"
-                    ? "bg-[#1a1a1a] text-white shadow-lg scale-100"
-                    : "text-gray-500 hover:bg-gray-50 hover:text-gray-900 border border-gray-300 bg-white",
-                )}
-              >
-                <LayoutGrid size={18} />
-                Date Mode
-              </button>
-              <button
-                onClick={() => setViewMode("week")}
-                className={cn(
-                  "px-5 py-3 rounded-lg text-sm font-bold flex items-center gap-2.5 transition-all duration-300",
-                  viewMode === "week"
-                    ? "bg-[#1a1a1a] text-white shadow-lg scale-100 border"
-                    : "text-gray-500 hover:bg-gray-50 hover:text-gray-900 border border-gray-300 bg-white",
-                )}
-              >
-                <CalendarDays size={18} />
-                Week View
-              </button>
+            <button
+              onClick={() => setViewMode("date")}
+              className={cn(
+                "px-5 py-3 rounded-lg text-sm font-bold flex items-center gap-2.5 transition-all duration-300",
+                viewMode === "date"
+                  ? "bg-[#1a1a1a] text-white shadow-lg scale-100"
+                  : "text-gray-500 hover:bg-gray-50 hover:text-gray-900 border border-gray-300 bg-white",
+              )}
+            >
+              <LayoutGrid size={18} />
+              Date Mode
+            </button>
+            <button
+              onClick={() => setViewMode("week")}
+              className={cn(
+                "px-5 py-3 rounded-lg text-sm font-bold flex items-center gap-2.5 transition-all duration-300",
+                viewMode === "week"
+                  ? "bg-[#1a1a1a] text-white shadow-lg scale-100 border"
+                  : "text-gray-500 hover:bg-gray-50 hover:text-gray-900 border border-gray-300 bg-white",
+              )}
+            >
+              <CalendarDays size={18} />
+              Week View
+            </button>
           </div>
         </div>
 
