@@ -99,7 +99,7 @@ export default function AccountPage() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] pb-8 relative overflow-hidden font-sans">
+    <div className="h-[calc(100vh-57px)] bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] relative overflow-auto">
       {/* Main Container */}
       <div className="max-w-8xl mx-auto px-4 md:px-6 relative z-10 py-8">
         {/* Header Section */}

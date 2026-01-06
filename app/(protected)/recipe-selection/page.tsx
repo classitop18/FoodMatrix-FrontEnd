@@ -215,7 +215,7 @@ export default function RecipeSelection() {
         title: "Recipes Generated!",
         description: `Found ${recipes.length} recipes.`,
       });
-    } catch (error) {
+    } catch (error) { 
       toast({
         title: "Error",
         description: "Failed to generate recipes.",
@@ -329,7 +329,7 @@ export default function RecipeSelection() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] pb-8 relative overflow-hidden font-sans">
+    <div className="h-[calc(100vh-57px)] bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] relative overflow-auto">
       {/* Background Decoration */}
       {/* <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-gradient-to-br from-[#7dab4f]/10 to-transparent rounded-full blur-[100px]" />
@@ -345,7 +345,7 @@ export default function RecipeSelection() {
               AI Recipe Selection
             </span>
           </div>
-          <div>
+          <div className="text-center">
             <h1 className="text-2xl lg:text-3xl font-extrabold text-[#313131] tracking-tight">
               Smarter choices for effortless cooking
             </h1>
@@ -477,7 +477,7 @@ export default function RecipeSelection() {
                                               }
                                             }}
                                           >
-                                            <SelectTrigger className="w-[160px] h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-sm font-medium shadow-none">
+                                            <SelectTrigger className="w-[220px] h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-sm font-medium shadow-none">
                                               <SelectValue placeholder="Select Members" />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -598,7 +598,7 @@ export default function RecipeSelection() {
                 })}
               </Accordion>
 
-              <div className="lg:max-w-[400px] w-full bg-[#e9e2fe] rounded-lg overflow-hidden">
+              <div className="lg:max-w-[550px] w-full bg-[#e9e2fe] rounded-lg overflow-hidden">
                 <div className="bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white p-4 flex justify-between items-center">
                   AI Generated Recipes
                   <span className="text-sm font-normal">

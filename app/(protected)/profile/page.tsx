@@ -419,7 +419,7 @@ const ProfilePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] pb-8 relative overflow-hidden font-sans">
+    <div className="h-[calc(100vh-57px)] bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] relative overflow-auto">
       <div className="relative z-10 w-full mx-auto px-6 py-8">
         {/* Header Section */}
         <div className="mb-6 animate-slide-up">
