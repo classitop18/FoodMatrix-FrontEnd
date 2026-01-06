@@ -255,7 +255,7 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
               {navigationItems.map((section) => (
                 <div
                   key={section.section}
-                  className="mb-8 last:mb-0 animate-slide-up"
+                  className="mb-4 last:mb-0 animate-slide-up"
                   style={{ animationDelay: "0.1s" }}
                 >
                   {!collapsed && (

@@ -293,7 +293,7 @@ const PantryPage: React.FC = () => {
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] pb-8 relative overflow-hidden font-sans">
+      <div className="h-[calc(100vh-57px)] bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] relative overflow-auto">
         <div className="max-w-8xl mx-auto px-4 md:px-6 relative z-10 py-8">
           {/* Header Section */}
           <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between mb-6 gap-6 animate-fade-in">

@@ -119,7 +119,7 @@ export default function OTPVerificationClient() {
                   <InputOTPSlot
                     key={index}
                     index={index}
-                    className="w-12 h-14 rounded-xl border-2 border-[var(--primary)]/20 text-lg font-bold text-[var(--primary)] focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary)]/10 transition-all bg-white"
+                    className="w-12 h-14 rounded-xl border-2 border-[var(--primary)]/20 text-lg font-bold text-[var(--primary)] focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)]/10 transition-all bg-white"
                   />
                 ))}
               </InputOTPGroup>
@@ -128,7 +128,7 @@ export default function OTPVerificationClient() {
 
           <Button
             onClick={handleVerify}
-            className="w-full h-14 text-lg font-bold rounded-xl bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] hover:shadow-lg hover:shadow-[var(--primary)]/30 transition-all duration-300 hover:scale-[1.02] mb-6"
+            className="w-full h-11 text-base font-bold rounded-xl bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] hover:shadow-lg hover:shadow-[var(--primary)]/30 transition-all duration-300 hover:scale-[1.02] mb-6 text-white"
             disabled={isLoading}
           >
             {isLoading ? "Verifying..." : "Verify Code"}

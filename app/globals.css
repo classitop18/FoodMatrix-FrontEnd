@@ -319,3 +319,7 @@ button {
   height: 28px;
   border-radius: 4px;
 }
+
+[data-slot="dialog-close"] svg {
+    stroke: #000;
+}

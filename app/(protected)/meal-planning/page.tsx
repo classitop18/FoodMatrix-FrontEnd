@@ -503,7 +503,7 @@ export default function MealPlanning() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] pb-8 relative overflow-hidden font-sans">
+    <div className="h-[calc(100vh-57px)] bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] relative overflow-auto">
       {/* Background Decoration */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-gradient-to-br from-[#7dab4f]/10 to-transparent rounded-full blur-[100px]" />
@@ -563,7 +563,7 @@ export default function MealPlanning() {
 
         <div className="rounded-2xl overflow-hidden bg-white p-6">
           {/* Stats Cards - Premium Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
             {/* Card 1: Home Cooking */}
             <div className="bg-white rounded-xl p-6 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] border border-gray-100 relative overflow-hidden group hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-all duration-500">
               <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50/50 rounded-bl-[100px] -mr-6 -mt-6 transition-transform group-hover:scale-110 duration-700" />
