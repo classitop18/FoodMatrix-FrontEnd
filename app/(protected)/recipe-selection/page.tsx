@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -21,8 +20,6 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   ChefHat,
-  ShoppingCart,
-  ArrowRight,
   Sparkles,
   Search,
   Info,
@@ -35,12 +32,12 @@ import {
   Plus,
   Check,
 } from "lucide-react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store.redux";
 import { useMembers } from "@/services/member/member.query";
 import { useToast } from "@/hooks/use-toast";
-import { Checkbox } from "@/components/ui/checkbox";
+
 
 import {
   useAddRecipeMutation,
@@ -483,7 +480,7 @@ export default function RecipeSelection() {
                                             <SelectContent>
                                               <SelectGroup>
                                                 <SelectItem value="all" className="text-sm">All Members ({members.length})</SelectItem>
-                                                {members.map((member:any) => (
+                                                {members.map((member: any) => (
                                                   <SelectItem key={member.id} value={member.id} className="text-sm">
                                                     {member.name || member?.user?.firstName + `(${member?.user?.username})` || 'Unnamed Member'}
                                                   </SelectItem>
