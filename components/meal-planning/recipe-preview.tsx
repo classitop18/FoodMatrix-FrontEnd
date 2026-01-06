@@ -131,11 +131,6 @@ export default function RecipeDetailsPage({
     setNutritionData(normalizeNutritionForChart(recipe?.nutrition));
   }, [recipe]);
 
-  console.log(recipe?.nutrition, "recipe?.nutrition");
-
-  console.log({ nutritionData });
-
-  console.log({ recipe }, "reciperecipe");
 
   // Custom tooltip to show units
   const CustomTooltip = ({ active, payload }: any) => {

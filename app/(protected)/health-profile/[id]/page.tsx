@@ -124,7 +124,6 @@ export default function HealthProfilePage() {
   useEffect(() => {
     if (memberHealth?.data) {
       const data = memberHealth.data;
-      console.log(data);
       setFormData({
         height: data.height ?? "",
         weight: data.weight ?? "",

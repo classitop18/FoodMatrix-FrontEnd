@@ -91,6 +91,15 @@ export function RecipeFiltersSidebar({
                 sortOrder: filters.sortOrder,
                 dateFilter: filters.dateFilter,
                 search: filters.search,
+                cuisines: "",
+                mealTypes: "",
+                difficulty: "",
+                minPrepTime: undefined,
+                maxPrepTime: undefined,
+                minCalories: undefined,
+                maxCalories: undefined,
+                minBudget: undefined,
+                maxBudget: undefined,
               })
             }
             className="h-8 px-2 text-xs text-red-500 hover:text-red-600 hover:bg-red-50 font-bold"
@@ -136,7 +145,7 @@ export function RecipeFiltersSidebar({
               </div>
 
               <Slider
-                defaultValue={[
+                value={[
                   localFilters.minBudget || 0,
                   localFilters.maxBudget || 50,
                 ]}
@@ -189,7 +198,7 @@ export function RecipeFiltersSidebar({
               </div>
 
               <Slider
-                defaultValue={[
+                value={[
                   localFilters.minPrepTime || 0,
                   localFilters.maxPrepTime || 120,
                 ]}

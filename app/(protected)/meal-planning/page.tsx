@@ -174,7 +174,7 @@ const validateAndCleanDates = () => {
       const date = startOfDay(new Date(d.actualDate));
       return isAfter(date, today) || date.getTime() === today.getTime();
     });
-    console.log({ validDates });
+  
 
     const validPlan: Record<string, MealSlot> = {};
     validDates.forEach((d) => {

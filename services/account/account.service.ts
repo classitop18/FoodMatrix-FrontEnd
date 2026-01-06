@@ -8,12 +8,11 @@ export class AccountService {
       API_ENDPOINTS.ACCOUNT.CREATE_ACCOUNT,
       payload,
     );
-    console.log(response, "accountResponse");
+
   }
 
   async getMyAccount() {
     const response = await apiClient.get(API_ENDPOINTS.ACCOUNT.GET_MY_ACCOUNT);
-    console.log(response, "accountResponse");
     return response?.data;
   }
 

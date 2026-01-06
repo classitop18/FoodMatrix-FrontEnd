@@ -146,17 +146,7 @@ export default function RecipeSelectionCard(props: RecipeSelectionCardProps) {
           scoreChange -= preferenceScores[currentPref];
         }
 
-        console.log(
-          recipeId,
-          "recipeId",
-          "currentPref:",
-          currentPref,
-          "newPref:",
-          newPref,
-          "scoreChange:",
-          scoreChange,
-        );
-
+  
         // Update backend - send update for both setting and removing preferences
         updateRecipeMutation.mutate({
           id: recipeId,

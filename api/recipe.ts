@@ -1,4 +1,10 @@
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQueryClient,
+  useQuery,
+  useInfiniteQuery,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import { apiClient } from "@/lib/api";
 // Removed import { Recipe } from "@/lib/recipe-constants";
 
@@ -30,6 +36,12 @@ export interface CostAnalysis {
   budgetEfficiency?: number;
 }
 
+export interface ComplementaryItem {
+  name: string;
+  cost: number;
+  optional?: boolean;
+}
+
 export interface Recipe {
   id: string;
   name: string;
@@ -55,6 +67,7 @@ export interface Recipe {
   budgetEfficiency?: number;
 
   ingredients: Ingredient[];
+  complementaryItems?: ComplementaryItem[];
 
   timesCooked: number;
   averageRating?: number;
@@ -120,23 +133,39 @@ export interface RecipesResponse {
 
 // Hooks
 
-export const useRecipesQuery = (filters: RecipeFilters) => {
-  return useQuery({ 
+export const useRecipesInfiniteQuery = (filters: RecipeFilters) => {
+  return useInfiniteQuery({
     queryKey: ["recipes", filters],
-    queryFn: async () => {
+    queryFn: async ({ pageParam = 1 }) => {
+      console.log("Fetching recipes with params:", {
+        ...filters,
+        page: pageParam,
+      });
       const params = new URLSearchParams();
+      // Add page param
+      params.append("page", pageParam.toString());
+
       Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== "") {
+        if (
+          key !== "page" &&
+          value !== undefined &&
+          value !== null &&
+          value !== ""
+        ) {
           params.append(key, value.toString());
         }
       });
       const response = await apiClient.get(`/recipes?${params.toString()}`);
-      console.log({
-        data:response?.data
-      },"myreciperesponse")
       return response.data?.data as RecipesResponse;
     },
-    placeholderData: (previousData) => previousData, // Keep previous data while fetching new data
+    getNextPageParam: (lastPage) => {
+      if (lastPage.pagination.page < lastPage.pagination.totalPages) {
+        return lastPage.pagination.page + 1;
+      }
+      return undefined;
+    },
+    initialPageParam: 1,
+    placeholderData: keepPreviousData,
   });
 };
 

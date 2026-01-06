@@ -76,7 +76,7 @@ export default function AccountPage() {
     loading,
   } = useSelector((state: RootState) => state.account);
 
-  console.log({ account }, "account");
+
   const user = useSelector((state: RootState) => state.auth.user);
 
   // Handle tab change with lazy loading tracking
@@ -97,7 +97,6 @@ export default function AccountPage() {
     return <Loader />;
   }
 
-  console.log({ myMembership }, "myMembership");
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] pb-8 relative overflow-hidden font-sans">

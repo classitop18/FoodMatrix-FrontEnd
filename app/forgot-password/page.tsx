@@ -39,8 +39,6 @@ export default function ForgotPasswordPage() {
       // TODO: Integrate forgot password API
       console.log("Forgot password request:", data);
       const response = await forgetPasswordMutation.mutateAsync(data?.email);
-
-      console.log(response, "myforgotresponse");
       setIsSubmitted(true);
       toast({
         title: "Email Sent!",

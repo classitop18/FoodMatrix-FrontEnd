@@ -21,14 +21,14 @@ class ApiClient {
   constructor() {
     this.client = axios.create({
       baseURL:
-        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api/v1",
+        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000/api/v1",
       withCredentials: true,
     });
 
     // Separate axios instance for refresh token (so it doesn't trigger interceptors)
     this.refreshClient = axios.create({
       baseURL:
-        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api/v1",
+        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000/api/v1",
       withCredentials: true,
     });
 
@@ -71,7 +71,7 @@ class ApiClient {
           const activeAccountId = localStorage.getItem(
             "foodmatrix_active_account_id",
           );
-          console.log({ activeAccountId }, "activeAccountId");
+  
           if (activeAccountId) {
             config.headers = config.headers || {};
             // Only set if not already set (allow overriding)
