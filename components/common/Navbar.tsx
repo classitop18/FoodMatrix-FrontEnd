@@ -14,7 +14,7 @@ import BorderButton from "./buttons/border-button";
 
 export default function Navbar() {
   return (
-    <nav className="sticky top-0 py-2 h-20 bg-white shadow-[0_4px_10px_rgba(225,221,240,1)] flex items-center">
+    <nav className="sticky top-0 py-2 h-20 bg-white shadow-[0_4px_10px_rgba(225,221,240,1)] flex items-center z-50">
       <div className="w-full lg:w-5xl xl:w-[1320px] mx-auto px-6 relative flex justify-between items-center">
         {/* ---------- LOGO ---------- */}
         <Link href={"/"} className="flex flex-col leading-tight cursor-pointer">
@@ -70,7 +70,7 @@ export default function Navbar() {
             </li>
 
             <li className="relative group">
-              <Link
+              <Link   
                 href="/"
                 className={
                   "text-black block text-base leading-[22px] font-medium transition-colors duration-200"
@@ -79,12 +79,12 @@ export default function Navbar() {
                 Contact
               </Link>
             </li>
-            <li className="relative group">
-              <Link href={"/login"}>
+            <li className="relative group cursor-pointer">
+              <Link href={"/login"} className="cursor-pointer">
                 <Button label="Login" />
               </Link>
             </li>
-            <li className="relative group">
+            <li className="relative group cursor-pointer">
               <Link href={"/register"}>
                 <BorderButton label="Create Account" />
               </Link>

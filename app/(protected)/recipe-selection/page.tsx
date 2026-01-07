@@ -19,6 +19,22 @@ import {
 } from "@/components/ui/accordion"
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from "@/components/ui/command"
+import { Badge } from "@/components/ui/badge"
+import { cn } from "@/lib/utils"
+import {
   ChefHat,
   Sparkles,
   Search,
@@ -31,9 +47,11 @@ import {
   Heart,
   Plus,
   Check,
+  ChevronDown,
 } from "lucide-react";
 
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { toggleMealPlan, setGeneratedRecipes, setGeneratedCustomRecipes } from "@/redux/features/meal-plan/meal-plan.slice";
 import { RootState } from "@/redux/store.redux";
 import { useMembers } from "@/services/member/member.query";
 import { useToast } from "@/hooks/use-toast";
@@ -60,6 +78,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import Link from "next/link";
 import { RecipeDetailsDialog } from "../recipes/components/recipe-details-dialog";
 import { Recipe as ApiRecipe } from "@/api/recipe";
+import { getRecipeImageUrl } from "@/lib/recipe-utils";
 
 interface Member {
   id: string;
@@ -72,20 +91,43 @@ interface Member {
     healthConditions?: string[];
     healthGoals?: string[];
   };
+  user?: {
+    firstName?: string;
+    username?: string;
+  };
 }
 
 export default function RecipeSelection() {
   const router = useRouter();
   const { toast } = useToast();
 
+  // Redux
+  const dispatch = useDispatch();
+  const { plans, generatedRecipes: generatedRecipies, generatedCustomRecipes: generatedCustomRecipies } = useSelector((state: RootState) => state.mealPlan);
+
+  // Derived selections for UI compatibility
+  const currentSelections: Record<string, string> = {};
+  Object.entries(plans).forEach(([date, meals]) => {
+    Object.entries(meals).forEach(([mealType, recipe]) => {
+      // Reconstruct slotKey as per the format used in this component
+      // Note: In generateRecipe, slotKey is `${slot.date}-${slot.meal}`
+      // slot.meal is derived from local storage and might be uppercase/lowercase depending on where it came from.
+      // But looking at line 154, it is uppercase. Line 207 uses lowercase for API.
+      // We need to match what's used in the render loop.
+      // Render loop uses slotKey = `${slot.date}-${slot.meal}`.
+      // In setMealPlan, we need to ensure we pass the correct mealType string that matches slot.meal.
+      // However, we storing it. Let's assume we store what we get.
+
+      const slotKey = `${date}-${mealType}`;
+      if (recipe && recipe.id) {
+        currentSelections[slotKey] = recipe.id;
+      }
+    });
+  });
+
   const [mealSlots, setMealSlots] = useState<Slot[]>([]);
-  const [selections, setSelections] = useState<Record<string, string>>({});
-  const [generatedRecipies, setGeneratedRecipies] = useState<
-    Record<string, { recipes: Recipe[] }>
-  >({});
-  const [generatedCustomRecipies, setGeneratedCustomRecipies] = useState<
-    Record<string, { recipes: Recipe[] }>
-  >({});
+  // const [selections, setSelections] = useState<Record<string, string>>({}); // Removed in favor of Redux
+  // Local state for generated recipes removed in favor of Redux
 
   const [selectedRecipes, setSelectedRecipes] = useState<string[]>([]);
   const [recipePayload, setRecipePayload] = useState<RecipePayload>({});
@@ -201,18 +243,19 @@ export default function RecipeSelection() {
         id: r.id || `ai-${slotKey}-${idx}-${Date.now()}`,
         complementaryItems: [],
         isAIGenerated: true,
+        image: r.image // Ensure image is passed through
       }));
 
-      setGeneratedRecipies((prev) => ({
-        ...prev,
-        [slotKey]: { recipes },
+      dispatch(setGeneratedRecipes({
+        slotKey,
+        recipes
       }));
 
       toast({
         title: "Recipes Generated!",
         description: `Found ${recipes.length} recipes.`,
       });
-    } catch (error) { 
+    } catch (error) {
       toast({
         title: "Error",
         description: "Failed to generate recipes.",
@@ -252,9 +295,9 @@ export default function RecipeSelection() {
           id: recipe.id || `custom-${slotKey}-${Date.now()}`,
           isAIGenerated: true,
         };
-        setGeneratedCustomRecipies((prev) => ({
-          ...prev,
-          [slotKey]: { recipes: [processed] },
+        dispatch(setGeneratedCustomRecipes({
+          slotKey,
+          recipes: [processed]
         }));
         toast({ title: "Recipe Found!", description: `Found ${customName}` });
       }
@@ -273,44 +316,48 @@ export default function RecipeSelection() {
   };
 
   const handleRecipeSelect = (recipe: any, slotKey: string) => {
-    setSelections((prev) => ({ ...prev, [slotKey]: recipe.id }));
-    if (!selectedRecipes.includes(recipe.id)) {
-      setSelectedRecipes((prev) => [...prev, recipe.id]);
-    }
+    // We need to parse slotKey to get date and mealType
+    // slotKey format: date-meal
+    // Find the last hyphen to split meal type
+    const lastHyphenIndex = slotKey.lastIndexOf('-');
+    if (lastHyphenIndex === -1) return;
+
+    const date = slotKey.substring(0, lastHyphenIndex);
+    const meal = slotKey.substring(lastHyphenIndex + 1);
+
+    dispatch(toggleMealPlan({
+      date,
+      mealType: meal,
+      recipe
+    }));
   };
 
   const calculateTotal = () => {
     let total = 0;
-    Object.entries(selections).forEach(([slotKey, recipeId]) => {
-      const allRecipes = [
-        ...recipeDatabase,
-        ...(generatedRecipies[slotKey]?.recipes || []),
-        ...(generatedCustomRecipies[slotKey]?.recipes || []),
-      ];
-      const r = allRecipes.find((r) => r.id === recipeId);
-      if (r) {
-        total += r.price || r.costAnalysis?.totalCost || 0;
-      }
+    Object.values(plans).forEach((dayPlan) => {
+      Object.values(dayPlan).forEach((recipe) => {
+        if (recipe) {
+          total += recipe.price || recipe.costAnalysis?.totalCost || 0;
+        }
+      });
     });
     return total;
   };
 
   const handleGenerateShoppingList = () => {
-    // Collect all selected recipe data
+    // Collect all selected recipe data from Redux
     const selectedData: any = {};
     const recipeIds: string[] = [];
+    const selectionsPayload: Record<string, string> = {};
 
-    Object.entries(selections).forEach(([slotKey, recipeId]) => {
-      const allRecipes = [
-        ...recipeDatabase,
-        ...(generatedRecipies[slotKey]?.recipes || []),
-        ...(generatedCustomRecipies[slotKey]?.recipes || []),
-      ];
-      const r = allRecipes.find((r) => r.id === recipeId);
-      if (r) {
-        selectedData[recipeId] = r;
-        recipeIds.push(recipeId);
-      }
+    Object.entries(plans).forEach(([date, dayPlan]) => {
+      Object.entries(dayPlan).forEach(([meal, recipe]) => {
+        if (recipe && recipe.id) {
+          selectedData[recipe.id] = recipe;
+          recipeIds.push(recipe.id);
+          selectionsPayload[`${date}-${meal}`] = recipe.id;
+        }
+      });
     });
 
     localStorage.setItem(
@@ -318,11 +365,11 @@ export default function RecipeSelection() {
       JSON.stringify({
         recipeIds,
         additionalRecipes: selectedData,
-        selections,
+        selections: selectionsPayload,
       }),
     );
 
-    router.push("/shopping-list");
+    router.push("/shopping-recipe");
   };
 
   return (
@@ -335,8 +382,15 @@ export default function RecipeSelection() {
       <div className="max-w-8xl mx-auto px-4 md:px-6 relative z-10 py-8">
         {/* Header */}
 
-        <div className="flex flex-col items-start lg:items-center justify-between mb-6 gap-3 animate-fade-in">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col items-start lg:items-center justify-between mb-6 gap-3 animate-fade-in relative">
+          <Button
+            variant="ghost"
+            className="absolute md:left-0 -top-2 md:top-1/2 md:-translate-y-1/2 p-0 hover:bg-transparent text-gray-500 hover:text-gray-900 flex gap-1"
+            onClick={() => router.push('/meal-planning')}
+          >
+            <ChevronDown className="rotate-90 w-5 h-5" /> Back
+          </Button>
+          <div className="flex items-center gap-2 mt-8 md:mt-0">
             <span className="bg-[#7dab4f] font-bold text-white text-[10px] uppercase tracking-wider px-2 py-1 rounded-full flex items-center gap-1">
               <Sparkles size={12} className="fill-white" />
               AI Recipe Selection
@@ -398,7 +452,7 @@ export default function RecipeSelection() {
 
                   return (
                     <AccordionItem value={`date-${date}`} key={date} className="">
-                      <AccordionTrigger className="p-4 hover:underline-none items-center bg-[#e9e2fe] rounded-lg">
+                      <AccordionTrigger className="p-4 hover:no-underline items-center bg-[#e9e2fe] rounded-lg">
                         <div className="flex flex-col md:justify-between w-full gap-1">
                           <h3 className="truncate text-base font-semibold text-[#7661d3]">{formattedDate}</h3>
                           <span>{slotsForDate.length} meals planned</span>
@@ -411,27 +465,29 @@ export default function RecipeSelection() {
                           className="w-full"
                           defaultValue={slotsForDate.length > 0 ? `meal-${date}-${slotsForDate[0].meal}` : undefined}
                         >
-                          {slotsForDate.map((slot, mealIndex) => {
+                          {slotsForDate?.map((slot, mealIndex) => {
                             const slotKey = `${slot.date}-${slot.meal}`;
                             const payload = recipePayload[slotKey] || {};
-                            const generatedRecipes = generatedRecipies[slotKey]?.recipes || [];
-                            const customRecipes = generatedCustomRecipies[slotKey]?.recipes || [];
+                            const generatedRecipes = generatedRecipies[slotKey] || [];
+                            const customRecipes = generatedCustomRecipies[slotKey] || [];
                             const allRecipesForSlot = [...generatedRecipes, ...customRecipes];
 
                             return (
                               <AccordionItem value={`meal-${slotKey}`} key={slotKey} className="">
-                                <AccordionTrigger className="p-0 items-center">
+                                <AccordionTrigger className="p-0 items-center hover:no-underline group">
                                   <div className="flex flex-row md:justify-between w-full gap-2 items-center">
-                                    <h3 className="truncate text-lg font-semibold text-black">{slot.meal}</h3>
-                                    <span>Generate Recipes</span>
+                                    <h3 className="truncate text-lg font-semibold text-black">
+                                      {slot.meal} <span className="text-gray-500 font-normal">({slot.type})</span>
+                                    </h3>
+                                    <span className="group-hover:underline text-primary">Generate Recipes</span>
                                   </div>
                                 </AccordionTrigger>
                                 <AccordionContent className="flex gap-4 flex-col mt-4">
                                   <div className="border border-[#F1EEFF] rounded-lg p-4 bg-white">
-                                    <div className="w-100">
+                                    {/* <div className="w-100">
                                       <h5 className="font-medium text-[#7661d3] text-base">Ai Recipe Generator</h5>
                                       <p className="font-normal text-[#313131]">Search for specific recipes or ingredients</p>
-                                    </div>
+                                    </div> */}
 
                                     <div className="flex flex-wrap justify-between gap-4 my-4 mb-6">
                                       <div className="flex flex-col gap-2">
@@ -463,31 +519,117 @@ export default function RecipeSelection() {
                                             </SelectContent>
                                           </Select>
 
-                                          <Select
-                                            value={payload.members?.join(',') || 'all'}
-                                            onValueChange={(value) => {
-                                              if (value === 'all') {
-                                                generateRecipePayload(slotKey, "members", members.map(m => m.id));
-                                              } else {
-                                                const selectedIds = value.split(',');
-                                                generateRecipePayload(slotKey, "members", selectedIds);
-                                              }
-                                            }}
-                                          >
-                                            <SelectTrigger className="w-[220px] h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-sm font-medium shadow-none">
-                                              <SelectValue placeholder="Select Members" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                              <SelectGroup>
-                                                <SelectItem value="all" className="text-sm">All Members ({members.length})</SelectItem>
-                                                {members.map((member: any) => (
-                                                  <SelectItem key={member.id} value={member.id} className="text-sm">
-                                                    {member.name || member?.user?.firstName + `(${member?.user?.username})` || 'Unnamed Member'}
-                                                  </SelectItem>
-                                                ))}
-                                              </SelectGroup>
-                                            </SelectContent>
-                                          </Select>
+                                          <Popover>
+                                            <PopoverTrigger asChild>
+                                              <Button
+                                                variant="outline"
+                                                role="combobox"
+                                                className="w-[220px] h-11 justify-between text-black bg-white border-[#BCBCBC] hover:bg-white hover:text-black font-normal"
+                                              >
+                                                <span className="truncate">
+                                                  {payload.members === undefined ||
+                                                    payload.members.length === members.length
+                                                    ? "All Members"
+                                                    : payload.members.length === 0
+                                                      ? "Select Members"
+                                                      : `${payload.members.length} selected`}
+                                                </span>
+                                                <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                              </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-[220px] p-0 bg-white" align="start">
+                                              <Command>
+                                                <CommandInput placeholder="Search members..." />
+                                                <CommandList>
+                                                  <CommandEmpty>No member found.</CommandEmpty>
+                                                  <CommandGroup>
+                                                    <CommandItem
+                                                      onSelect={() => {
+                                                        const allIds = members.map((m) => m.id);
+                                                        const isAllSelected =
+                                                          !payload.members ||
+                                                          payload.members.length === members.length;
+
+                                                        generateRecipePayload(
+                                                          slotKey,
+                                                          "members",
+                                                          isAllSelected ? [] : allIds
+                                                        );
+                                                      }}
+                                                    >
+                                                      <div
+                                                        className={cn(
+                                                          "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+                                                          !payload.members ||
+                                                            payload.members.length === members.length
+                                                            ? "bg-primary text-primary-foreground"
+                                                            : "opacity-50 [&_svg]:invisible"
+                                                        )}
+                                                      >
+                                                        <Check className={cn("h-4 w-4")} />
+                                                      </div>
+                                                      <span>Select All</span>
+                                                    </CommandItem>
+                                                  </CommandGroup>
+                                                  <CommandSeparator />
+                                                  <CommandGroup>
+                                                    {members.map((member) => {
+                                                      const isSelected =
+                                                        !payload.members ||
+                                                        payload.members.includes(member.id);
+                                                      return (
+                                                        <CommandItem
+                                                          key={member.id}
+                                                          onSelect={() => {
+                                                            const allIds = members.map(
+                                                              (m) => m.id
+                                                            );
+                                                            const currentIds =
+                                                              payload.members || allIds;
+                                                            let newIds;
+                                                            if (isSelected) {
+                                                              newIds = currentIds.filter(
+                                                                (id) => id !== member.id
+                                                              );
+                                                            } else {
+                                                              newIds = [
+                                                                ...currentIds,
+                                                                member.id,
+                                                              ];
+                                                            }
+                                                            generateRecipePayload(
+                                                              slotKey,
+                                                              "members",
+                                                              newIds
+                                                            );
+                                                          }}
+                                                        >
+                                                          <div
+                                                            className={cn(
+                                                              "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+                                                              isSelected
+                                                                ? "bg-primary text-primary-foreground"
+                                                                : "opacity-50 [&_svg]:invisible"
+                                                            )}
+                                                          >
+                                                            <Check className={cn("h-4 w-4")} />
+                                                          </div>
+                                                          <span>
+                                                            {member.name ||
+                                                              member?.user?.firstName +
+                                                              (member?.user?.username
+                                                                ? ` (${member?.user?.username})`
+                                                                : "") ||
+                                                              "Unnamed Member"}
+                                                          </span>
+                                                        </CommandItem>
+                                                      );
+                                                    })}
+                                                  </CommandGroup>
+                                                </CommandList>
+                                              </Command>
+                                            </PopoverContent>
+                                          </Popover>
 
                                           <Select
                                             value={payload.recipeCount?.toString() || ''}
@@ -595,116 +737,169 @@ export default function RecipeSelection() {
                 })}
               </Accordion>
 
-              <div className="lg:max-w-[550px] w-full bg-[#e9e2fe] rounded-lg overflow-hidden">
-                <div className="bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white p-4 flex justify-between items-center">
-                  AI Generated Recipes
-                  <span className="text-sm font-normal">
-                    {Object.values(generatedRecipies).reduce((acc, val) => acc + (val?.recipes?.length || 0), 0) +
-                      Object.values(generatedCustomRecipies).reduce((acc, val) => acc + (val?.recipes?.length || 0), 0)} Results
-                  </span>
-                </div>
+              <div className="lg:max-w-[550px] w-full flex flex-col gap-4">
 
-                <ScrollArea className="w-full h-[calc(100vh-300px)] p-4">
-                  <div className="space-y-2">
-                    {Object.entries(generatedRecipies).length === 0 && Object.entries(generatedCustomRecipies).length === 0 ? (
-                      <div className="text-center py-10 text-gray-500">
-                        <p className="text-sm">No recipes generated yet</p>
-                        <p className="text-xs mt-1">Select options and click Generate Recipes</p>
-                      </div>
-                    ) : (
-                      Object.entries({ ...generatedRecipies, ...generatedCustomRecipies }).map(([slotKey, data]) => {
-                        const recipes = data?.recipes || [];
-                        if (recipes.length === 0) return null;
+                <div className="w-full bg-[#e9e2fe] rounded-lg overflow-hidden flex-1">
+                  <div className="bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white p-4 flex justify-between items-center">
+                    AI Generated Recipes
+                    <span className="text-sm font-normal">
+                      {Object.values(generatedRecipies).reduce((acc, val) => acc + (val?.length || 0), 0) +
+                        Object.values(generatedCustomRecipies).reduce((acc, val) => acc + (val?.length || 0), 0)} Results
+                    </span>
+                  </div>
 
-                        const [date, meal] = slotKey.split('-');
-                        const shortDate = new Date(date).toLocaleDateString('en-US', {
-                          weekday: 'short',
-                          month: 'short',
-                          day: 'numeric'
-                        });
+                  <ScrollArea className="w-full h-[calc(100vh-300px)] p-4">
+                    <div className="space-y-2">
+                      {Object.entries(generatedRecipies).length === 0 && Object.entries(generatedCustomRecipies).length === 0 ? (
+                        <div className="text-center py-10 text-gray-500">
+                          <p className="text-sm">No recipes generated yet</p>
+                          <p className="text-xs mt-1">Select options and click Generate Recipes</p>
+                        </div>
+                      ) : (
+                        Object.entries({ ...generatedRecipies, ...generatedCustomRecipies }).map(([slotKey, data]) => {
+                          const recipes = data || [];
+                          if (recipes.length === 0) return null;
 
-                        return (
-                          <div key={slotKey} className="space-y-2">
-                            <div className="flex justify-between items-center bg-white rounded-lg p-2 border border-[#DDD6FA] sticky top-0 z-10">
-                              <div>
-                                <p className="font-semibold text-gray-900">{shortDate}</p>
-                                <p className="text-xs text-gray-500">{recipes.length} Result{recipes.length > 1 ? 's' : ''}</p>
+                          const [date, meal] = slotKey.split('-');
+                          const shortDate = new Date(date).toLocaleDateString('en-US', {
+                            weekday: 'short',
+                            month: 'short',
+                            day: 'numeric'
+                          });
+
+                          return (
+                            <div key={slotKey} className="space-y-2">
+                              <div className="flex justify-between items-center bg-white rounded-lg p-2 border border-[#DDD6FA] sticky top-0 z-10">
+                                <div>
+                                  <p className="font-semibold text-gray-900">{shortDate}</p>
+                                  <p className="text-xs text-gray-500">{recipes.length} Result{recipes.length > 1 ? 's' : ''}</p>
+                                </div>
+                                <span className="text-sm font-normal text-[var(--primary)]">{meal}</span>
                               </div>
-                              <span className="text-sm font-normal text-[var(--primary)]">{meal}</span>
-                            </div>
 
-                            {recipes.map((recipe) => {
-                              const isSelected = selections[slotKey] === recipe.id;
+                              {recipes.map((recipe: any) => {
+                                const isSelected = currentSelections[slotKey] === recipe.id;
 
-                              return (
-                                <div
-                                  key={recipe.id}
-                                  className="bg-white rounded-lg p-2 space-y-3 relative cursor-pointer hover:shadow-md transition-shadow"
-                                  onClick={() => handleRecipeSelect(recipe, slotKey)}
-                                >
-                                  <div className="flex justify-between flex-col items-start">
-                                    <h3 className="font-bold text-gray-900 relative mb-2 pr-8">
-                                      {recipe.name || 'Untitled Recipe'}
-                                    </h3>
+                                return (
+                                  <div
+                                    key={recipe.id}
+                                    className="bg-white rounded-xl p-3 relative cursor-pointer hover:shadow-lg transition-all border border-transparent hover:border-[#7dab4f]/20 group"
+                                    onClick={() => handleRecipeSelect(recipe, slotKey)}
+                                  >
+                                    <div className="flex gap-4">
+                                      {/* Image Section */}
+                                      <div className="h-28 w-28 shrink-0 rounded-lg bg-gray-50 overflow-hidden relative border border-gray-100">
+                                        {recipe?.imageUrl ? (
+                                          <img
+                                            src={getRecipeImageUrl(recipe.imageUrl)!}
+                                            alt={recipe.name}
+                                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                          />
+                                        ) : (
+                                          <div className="h-full w-full flex flex-col items-center justify-center text-gray-300 gap-1">
+                                            <ChefHat className="h-8 w-8" />
+                                            <span className="text-[9px] font-medium uppercase tracking-wider">No Image</span>
+                                          </div>
+                                        )}
+
+                                        {/* Quick Actions Overlay (optional, or keep simple) */}
+                                        {/* <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-1 flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Heart className="size-3 text-white hover:fill-red-500 hover:text-red-500" />
+                                      </div> */}
+                                      </div>
+
+                                      {/* Content Section */}
+                                      <div className="flex flex-col flex-1 min-w-0 justify-between py-0.5">
+                                        <div className="space-y-1">
+                                          <div className="flex justify-between items-start gap-2 pr-8">
+                                            <h3 className="font-bold text-gray-900 text-sm md:text-base leading-tight line-clamp-1">
+                                              {recipe.name || 'Untitled Recipe'}
+                                            </h3>
+                                          </div>
+                                          <p className="text-xs text-gray-500 line-clamp-2 font-medium leading-relaxed">
+                                            {recipe.description || 'No description available for this recipe.'}
+                                          </p>
+                                        </div>
+
+                                        {/* Footer */}
+                                        <div className="flex items-center justify-between mt-2">
+                                          <div className="flex items-center gap-3 text-xs text-gray-600 font-medium">
+                                            <div className="flex items-center gap-1 bg-gray-50 px-1.5 py-0.5 rounded-md border border-gray-100">
+                                              <Clock className="size-3 text-gray-400" />
+                                              <span>{recipe.prepTime || '30'}m</span>
+                                            </div>
+                                            <div className="flex items-center gap-1 bg-gray-50 px-1.5 py-0.5 rounded-md border border-gray-100">
+                                              <Flame className="size-3 text-gray-400" />
+                                              <span>{recipe.nutrition?.calories || recipe.calories || '250'}</span>
+                                            </div>
+                                          </div>
+
+                                          <div className="flex items-center gap-3">
+                                            <div className="flex gap-2 text-gray-400">
+                                              <ThumbsUp onClick={(e) => {
+                                                e.stopPropagation();
+                                                toast({ title: "Feature Coming Soon", description: "You can like recipes soon!" });
+
+                                              }} className="size-3.5 hover:text-green-600 transition-colors" />
+                                              <Heart onClick={(e) => {
+                                                e.stopPropagation();
+                                                toast({ title: "Feature Coming Soon", description: "You can like love soon!" });
+                                              }} className="size-3.5 hover:text-pink-600 transition-colors" />
+                                            </div>
+                                            <button
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setDetailedRecipe(recipe as any);
+                                                setIsDetailsOpen(true);
+                                              }}
+                                              className="text-[10px] font-semibold text-[var(--primary)] hover:underline uppercase tracking-wide"
+                                            >
+                                              Details
+                                            </button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* Selection Checkbox */}
                                     <span
-                                      className={`w-6 h-6 ${isSelected ? 'bg-amber-500' : 'bg-[var(--primary)]'} rounded-tr-md rounded-bl-md absolute top-0 right-0 flex items-center justify-center`}
+                                      className={cn(
+                                        "absolute top-0 right-0 w-8 h-8 rounded-tr-xl rounded-bl-xl flex items-center justify-center transition-all duration-300",
+                                        isSelected
+                                          ? "bg-[var(--primary)] text-white shadow-md scale-100"
+                                          : "bg-gray-100 text-gray-300 hover:bg-gray-200 scale-90 opacity-70 hover:opacity-100"
+                                      )}
                                     >
                                       {isSelected ? (
-                                        <Check className="size-4 text-white m-auto"></Check>
+                                        <Check className="size-5 stroke-[3px]" />
                                       ) : (
-                                        <Plus className="size-4 text-white m-auto"></Plus>
+                                        <Plus className="size-5" />
                                       )}
                                     </span>
-
-                                    <div className="flex gap-4 justify-between w-full">
-                                      <p className="text-sm font-normal text-gray-500 line-clamp-2">
-                                        {recipe.description || 'No description available'}
-                                      </p>
-                                      <div className="flex gap-3 flex-shrink-0">
-                                        <ThumbsUp className="size-4 cursor-pointer hover:text-green-600 transition-colors"></ThumbsUp>
-                                        <ThumbsDown className="size-4 cursor-pointer hover:text-red-600 transition-colors"></ThumbsDown>
-                                        <Heart className="size-4 cursor-pointer hover:text-pink-600 transition-colors"></Heart>
-                                      </div>
-                                    </div>
                                   </div>
+                                );
+                              })}
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </ScrollArea>
+                </div>
 
-                                  <div className="flex items-center gap-4 text-sm text-black justify-between flex-wrap">
-                                    <div className="flex items-center gap-4">
-                                      <div className="flex items-center gap-1">
-                                        <Clock className="size-4"></Clock>
-                                        <span>{recipe.prepTime || '30'} min</span>
-                                      </div>
-                                      <div className="flex items-center gap-1">
-                                        <Flame className="size-4"></Flame>
-                                        <span>{recipe.nutrition?.calories || recipe.calories || '250'} cal</span>
-                                      </div>
-                                      <div className="flex items-center gap-1">
-                                        <DollarSign className="size-4"></DollarSign>
-                                        <span>{(recipe.price || recipe.costAnalysis?.totalCost || 5).toFixed(2)}</span>
-                                      </div>
-                                    </div>
-
-                                    <Link
-                                      href="#"
-                                      className="text-sm font-medium text-[var(--primary)] underline"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setDetailedRecipe(recipe as any);
-                                        setIsDetailsOpen(true);
-                                      }}
-                                    >
-                                      See more
-                                    </Link>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        );
-                      })
-                    )}
+                <div className="bg-white p-4 rounded-lg border border-[#DDD6FA] shadow-sm">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-medium text-gray-700">Total Selected</span>
+                    <span className="text-lg font-bold text-[#7dab4f]">{Object.keys(currentSelections).length} Recipes</span>
                   </div>
-                </ScrollArea>
+                  <Button
+                    className="w-full h-11 text-base font-semibold bg-[#7dab4f] hover:bg-[#6c9b42] shadow-sm transition-all"
+                    onClick={handleGenerateShoppingList}
+                    disabled={Object.keys(currentSelections).length === 0}
+                  >
+                    Continue to Shopping List
+                  </Button>
+                </div>
               </div>
             </>
           )}
@@ -716,6 +911,6 @@ export default function RecipeSelection() {
         open={isDetailsOpen}
         onOpenChange={setIsDetailsOpen}
       />
-    </div>
+    </div >
   );
 }

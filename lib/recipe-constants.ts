@@ -113,6 +113,7 @@ export type RecipePayload = Record<string, RecipeEntry>;
 export interface Recipe {
   id: string;
   name: string;
+  image?: string | null;
   price?: number;
   cuisine?: string;
   prepTime?: number;

@@ -75,7 +75,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
           <button
             onClick={handleRefetch}
             disabled={isLoading}
-            className={`bg-gray-200 hover:bg-gray-300 text-gray-700 p-2 rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed h-10 w-10 ${
+            className={`bg-gray-200 hover:bg-gray-300 text-gray-700 p-2 rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed h-10 w-10 flex items-center justify-center ${
               isLoading ? "animate-spin" : ""
             }`}
             title="Refetch Members"

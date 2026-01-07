@@ -1,12 +1,14 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { authSlice } from "./features/auth/auth.slice";
 import { accountSlice } from "./features/account/account.slice";
+import { mealPlanSlice } from "./features/meal-plan/meal-plan.slice";
 import { accountListener } from "./middlewares/account.middleware";
 
 export const store = configureStore({
   reducer: {
     auth: authSlice.reducer,
     account: accountSlice.reducer,
+    mealPlan: mealPlanSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().prepend(accountListener.middleware),

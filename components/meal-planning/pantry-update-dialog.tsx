@@ -9,8 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { Loader2, ArrowRight, AlertCircle, CheckCircle } from "lucide-react";
+import { Loader2, ArrowRight, CheckCircle } from "lucide-react";
 import { usePantryQuery } from "@/services/pantry/pantry.query";
 import { useUpdatePantryMutation } from "@/services/pantry/pantry.mutation";
 import { toast } from "@/hooks/use-toast";
