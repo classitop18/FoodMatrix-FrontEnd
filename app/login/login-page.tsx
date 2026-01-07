@@ -178,7 +178,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <h1 className="text-4xl font-extrabold text-[var(--primary)] mb-2">
+            <h1 className="text-2xl lg:text-4xl font-extrabold text-[var(--primary)] my-2">
               Welcome Back
             </h1>
             <p className="text-gray-600 text-base">
@@ -287,7 +287,7 @@ export default function LoginPage() {
 
           <Button
             variant="outline"
-            className="w-full justify-center bg-white  hover:text-white hover:bg-(--primary) border-(--primary) border text-(--primary) font-medium ps-6! pe-6! py-1 h-10 rounded-lg text-base transition-all duration-300 cursor-pointer group relative flex items-center hover:inset-shadow-[-5px_-5px_5px_rgba(0,0,0,0.30)]"
+            className="w-full justify-center bg-white  hover:text-white hover:bg-black border-black border text-black font-medium ps-6! pe-6! py-1 rounded-lg text-base transition-all duration-300 cursor-pointer group relative flex items-center hover:inset-shadow-[-5px_-5px_5px_rgba(0,0,0,0.30)] h-11"
             disabled={loginMutation?.isPending}
             asChild
           >

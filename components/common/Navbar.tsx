@@ -14,7 +14,7 @@ import BorderButton from "./buttons/border-button";
 
 export default function Navbar() {
   return (
-    <nav className="sticky top-0 z-50 py-2 h-20 bg-white shadow-[0_4px_10px_rgba(225,221,240,1)] flex items-center">
+    <nav className="sticky top-0 py-2 h-20 bg-white shadow-[0_4px_10px_rgba(225,221,240,1)] flex items-center">
       <div className="w-full lg:w-5xl xl:w-[1320px] mx-auto px-6 relative flex justify-between items-center">
         {/* ---------- LOGO ---------- */}
         <Link href={"/"} className="flex flex-col leading-tight cursor-pointer">

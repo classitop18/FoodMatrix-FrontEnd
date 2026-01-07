@@ -565,9 +565,9 @@ export default function MealPlanning() {
           {/* Stats Cards - Premium Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
             {/* Card 1: Home Cooking */}
-            <div className="bg-white rounded-xl p-6 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] border border-gray-100 relative overflow-hidden group hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-all duration-500">
+            <div className="bg-white rounded-xl p-4 lg:p-6 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] border border-gray-100 relative overflow-hidden group hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-all duration-500">
               <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50/50 rounded-bl-[100px] -mr-6 -mt-6 transition-transform group-hover:scale-110 duration-700" />
-              <div className="relative z-10 flex flex-col justify-between h-full">
+              <div className="relative z-10 flex flex-col justify-between h-full gap-3">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-emerald-100/80 rounded-lg flex items-center justify-center text-emerald-600 shadow-sm">
                     <ChefHat size={20} />
@@ -588,9 +588,9 @@ export default function MealPlanning() {
             </div>
 
             {/* Card 2: Takeout */}
-            <div className="bg-white rounded-xl p-6 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] border border-gray-100 relative overflow-hidden group hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-all duration-500">
+            <div className="bg-white rounded-xl p-4 lg:p-6 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] border border-gray-100 relative overflow-hidden group hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-all duration-500">
               <div className="absolute top-0 right-0 w-32 h-32 bg-rose-50/50 rounded-bl-[100px] -mr-6 -mt-6 transition-transform group-hover:scale-110 duration-700" />
-              <div className="relative z-10 flex flex-col justify-between h-full">
+              <div className="relative z-10 flex flex-col justify-between h-full gap-3">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-rose-100/80 rounded-lg flex items-center justify-center text-rose-600 shadow-sm">
                     <ShoppingBag size={20} />
@@ -609,9 +609,9 @@ export default function MealPlanning() {
             </div>
 
             {/* Card 3: Dine Out */}
-            <div className="bg-white rounded-xl p-6 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] border border-gray-100 relative overflow-hidden group hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-all duration-500">
+            <div className="bg-white rounded-xl p-4 lg:p-6 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] border border-gray-100 relative overflow-hidden group hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-all duration-500">
               <div className="absolute top-0 right-0 w-32 h-32 bg-purple-50/50 rounded-bl-[100px] -mr-6 -mt-6 transition-transform group-hover:scale-110 duration-700" />
-              <div className="relative z-10 flex flex-col justify-between h-full">
+              <div className="relative z-10 flex flex-col justify-between h-full gap-3">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-purple-100/80 rounded-lg flex items-center justify-center text-purple-600 shadow-sm">
                     <Store size={20} />
@@ -632,12 +632,12 @@ export default function MealPlanning() {
             </div>
 
             {/* Card 4: Quick/Easy (Feature Card) */}
-            <div className="bg-gradient-to-br from-[#3d326d] to-[#2d2454] rounded-xl p-6 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] text-white relative overflow-hidden group hover:scale-[1.02] transition-all duration-500 ring-1 ring-white/10">
+            <div className="bg-gradient-to-br from-[#3d326d] to-[#2d2454] rounded-xl lg:p-6 p-4 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] text-white relative overflow-hidden group hover:scale-[1.02] transition-all duration-500 ring-1 ring-white/10">
               <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -mr-12 -mt-12 group-hover:scale-110 transition-transform duration-700 blur-2xl" />
               <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#7dab4f]/20 rounded-full -ml-10 -mb-10 blur-xl" />
 
-              <div className="relative z-10 flex flex-col justify-between h-full">
-                <div className="flex items-center justify-between mb-4">
+              <div className="relative z-10 flex flex-col justify-between h-full gap-3">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-lg flex items-center justify-center text-white border border-white/10">
                       <Clock size={20} />
@@ -647,7 +647,7 @@ export default function MealPlanning() {
                     </span>
                   </div>
                 </div>
-                <div className="flex items-end justify-between">
+                <div className="flex items-end justify-between gap-4">
                   <div className="flex gap-4 items-center">
                     <p className="text-4xl font-black text-white tracking-tight">
                       {counts.leftover +
@@ -676,7 +676,7 @@ export default function MealPlanning() {
             <div className="mb-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
               <div className="bg-white rounded-lg p-3 border border-blue-100/50 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] flex flex-col sm:flex-row gap-3 items-center justify-between">
                 <div className="flex-1 w-full flex items-center gap-3 pl-2">
-                  <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 hidden sm:flex">
+                  <div className="w-10 h-10 rounded-full bg-blue-50 items-center justify-center text-blue-500 flex">
                     <CalendarIcon size={20} />
                   </div>
                   <div className="flex flex-col">
@@ -826,7 +826,7 @@ export default function MealPlanning() {
                 {!isReadOnly && (
                   <Button
                     onClick={() => setIsDateDialogOpen(true)}
-                    className="text-white bg-(--primary) hover:bg-(--primary) text-white rounded-lg h-12 px-6 shadow-xl shadow-[#7dab4f]/20 hover:shadow-2xl hover:-translate-y-1 transition-all font-medium text-base"
+                    className="text-white bg-(--primary) hover:bg-(--primary) text-white rounded-lg h-11 px-6 shadow-xl shadow-[#7dab4f]/20 hover:shadow-2xl hover:-translate-y-1 transition-all font-medium text-base"
                   >
                     Add First Day
                   </Button>

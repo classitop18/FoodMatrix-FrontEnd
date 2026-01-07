@@ -339,11 +339,11 @@ const PantryPage: React.FC = () => {
           </div>
 
 
-<div className="rounded-2xl overflow-hidden bg-white p-6">
+<div className="rounded-2xl overflow-hidden bg-white lg:p-6 p-4">
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
             {/* Total Items */}
-            <div className="bg-white rounded-xl p-6 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] relative overflow-hidden group border border-gray-200 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] hover:border-[#7661d3]/20 transition-all">
+            <div className="bg-white rounded-xl lg:p-6 p-4 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] relative overflow-hidden group border border-gray-200 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] hover:border-[#7661d3]/20 transition-all">
               <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#F3F0FD] to-transparent rounded-full -mr-8 -mt-8 transition-transform duration-500 group-hover:scale-125" />
               <div className="relative z-10 flex items-center justify-between">
                 <div>
@@ -361,7 +361,7 @@ const PantryPage: React.FC = () => {
             </div>
 
             {/* Expiring Soon */}
-            <div className="bg-white rounded-xl p-6 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] relative overflow-hidden group border border-gray-200 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] hover:border-[#7661d3]/20 transition-all">
+            <div className="bg-white rounded-xl lg:p-6 p-4 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] relative overflow-hidden group border border-gray-200 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] hover:border-[#7661d3]/20 transition-all">
               <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-orange-50 to-transparent rounded-full -mr-8 -mt-8 transition-transform duration-500 group-hover:scale-125" />
               <div className="relative z-10 flex items-center justify-between">
                 <div>
@@ -379,7 +379,7 @@ const PantryPage: React.FC = () => {
             </div>
 
             {/* Total Value */}
-            <div className="bg-white rounded-xl p-6 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] relative overflow-hidden group border border-gray-200 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] hover:border-[#7661d3]/20 transition-all">
+            <div className="bg-white rounded-xl lg:p-6 p-4 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] relative overflow-hidden group border border-gray-200 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] hover:border-[#7661d3]/20 transition-all">
               <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#e8f5e0] to-transparent rounded-full -mr-8 -mt-8 transition-transform duration-500 group-hover:scale-125" />
               <div className="relative z-10 flex items-center justify-between">
                 <div>
@@ -397,7 +397,7 @@ const PantryPage: React.FC = () => {
             </div>
 
             {/* Storage Locations */}
-            <div className="bg-gradient-to-br from-[#3d326d] to-[#2d2454] rounded-2xl p-6 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] text-white relative overflow-hidden group hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-all">
+            <div className="bg-gradient-to-br from-[#3d326d] to-[#2d2454] rounded-2xl lg:p-6 p-4 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] text-white relative overflow-hidden group hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-all">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-10 -mt-10 group-hover:scale-110 transition-transform duration-700" />
               <div className="absolute bottom-0 left-0 w-20 h-20 bg-[#7dab4f]/10 rounded-full -ml-6 -mb-6" />
               <div className="relative z-10 flex items-center justify-between">
@@ -475,7 +475,7 @@ const PantryPage: React.FC = () => {
           {/* Main Content Area */}
           <div className="border-gray-200 border bg-white rounded-xl overflow-hidden animate-scale-in">
             {/* Header */}
-            <div className="bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white p-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white p-4 flex flex-col lg:flex-row justify-between lg:items-center gap-4">
               <h3 className="flex items-center gap-3 text-xl font-bold">
                 <Package className="h-6 w-6" />
                 Inventory
@@ -494,7 +494,7 @@ const PantryPage: React.FC = () => {
                     value={tableSearchQuery}
                     onChange={(e) => setTableSearchQuery(e.target.value)}
                     placeholder="Search..."
-                    className="w-full pl-9 pr-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:bg-white/20 transition-all text-sm font-medium"/>
+                    className="w-full h-11 pl-9 pr-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:bg-white/20 transition-all text-sm font-medium"/>
                 </div>
 
                 {/* Location Filter */}

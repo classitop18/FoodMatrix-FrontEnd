@@ -113,7 +113,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
     <div ref={wrapperRef} className={cn("relative space-y-1.5", className)}>
       <Label
         htmlFor="address-autocomplete"
-        className="flex items-center gap-2 font-semibold text-gray-700 dark:text-gray-200"
+        className="flex items-center gap-2 font-semibold text-gray-700"
       >
         <MapPin className="w-4 h-4 text-[var(--primary)]" />
         {label}

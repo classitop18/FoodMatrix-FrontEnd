@@ -342,7 +342,7 @@ export default function RecipeSelection() {
               AI Recipe Selection
             </span>
           </div>
-          <div className="text-center">
+          <div className="lg:text-center">
             <h1 className="text-2xl lg:text-3xl font-extrabold text-[#313131] tracking-tight">
               Smarter choices for effortless cooking
             </h1>

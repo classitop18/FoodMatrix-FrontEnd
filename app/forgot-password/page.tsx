@@ -125,7 +125,7 @@ export default function ForgotPasswordPage() {
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-[var(--primary)] to-[var(--primary-light)] text-white shadow-lg shadow-[var(--primary)]/30 mb-4">
               <Mail className="w-5 h-5" />
             </div>
-            <h1 className="text-4xl font-extrabold text-[var(--primary)] mb-2">
+            <h1 className="text-2xl lg:text-4xl font-extrabold text-[var(--primary)] my-2">
               Forgot Password?
             </h1>
             <p className="text-gray-600 text-base">

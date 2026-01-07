@@ -250,10 +250,10 @@ export default function Register() {
         <Card className="w-full max-w-2xl border-2 border-[var(--primary)]/10 shadow-2xl rounded-3xl backdrop-blur-xl bg-white/90 animate-scale-in">
           <CardContent className="p-8 md:p-10">
             <div className="text-center mb-8">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-[var(--primary)] to-[var(--primary-light)] text-white shadow-lg shadow-[var(--primary)]/30 mb-4">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-[var(--primary)] to-[var(--primary-light)] text-white shadow-lg shadow-[var(--primary)]/30">
                 <UserPlus className="w-5 h-5" />
               </div>
-              <h1 className="text-4xl md:text-5xl font-extrabold text-[var(--primary)] mb-2">
+              <h1 className="text-2xl lg:text-4xl font-extrabold text-[var(--primary)] my-2">
                 Create Account
               </h1>
               <p className="text-gray-600 text-base">
@@ -439,7 +439,7 @@ export default function Register() {
 
               <Button
                 type="submit"
-                className="w-full justify-center text-white bg-(--primary) hover:bg-(--primary) font-medium ps-6! pe-6! py-1 h-12 rounded-lg text-base transition-all duration-300 cursor-pointer group relative flex items-center
+                className="w-full justify-center text-white bg-(--primary) hover:bg-(--primary) font-medium ps-6! pe-6! py-1 h-11 rounded-lg text-base transition-all duration-300 cursor-pointer group relative flex items-center
             inset-shadow-[5px_5px_5px_rgba(0,0,0,0.30)] hover:inset-shadow-[-5px_-5px_5px_rgba(0,0,0,0.50)]"
                 disabled={registerMutation?.isPending}
               >
@@ -459,7 +459,7 @@ export default function Register() {
 
             <Button
               variant="outline"
-              className="w-full justify-center bg-white  hover:text-white hover:bg-(--primary) border-(--primary) border text-(--primary) font-medium ps-6! pe-6! py-1 h-10 rounded-lg text-base transition-all duration-300 cursor-pointer group relative flex items-center hover:inset-shadow-[-5px_-5px_5px_rgba(0,0,0,0.30)]"
+              className="w-full justify-center bg-white  hover:text-white hover:bg-black border-black border text-black font-medium ps-6! pe-6! py-1 rounded-lg text-base transition-all duration-300 cursor-pointer group relative flex items-center hover:inset-shadow-[-5px_-5px_5px_rgba(0,0,0,0.30)] h-11"
               disabled={registerMutation?.isPending}
               asChild
             >

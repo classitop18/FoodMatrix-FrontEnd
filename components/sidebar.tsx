@@ -9,7 +9,6 @@ import {
   BookOpen,
   ShoppingCart,
   Receipt,
-  Settings,
   CreditCard,
   TrendingUp,
   Award,
@@ -19,13 +18,13 @@ import {
   MapPin,
   LogOut,
   Menu,
-  ChevronLeft,
-  ChevronRight,
   Store,
   Copy,
   Activity,
   MessageCircle,
   Wrench,
+  MenuIcon,
+  X,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -148,8 +147,7 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
       <Button
         variant="ghost"
         className={cn(
-          "w-full gap-3 transition-all duration-300 relative overflow-hidden group mb-2 cursor-pointer",
-          collapsed ? "justify-center px-2 h-10" : "justify-start h-11",
+          "w-full gap-3 transition-all duration-300 relative overflow-hidden group mb-0 cursor-pointer justify-start h-11",
           active
             ? "bg-[var(--primary)] text-white shadow-md shadow-[var(--primary)]/30 hover:bg-[var(--primary)]/90"
             : "text-gray-600 hover:bg-[var(--primary-bg)] hover:text-[var(--primary)]",
@@ -162,32 +160,16 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
             active ? "text-white scale-110" : "group-hover:scale-110",
           )}
         />
-        {!collapsed && (
-          <span
-            className={cn("truncate font-medium", active ? "text-white" : "")}
-          >
-            {item.label}
-          </span>
-        )}
-        {active && !collapsed && (
+        <span
+          className={cn("truncate font-medium", active ? "text-white" : "")}
+        >
+          {item.label}
+        </span>
+        {active && (
           <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-[var(--green)] rounded-l-full"></div>
         )}
       </Button>
     );
-
-    if (collapsed) {
-      return (
-        <Tooltip delayDuration={0}>
-          <TooltipTrigger asChild>{button}</TooltipTrigger>
-          <TooltipContent
-            side="right"
-            className="bg-[var(--primary)] text-white border-none"
-          >
-            {item.label}
-          </TooltipContent>
-        </Tooltip>
-      );
-    }
 
     return button;
   };
@@ -198,120 +180,92 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
 
   return (
     <>
+
+      {/* Sidebar (fixed height, no scroll) */}
       <aside
         className={cn(
-          "h-screen bg-white  flex-shrink-0 transition-all duration-300",
-          collapsed ? "w-24" : "w-64",
+          "h-screen bg-white flex-shrink-0 transition-all duration-300 pt-[55px] fixed z-[51] lg:relative",
+          collapsed ? "-left-[266px] w-0" : "left-0 w-64",
         )}
       >
-        <div
-          className={cn(
-            "flex flex-col h-full bg-white  border-[#EBE7F6] transition-all duration-300 scrollbar-hide",
-            className,
-          )}
-        >
-          {/* Logo */}
-          <div className="p-2 border-b border-[#EBE7F6] flex items-center justify-between bg-gradient-to-r from-white to-[var(--primary-bg)]/30">
-            <div
-              className="flex items-center gap-3 overflow-hidden cursor-pointer"
-              onClick={() => router.push("/")}
-            >
-              <div className="min-w-10 w-10 h-10 bg-gradient-to-br from-[var(--primary)] to-[var(--primary-light)] rounded-xl flex items-center justify-center shadow-lg shadow-[var(--primary)]/20">
-                {/* Using ChefHat as a placeholder logo icon if UtensilsCrossed is not desired, but sticking to existing icon with better style */}
-                <ChefHat className="w-6 h-6 text-white" />
-              </div>
-              {!collapsed && (
-                <div className="flex flex-col">
-                  <h1 className="text-xl font-extrabold text-[#3D326D] tracking-tight leading-none">
-                    FoodMatrix
-                  </h1>
-                  <p className="text-[10px] text-[var(--green)] font-bold uppercase tracking-wider mt-1">
-                    Budget Intelligence
-                  </p>
-                </div>
-              )}
-            </div>
 
-            {handleToggleCollapse && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleToggleCollapse}
-                className="text-gray-400 hover:text-[var(--primary)] hover:bg-[var(--primary-bg)] rounded-full w-8 h-8"
-              >
-                {collapsed ? (
-                  <ChevronRight className="w-4 h-4" />
-                ) : (
-                  <ChevronLeft className="w-4 h-4" />
-                )}
-              </Button>
-            )}
+        {/* Logo */}
+        <div className="p-2 border-b border-[#EBE7F6] flex items-center justify-betweenbg-white fixed top-0 left-0 w-[256px] justify-between">
+          <div
+            className="flex items-center gap-3 overflow-hidden cursor-pointer"
+            onClick={() => router.push("/")}
+          >
+            <div className="min-w-10 w-10 h-10 bg-gradient-to-br from-[var(--primary)] to-[var(--primary-light)] rounded-xl flex items-center justify-center shadow-lg shadow-[var(--primary)]/20">
+              {/* Using ChefHat as a placeholder logo icon if UtensilsCrossed is not desired, but sticking to existing icon with better style */}
+              <ChefHat className="w-6 h-6 text-white" />
+            </div>
+            <div className="flex flex-col">
+              <h1 className="text-xl font-extrabold text-[#3D326D] tracking-tight leading-none">
+                FoodMatrix
+              </h1>
+              <p className="text-[10px] text-[var(--green)] font-bold uppercase tracking-wider mt-1">
+                Budget Intelligence
+              </p>
+            </div>
           </div>
 
+          {handleToggleCollapse && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleToggleCollapse}
+              className="text-gray-400 hover:text-[var(--primary)] bg-[var(--primary-bg)] rounded-full w-8 h-8"
+            >
+              {collapsed ? (
+                <MenuIcon className="w-4 h-4" />
+              ) : (
+                <X className="w-4 h-4" />
+              )}
+            </Button>
+          )}
+        </div>
+        <div
+          className={cn(
+            "flex flex-col h-full bg-white  border-[#EBE7F6] transition-all duration-300 scrollbar-hide shadow-2xl md:shadow-none",
+          )}
+        >
+
           {/* Navigation */}
           {/* Navigation */}
-          <ScrollArea className="px-4 py-6 h-[calc(100vh-180px)] overflow-y-auto">
-            <TooltipProvider>
-              {navigationItems.map((section) => (
-                <div
-                  key={section.section}
-                  className="mb-4 last:mb-0 animate-slide-up"
-                  style={{ animationDelay: "0.1s" }}
-                >
-                  {!collapsed && (
-                    <h2 className="px-3 mb-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-                      {section.section}
-                    </h2>
-                  )}
-                  <nav className="space-y-2">
-                    {section.items.map((item) => (
-                      <NavButton
-                        key={item.path}
-                        item={item}
-                        active={isActive(item.path)}
-                      />
-                    ))}
-                  </nav>
-                </div>
-              ))}
-            </TooltipProvider>
+          <ScrollArea className="px-4 py-6 h-[calc(100vh-138px)] overflow-y-auto">
+            {navigationItems.map((section) => (
+              <div
+                key={section.section}
+                className="mb-4 last:mb-0 animate-slide-up"
+                style={{ animationDelay: "0.1s" }}
+              >
+                <h2 className="px-3 mb-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                  {section.section}
+                </h2>
+                <nav className="flex flex-col gap-2 space-y-2">
+                  {section.items.map((item) => (
+                    <NavButton
+                      key={item.path}
+                      item={item}
+                      active={isActive(item.path)}
+                    />
+                  ))}
+                </nav>
+              </div>
+            ))}
           </ScrollArea>
 
           {/* Logout */}
           <div className="p-4 border-t border-[#EBE7F6] bg-gray-50/50">
-            <TooltipProvider>
-              {collapsed ? (
-                <Tooltip delayDuration={0}>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="w-full justify-center gap-3 text-red-500 bg-red-50 hover:text-red-600 transition-colors h-12 rounded-lg cursor-pointer px-4 py-2"
-                      disabled={logoutMutation.isPending}
-                      onClick={handleLogout}
-                    >
-                      <LogOut className="w-5 h-5" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent
-                    side="right"
-                    className="bg-red-500 text-white border-none"
-                  >
-                    Logout
-                  </TooltipContent>
-                </Tooltip>
-              ) : (
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start gap-3 text-red-500 bg-red-50 hover:text-red-600 transition-colors h-12 rounded-lg cursor-pointer"
-                  onClick={handleLogout}
-                  disabled={logoutMutation.isPending}
-                >
-                  <LogOut className="w-5 h-5" />
-                  <span className="font-semibold">Logout</span>
-                </Button>
-              )}
-            </TooltipProvider>
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-3 text-red-500 bg-red-50 hover:text-red-600 transition-colors h-12 rounded-lg cursor-pointer"
+              onClick={handleLogout}
+              disabled={logoutMutation.isPending}
+            >
+              <LogOut className="w-5 h-5" />
+              <span className="font-semibold">Logout</span>
+            </Button>
           </div>
         </div>
       </aside>

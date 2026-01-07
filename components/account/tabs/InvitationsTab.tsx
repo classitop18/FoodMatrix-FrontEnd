@@ -280,7 +280,7 @@ export const InvitationsTab: React.FC<InvitationsTabProps> = ({
             <button
               onClick={handleRefetchAccInv}
               disabled={isAccInvLoading_combined}
-              className={`bg-gray-200 hover:bg-gray-300 text-gray-700 p-2 rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+              className={`bg-gray-200 hover:bg-gray-300 text-gray-700 p-2 rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed h-10 w-10 flex items-center justify-center ${
                 isAccInvLoading_combined ? "animate-spin" : ""
               }`}
               title="Refetch Sent Invitations"
@@ -289,7 +289,7 @@ export const InvitationsTab: React.FC<InvitationsTabProps> = ({
             </button>
             <button
               onClick={onInviteNew}
-              className="bg-[#313131] hover:bg-black text-white font-bold h-9 px-4 rounded-lg shadow-md"
+              className="bg-[#313131] hover:bg-black text-white font-bold h-10 text-sm px-4 rounded-lg shadow-md"
             >
               Invite New
             </button>

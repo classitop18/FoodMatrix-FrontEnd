@@ -224,7 +224,7 @@ export default function AccountPage() {
           {/* Budget Cards - Takes 8 columns */}
           <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* Budget Card */}
-            <div className="bg-white rounded-xl p-6 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] relative overflow-hidden group border border-gray-200 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] hover:border-[#7661d3]/20 transition-all">
+            <div className="bg-white rounded-xl lg:p-6 p-4 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] relative overflow-hidden group border border-gray-200 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] hover:border-[#7661d3]/20 transition-all">
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#F3F0FD] to-transparent rounded-full -mr-12 -mt-12 transition-transform duration-500 group-hover:scale-125" />
 
               <div className="relative z-10 flex items-center justify-between mb-4">
@@ -328,7 +328,7 @@ export default function AccountPage() {
                   onClick={() => handleTabChange(tab.id)}
                   className={`px-5 py-2 rounded-full font-bold text-sm transition-all duration-300 whitespace-nowrap ${
                     activeTab === tab.id
-                      ? "bg-[var(--primary)] text-white shadow-lg"
+                      ? "bg-[var(--primary)] text-white"
                       : "bg-white text-gray-600 hover:bg-gray-100"
                   }`}
                 >

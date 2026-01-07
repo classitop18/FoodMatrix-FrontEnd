@@ -45,7 +45,7 @@ export default function ProtectedHeader() {
   const initials = `${user?.firstName?.[0] ?? ""}${user?.lastName?.[0] ?? ""}`;
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur border-b border-gray-200">
+    <header className="sticky top-0 z-[50] w-full bg-white/90 backdrop-blur border-b border-gray-200">
       <div className="w-full px-4 sm:px-4">
         <div className="flex h-14 items-center">
           {/* Left spacer (logo can go here later) */}

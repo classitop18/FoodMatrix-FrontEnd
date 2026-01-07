@@ -449,7 +449,7 @@ const ProfilePage = () => {
               onClick={() => setActiveTab("account")}
               className={`px-5 py-2 rounded-full font-bold text-sm transition-all duration-300 whitespace-nowrap ${
                 activeTab === "account"
-                  ? "bg-[var(--primary)] text-white shadow-lg"
+                  ? "bg-[var(--primary)] text-white"
                   : "bg-white text-gray-600 hover:bg-gray-100"
               }`}
             >
@@ -463,7 +463,7 @@ const ProfilePage = () => {
               onClick={() => setActiveTab("settings")}
               className={`px-5 py-2 rounded-full font-bold text-sm transition-all duration-300 whitespace-nowrap ${
                 activeTab === "settings"
-                  ? "bg-[var(--primary)] text-white shadow-lg"
+                  ? "bg-[var(--primary)] text-white"
                   : "bg-white text-gray-600 hover:bg-gray-100"
               }`}
             >
@@ -529,9 +529,9 @@ const ProfilePage = () => {
               </div>
 
               {/* Profile Card */}
-              <Card className="bg-white rounded-2xl overflow-hidden transition-all duration-300 border-2 border-[#7661d3]/20 shadow-none">
-                <CardHeader className="bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white py-4 flex justify-between items-center">
-                  <CardTitle className="flex items-center gap-3 text-xl font-bold p-0">
+              <Card className="bg-white rounded-2xl overflow-hidden transition-all duration-300 border-2 border-[#7661d3]/20 shadow-none gap-0">
+                <CardHeader className="bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white py-4 flex justify-between items-center flex-wrap">
+                  <CardTitle className="flex items-center gap-3 text-base lg:text-xl font-bold p-0">
                     <User className="h-6 w-6" />
                     Profile Information
                   </CardTitle>
@@ -583,7 +583,7 @@ const ProfilePage = () => {
 
                 <CardContent className="p-6 space-y-6 bg-white">
                   {/* Profile Picture Section */}
-                  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 pb-6 border-b-2 border-gray-200">
+                  <div className="flex flex-col md:flex-row items-center sm:items-start gap-4 pb-6 border-b-2 border-gray-200">
                     <div className="relative">
                       <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--primary-light)] flex items-center justify-center text-white text-4xl font-extrabold shadow-xl ring-4 ring-white">
                         {accountData?.name.charAt(0).toUpperCase()}
@@ -597,7 +597,7 @@ const ProfilePage = () => {
 
                     <div className="flex-1 text-center sm:text-left">
                       <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 mb-2">
-                        <h3 className="text-2xl font-extrabold text-gray-800">
+                        <h3 className="text-lg lg:text-2xl font-extrabold text-gray-800">
                           {accountData?.name}
                         </h3>
                         {accountData?.isVerified && (
@@ -903,7 +903,7 @@ const ProfilePage = () => {
           {/* Settings Tab */}
           {activeTab === "settings" && (
             <div className="space-y-6 animate-scale-in">
-              <Card className="border-0 shadow-xl bg-white gap-0 rounded-xl overflow-hidden">
+              <Card className="border-0 shadow-md bg-white gap-0 rounded-xl overflow-hidden">
                 <CardHeader className="bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white py-4 flex justify-between items-center">
                   <CardTitle className="flex items-center gap-3 text-xl font-bold p-0">
                     <Shield className="h-6 w-6" />
@@ -914,10 +914,7 @@ const ProfilePage = () => {
                 <CardContent className="p-6 space-y-4">
                   {/* MFA Toggle */}
                   <div
-                    className="flex items-center justify-between p-5 
-      bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] 
-      rounded-2xl border border-[#E6E1FF] shadow-md"
-                  >
+                    className="flex items-center justify-between p-5 bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] rounded-2xl border border-[#E6E1FF] shadow-md flex-wrap gap-3">
                     <div className="flex items-center gap-3">
                       <div className="bg-[var(--primary)] p-3 rounded-xl shadow-lg">
                         <Shield className="w-5 h-5 text-white" />
@@ -941,7 +938,7 @@ const ProfilePage = () => {
                         checked={accountData.isMfaEnabled}
                         disabled={isMfaUpdating}
                         onCheckedChange={handleMfaToggle}
-                        className="data-[state=checked]:bg-[var(--green)] border border-gray-600 "
+                        className=""
                       />
                     </div>
                   </div>
@@ -955,9 +952,7 @@ const ProfilePage = () => {
                   )}
 
                   <div
-                    className="flex items-center justify-between p-5 
-      bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] 
-      rounded-2xl border border-[#E6E1FF] shadow-md"
+                    className="flex items-center justify-between p-5 bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] rounded-2xl border border-[#E6E1FF] shadow-md flex-wrap gap-3"
                   >
                     <div className="flex items-center gap-3">
                       <div className="bg-[var(--green)] p-3 rounded-xl shadow-lg">
@@ -986,9 +981,7 @@ const ProfilePage = () => {
 
                   {/* Logout */}
                   <div
-                    className="flex items-center justify-between p-5 
-      bg-gradient-to-r from-red-50 to-red-100 
-      rounded-2xl border border-red-200 shadow-md"
+                    className="flex items-center justify-between p-5 bg-gradient-to-r from-red-50 to-red-100 rounded-2xl border border-red-200 shadow-md flex-wrap gap-3"
                   >
                     <div className="flex items-center gap-3">
                       <div className="bg-red-600 p-3 rounded-xl shadow-lg">

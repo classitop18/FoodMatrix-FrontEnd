@@ -75,7 +75,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
           <button
             onClick={handleRefetch}
             disabled={isLoading}
-            className={`bg-gray-200 hover:bg-gray-300 text-gray-700 p-2 rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`bg-gray-200 hover:bg-gray-300 text-gray-700 p-2 rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed h-10 w-10 ${
               isLoading ? "animate-spin" : ""
             }`}
             title="Refetch Members"
@@ -85,7 +85,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
           <div className="flex items-center bg-gray-100 rounded-lg p-1">
             <button
               onClick={() => setViewMode("card")}
-              className={`p-1.5 rounded transition-all ${
+              className={`p-1.5 rounded transition-all h-8 ${
                 viewMode === "card" ? "bg-white shadow-sm" : "text-gray-400"
               }`}
             >
@@ -93,7 +93,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
             </button>
             <button
               onClick={() => setViewMode("table")}
-              className={`p-1.5 rounded transition-all ${
+              className={`p-1.5 rounded transition-all h-8 ${
                 viewMode === "table" ? "bg-white shadow-sm" : "text-gray-400"
               }`}
             >
@@ -106,7 +106,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
           <ProtectedAction permission={PERMISSIONS.MEMBER_CREATE}>
             <button
               onClick={onAddMember}
-              className="bg-[#313131] hover:bg-black text-white font-bold text-xs px-4 py-2 rounded-lg transition-all flex items-center gap-1.5 shadow-md"
+              className="bg-[#313131] hover:bg-black text-white font-medium text-sm px-4 py-2 rounded-lg transition-all flex items-center gap-1.5 shadow-md h-10"
             >
               <Plus size={14} />
               Add Member
@@ -116,7 +116,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
       </div>
 
       {viewMode === "card" ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 p-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 p-3">
           {membersList.map((member) => (
             <MemberCard
               key={member.id}
