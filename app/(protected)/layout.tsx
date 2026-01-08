@@ -16,7 +16,7 @@ export default function ProtectedLayout({
         <AuthProvider>
           {/* Root */}
           <div className="min-h-screen flex overflow-hidden">
-              <Sidebar />
+            <Sidebar />
 
             {/* Main content (only this scrolls) */}
             <main className="flex-1 h-screen overflow-y-auto transition-all duration-300">

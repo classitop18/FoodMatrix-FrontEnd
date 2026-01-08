@@ -59,11 +59,36 @@ export const API_ENDPOINTS = {
     CATEGORIES: "/ingredients/categories",
   },
 
+  INVITATION: {
+    SEND: "/invitations/send",
+    ACCEPT: "/invitations/accept",
+    APPROVE: "/invitations/approve",
+    REJECT: "/invitations/reject",
+    RESEND: "/invitations/resend",
+    CANCEL: "/invitations/cancel",
+    GET_ALL: "/invitations",
+    GET_MY: "/invitations/my-invitations",
+    VALIDATE_TOKEN: (token: string) => `/invitations/validate-token/${token}`,
+  },
+
   // Meal Plans
   MEAL_PLAN: {
     GET_MEAL_PLANS: "/meal-plans",
     CREATE_MEAL_PLAN: "/meal-plans",
     UPDATE_MEAL_PLAN: (id: string) => `/meal-plans/${id}`,
     DELETE_MEAL_PLAN: (id: string) => `/meal-plans/${id}`,
+  },
+
+  // Recipes
+  RECIPE: {
+    GET_RECIPES: "/recipes",
+    GET_RECIPE_BY_ID: (id: string) => `/recipes/${id}`,
+    CREATE_RECIPE: "/recipes",
+    UPDATE_RECIPE: (id: string) => `/recipes/${id}`,
+    DELETE_RECIPE: (id: string) => `/recipes/${id}`,
+    GENERATE_AI: "/recipes/generate-ai",
+    SEARCH_CUSTOM: "/recipes/search-custom",
+    UPDATE_STATUS: (id: string) => `/recipes/${id}/status`,
+    INTERACT: (id: string) => `/recipes/${id}/interact`,
   },
 };

@@ -1,12 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
-import { GetMembersParams, MemberService } from "./member.service";
+import { MemberService } from "./member.service";
+import { GetMembersParams } from "./types/member.types";
 
-const memberSerice = new MemberService();
+const memberService = new MemberService();
 
 export const useMembers = (params: GetMembersParams, options?: any) => {
   return useQuery({
     queryKey: ["members", params],
-    queryFn: () => memberSerice.getMembers(params),
+    queryFn: () => memberService.getMembers(params),
     enabled: !!params.accountId,
     ...options,
   });
@@ -15,7 +16,7 @@ export const useMembers = (params: GetMembersParams, options?: any) => {
 export const useGetMember = (memberId: string) => {
   return useQuery({
     queryKey: ["member", memberId],
-    queryFn: () => memberSerice.getMemberById(memberId),
+    queryFn: () => memberService.getMemberById(memberId),
     enabled: !!memberId,
     retry: false,
     refetchOnWindowFocus: false,

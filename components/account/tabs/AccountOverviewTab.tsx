@@ -30,7 +30,6 @@ export const AccountOverviewTab: React.FC<AccountOverviewTabProps> = ({
   const { can, isSuperAdmin, isAdmin, isMember } = usePermissions();
   const [isRefetching, setIsRefetching] = useState(false);
 
-
   const handleRefetch = async () => {
     if (isRefetching || loading) return;
     setIsRefetching(true);

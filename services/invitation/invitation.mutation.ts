@@ -2,6 +2,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { InvitationService } from "./invitation.service";
 import { toast } from "@/hooks/use-toast";
 
+const invitationService = new InvitationService();
+
 export const useSendInvitation = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -9,7 +11,7 @@ export const useSendInvitation = () => {
       email: string;
       accountId: string;
       proposedRole?: string;
-    }) => InvitationService.sendInvitation(payload),
+    }) => invitationService.sendInvitation(payload),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({
         queryKey: ["account-invitations", variables.accountId],
@@ -34,7 +36,7 @@ export const useSendInvitation = () => {
 export const useAcceptInvitation = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (token: string) => InvitationService.acceptInvitation(token),
+    mutationFn: (token: string) => invitationService.acceptInvitation(token),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-invitations"] });
       queryClient.invalidateQueries({ queryKey: ["myaccounts"] });
@@ -66,7 +68,7 @@ export const useApproveInvitation = () => {
       invitationId: string;
       role: string;
       accountId: string;
-    }) => InvitationService.approveInvitation(invitationId, role),
+    }) => invitationService.approveInvitation(invitationId, role, accountId),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({
         queryKey: ["account-invitations", variables.accountId],
@@ -102,7 +104,7 @@ export const useRejectInvitation = () => {
       invitationId: string;
       reason?: string;
       accountId: string;
-    }) => InvitationService.rejectInvitation(invitationId, reason),
+    }) => invitationService.rejectInvitation(invitationId, reason, accountId),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({
         queryKey: ["account-invitations", variables.accountId],
@@ -127,7 +129,7 @@ export const useRejectInvitation = () => {
 export const useResendInvitation = () => {
   return useMutation({
     mutationFn: (invitationId: string) =>
-      InvitationService.resendInvitation(invitationId),
+      invitationService.resendInvitation(invitationId),
     onSuccess: () => {
       toast({
         title: "Invitation resent successfully!",
@@ -155,7 +157,7 @@ export const useCancelInvitation = () => {
     }: {
       invitationId: string;
       accountId: string;
-    }) => InvitationService.cancelInvitation(invitationId),
+    }) => invitationService.cancelInvitation(invitationId, accountId),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({
         queryKey: ["account-invitations", variables.accountId],

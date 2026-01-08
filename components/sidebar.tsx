@@ -180,7 +180,6 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
 
   return (
     <>
-
       {/* Sidebar (fixed height, no scroll) */}
       <aside
         className={cn(
@@ -188,7 +187,6 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
           collapsed ? "-left-[266px] w-0" : "left-0 w-64",
         )}
       >
-
         {/* Logo */}
         <div className="p-2 border-b border-[#EBE7F6] flex items-center justify-betweenbg-white fixed top-0 left-0 w-[256px] justify-between">
           <div
@@ -229,7 +227,6 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
             "flex flex-col h-full bg-white  border-[#EBE7F6] transition-all duration-300 scrollbar-hide shadow-2xl md:shadow-none",
           )}
         >
-
           {/* Navigation */}
           {/* Navigation */}
           <ScrollArea className="px-4 py-6 h-[calc(100vh-138px)] overflow-y-auto">

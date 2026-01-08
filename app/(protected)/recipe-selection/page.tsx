@@ -16,13 +16,13 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion"
+} from "@/components/ui/accordion";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from "@/components/ui/popover";
 import {
   Command,
   CommandEmpty,
@@ -31,9 +31,9 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-} from "@/components/ui/command"
-import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/command";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import {
   ChefHat,
   Sparkles,
@@ -51,17 +51,20 @@ import {
 } from "lucide-react";
 
 import { useDispatch, useSelector } from "react-redux";
-import { toggleMealPlan, setGeneratedRecipes, setGeneratedCustomRecipes } from "@/redux/features/meal-plan/meal-plan.slice";
+import {
+  toggleMealPlan,
+  setGeneratedRecipes,
+  setGeneratedCustomRecipes,
+} from "@/redux/features/meal-plan/meal-plan.slice";
 import { RootState } from "@/redux/store.redux";
 import { useMembers } from "@/services/member/member.query";
 import { useToast } from "@/hooks/use-toast";
 
-
 import {
-  useAddRecipeMutation,
   useGenerateAICustomRecipeMutation,
   useGenerateAIRecipeMutation,
-} from "@/api/recipe";
+  useInteractWithRecipeMutation,
+} from "@/services/recipe";
 import {
   cuisineOptions,
   RecipeEntry,
@@ -74,10 +77,15 @@ import {
 import RecipeSelectionCard, {
   Slot,
 } from "@/components/meal-planning/recipe-selection-card";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import Link from "next/link";
 import { RecipeDetailsDialog } from "../recipes/components/recipe-details-dialog";
-import { Recipe as ApiRecipe } from "@/api/recipe";
+import { Recipe as ApiRecipe } from "@/services/recipe";
 import { getRecipeImageUrl } from "@/lib/recipe-utils";
 
 interface Member {
@@ -103,21 +111,16 @@ export default function RecipeSelection() {
 
   // Redux
   const dispatch = useDispatch();
-  const { plans, generatedRecipes: generatedRecipies, generatedCustomRecipes: generatedCustomRecipies } = useSelector((state: RootState) => state.mealPlan);
+  const {
+    plans,
+    generatedRecipes: generatedRecipies,
+    generatedCustomRecipes: generatedCustomRecipies,
+  } = useSelector((state: RootState) => state.mealPlan);
 
   // Derived selections for UI compatibility
   const currentSelections: Record<string, string> = {};
   Object.entries(plans).forEach(([date, meals]) => {
     Object.entries(meals).forEach(([mealType, recipe]) => {
-      // Reconstruct slotKey as per the format used in this component
-      // Note: In generateRecipe, slotKey is `${slot.date}-${slot.meal}`
-      // slot.meal is derived from local storage and might be uppercase/lowercase depending on where it came from.
-      // But looking at line 154, it is uppercase. Line 207 uses lowercase for API.
-      // We need to match what's used in the render loop.
-      // Render loop uses slotKey = `${slot.date}-${slot.meal}`.
-      // In setMealPlan, we need to ensure we pass the correct mealType string that matches slot.meal.
-      // However, we storing it. Let's assume we store what we get.
-
       const slotKey = `${date}-${mealType}`;
       if (recipe && recipe.id) {
         currentSelections[slotKey] = recipe.id;
@@ -137,10 +140,81 @@ export default function RecipeSelection() {
 
   const [detailedRecipe, setDetailedRecipe] = useState<ApiRecipe | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [interactions, setInteractions] = useState<
+    Record<
+      string,
+      { isLiked: boolean; isDisliked: boolean; isFavorite: boolean }
+    >
+  >({});
+
+  const [isReduxHydrated, setIsReduxHydrated] = useState(false);
 
   // Mutations
   const generateRecipeWithAi = useGenerateAIRecipeMutation();
   const generateCustomRecipeWithAi = useGenerateAICustomRecipeMutation();
+  const interactWithRecipeMutation = useInteractWithRecipeMutation();
+
+  const handleInteraction = async (
+    recipe: any,
+    action: "like" | "dislike" | "favorite",
+    e: React.MouseEvent
+  ) => {
+    e.stopPropagation();
+
+    // Calculate optimistic state
+    const current = interactions[recipe.id] || {
+      isLiked: recipe.isLiked || false,
+      isDisliked: recipe.isDisliked || false,
+      isFavorite: recipe.isFavorite || false,
+    };
+
+    const next = { ...current };
+
+    if (action === "like") {
+      if (next.isLiked) {
+        next.isLiked = false;
+      } else {
+        next.isLiked = true;
+        next.isDisliked = false;
+        next.isFavorite = false;
+      }
+    } else if (action === "dislike") {
+      if (next.isDisliked) {
+        next.isDisliked = false;
+      } else {
+        next.isDisliked = true;
+        next.isLiked = false;
+        next.isFavorite = false;
+      }
+    } else if (action === "favorite") {
+      if (next.isFavorite) {
+        next.isFavorite = false;
+      } else {
+        next.isFavorite = true;
+        next.isLiked = false;
+        next.isDisliked = false;
+      }
+    }
+
+    // Apply Optimistic Update
+    setInteractions((prev) => ({ ...prev, [recipe.id]: next }));
+
+    try {
+      await interactWithRecipeMutation.mutateAsync({
+        id: recipe.id,
+        action,
+      });
+    } catch (error) {
+      // Revert on error
+      setInteractions((prev) => ({ ...prev, [recipe.id]: current }));
+      toast({
+        title: "Error",
+        description: "Failed to update preference",
+        variant: "destructive",
+      });
+    }
+
+  };
 
   // Load Members
   // Load Members
@@ -155,6 +229,44 @@ export default function RecipeSelection() {
     },
   );
   const members: Member[] = (membersData as any)?.data?.data || [];
+
+  // Hydrate generated recipes from Local Storage
+  useEffect(() => {
+    try {
+      const savedGenerated = localStorage.getItem("foodmatrix-generated-recipes");
+      if (savedGenerated) {
+        const parsed = JSON.parse(savedGenerated);
+        if (parsed.generated) {
+          Object.entries(parsed.generated).forEach(([key, recipes]) => {
+            dispatch(setGeneratedRecipes({ slotKey: key, recipes: recipes as any[] }));
+          });
+        }
+        if (parsed.custom) {
+          Object.entries(parsed.custom).forEach(([key, recipes]) => {
+            dispatch(setGeneratedCustomRecipes({ slotKey: key, recipes: recipes as any[] }));
+          });
+        }
+      }
+    } catch (e) {
+      console.error("Failed to load generated recipes", e);
+    } finally {
+      setIsReduxHydrated(true);
+    }
+  }, [dispatch]);
+
+  // Persist generated recipes to Local Storage
+  useEffect(() => {
+    if (!isReduxHydrated) return;
+    try {
+      const data = {
+        generated: generatedRecipies,
+        custom: generatedCustomRecipies
+      };
+      localStorage.setItem("foodmatrix-generated-recipes", JSON.stringify(data));
+    } catch (e) {
+      console.error("Failed to save generated recipes", e);
+    }
+  }, [generatedRecipies, generatedCustomRecipies, isReduxHydrated]);
 
   // Initialize Slots from Local Storage
   useEffect(() => {
@@ -243,13 +355,15 @@ export default function RecipeSelection() {
         id: r.id || `ai-${slotKey}-${idx}-${Date.now()}`,
         complementaryItems: [],
         isAIGenerated: true,
-        image: r.image // Ensure image is passed through
+        image: r.image, // Ensure image is passed through
       }));
 
-      dispatch(setGeneratedRecipes({
-        slotKey,
-        recipes
-      }));
+      dispatch(
+        setGeneratedRecipes({
+          slotKey,
+          recipes,
+        }),
+      );
 
       toast({
         title: "Recipes Generated!",
@@ -295,10 +409,12 @@ export default function RecipeSelection() {
           id: recipe.id || `custom-${slotKey}-${Date.now()}`,
           isAIGenerated: true,
         };
-        dispatch(setGeneratedCustomRecipes({
-          slotKey,
-          recipes: [processed]
-        }));
+        dispatch(
+          setGeneratedCustomRecipes({
+            slotKey,
+            recipes: [processed],
+          }),
+        );
         toast({ title: "Recipe Found!", description: `Found ${customName}` });
       }
     } catch {
@@ -319,17 +435,19 @@ export default function RecipeSelection() {
     // We need to parse slotKey to get date and mealType
     // slotKey format: date-meal
     // Find the last hyphen to split meal type
-    const lastHyphenIndex = slotKey.lastIndexOf('-');
+    const lastHyphenIndex = slotKey.lastIndexOf("-");
     if (lastHyphenIndex === -1) return;
 
     const date = slotKey.substring(0, lastHyphenIndex);
     const meal = slotKey.substring(lastHyphenIndex + 1);
 
-    dispatch(toggleMealPlan({
-      date,
-      mealType: meal,
-      recipe
-    }));
+    dispatch(
+      toggleMealPlan({
+        date,
+        mealType: meal,
+        recipe,
+      }),
+    );
   };
 
   const calculateTotal = () => {
@@ -386,7 +504,7 @@ export default function RecipeSelection() {
           <Button
             variant="ghost"
             className="absolute md:left-0 -top-2 md:top-1/2 md:-translate-y-1/2 p-0 hover:bg-transparent text-gray-500 hover:text-gray-900 flex gap-1"
-            onClick={() => router.push('/meal-planning')}
+            onClick={() => router.push("/meal-planning")}
           >
             <ChevronDown className="rotate-90 w-5 h-5" /> Back
           </Button>
@@ -401,7 +519,8 @@ export default function RecipeSelection() {
               Smarter choices for effortless cooking
             </h1>
             <p className="text-sm text-gray-500 font-medium mt-1">
-              Choose your cuisine and generate personalized AI recipes for each meal
+              Choose your cuisine and generate personalized AI recipes for each
+              meal
             </p>
           </div>
         </div>
@@ -432,29 +551,43 @@ export default function RecipeSelection() {
                 type="single"
                 collapsible
                 className="w-full"
-                defaultValue={mealSlots.length > 0 ? `date-${mealSlots[0].date}` : undefined}
+                defaultValue={
+                  mealSlots.length > 0 ? `date-${mealSlots[0].date}` : undefined
+                }
               >
                 {/* Group slots by date */}
                 {Object.entries(
-                  mealSlots.reduce((acc, slot) => {
-                    const dateKey = slot.date.toString();
-                    if (!acc[dateKey]) acc[dateKey] = [];
-                    acc[dateKey].push(slot);
-                    return acc;
-                  }, {} as Record<string, Slot[]>)
+                  mealSlots.reduce(
+                    (acc, slot) => {
+                      const dateKey = slot.date.toString();
+                      if (!acc[dateKey]) acc[dateKey] = [];
+                      acc[dateKey].push(slot);
+                      return acc;
+                    },
+                    {} as Record<string, Slot[]>,
+                  ),
                 ).map(([date, slotsForDate], dateIndex) => {
-                  const formattedDate = new Date(date).toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric'
-                  });
+                  const formattedDate = new Date(date).toLocaleDateString(
+                    "en-US",
+                    {
+                      weekday: "long",
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    },
+                  );
 
                   return (
-                    <AccordionItem value={`date-${date}`} key={date} className="">
+                    <AccordionItem
+                      value={`date-${date}`}
+                      key={date}
+                      className=""
+                    >
                       <AccordionTrigger className="p-4 hover:no-underline items-center bg-[#e9e2fe] rounded-lg">
                         <div className="flex flex-col md:justify-between w-full gap-1">
-                          <h3 className="truncate text-base font-semibold text-[#7661d3]">{formattedDate}</h3>
+                          <h3 className="truncate text-base font-semibold text-[#7661d3]">
+                            {formattedDate}
+                          </h3>
                           <span>{slotsForDate.length} meals planned</span>
                         </div>
                       </AccordionTrigger>
@@ -463,23 +596,41 @@ export default function RecipeSelection() {
                           type="single"
                           collapsible
                           className="w-full"
-                          defaultValue={slotsForDate.length > 0 ? `meal-${date}-${slotsForDate[0].meal}` : undefined}
+                          defaultValue={
+                            slotsForDate.length > 0
+                              ? `meal-${date}-${slotsForDate[0].meal}`
+                              : undefined
+                          }
                         >
                           {slotsForDate?.map((slot, mealIndex) => {
                             const slotKey = `${slot.date}-${slot.meal}`;
                             const payload = recipePayload[slotKey] || {};
-                            const generatedRecipes = generatedRecipies[slotKey] || [];
-                            const customRecipes = generatedCustomRecipies[slotKey] || [];
-                            const allRecipesForSlot = [...generatedRecipes, ...customRecipes];
+                            const generatedRecipes =
+                              generatedRecipies[slotKey] || [];
+                            const customRecipes =
+                              generatedCustomRecipies[slotKey] || [];
+                            const allRecipesForSlot = [
+                              ...generatedRecipes,
+                              ...customRecipes,
+                            ];
 
                             return (
-                              <AccordionItem value={`meal-${slotKey}`} key={slotKey} className="">
+                              <AccordionItem
+                                value={`meal-${slotKey}`}
+                                key={slotKey}
+                                className=""
+                              >
                                 <AccordionTrigger className="p-0 items-center hover:no-underline group">
                                   <div className="flex flex-row md:justify-between w-full gap-2 items-center">
                                     <h3 className="truncate text-lg font-semibold text-black">
-                                      {slot.meal} <span className="text-gray-500 font-normal">({slot.type})</span>
+                                      {slot.meal}{" "}
+                                      <span className="text-gray-500 font-normal">
+                                        ({slot.type})
+                                      </span>
                                     </h3>
-                                    <span className="group-hover:underline text-primary">Generate Recipes</span>
+                                    <span className="group-hover:underline text-primary">
+                                      Generate Recipes
+                                    </span>
                                   </div>
                                 </AccordionTrigger>
                                 <AccordionContent className="flex gap-4 flex-col mt-4">
@@ -499,7 +650,11 @@ export default function RecipeSelection() {
                                           <Select
                                             value={payload.cuisine}
                                             onValueChange={(value) =>
-                                              generateRecipePayload(slotKey, "cuisine", value)
+                                              generateRecipePayload(
+                                                slotKey,
+                                                "cuisine",
+                                                value,
+                                              )
                                             }
                                           >
                                             <SelectTrigger className="w-[155px] h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-sm font-medium shadow-none">
@@ -507,14 +662,24 @@ export default function RecipeSelection() {
                                             </SelectTrigger>
                                             <SelectContent>
                                               <SelectGroup>
-                                                {cuisineOptions.map((cuisine) => (
-                                                  <SelectItem key={cuisine.value} value={cuisine.value} className="text-sm">
-                                                    <span className="flex items-center gap-2">
-                                                      <span>{cuisine.icon}</span>
-                                                      <span>{cuisine.label}</span>
-                                                    </span>
-                                                  </SelectItem>
-                                                ))}
+                                                {cuisineOptions.map(
+                                                  (cuisine) => (
+                                                    <SelectItem
+                                                      key={cuisine.value}
+                                                      value={cuisine.value}
+                                                      className="text-sm"
+                                                    >
+                                                      <span className="flex items-center gap-2">
+                                                        <span>
+                                                          {cuisine.icon}
+                                                        </span>
+                                                        <span>
+                                                          {cuisine.label}
+                                                        </span>
+                                                      </span>
+                                                    </SelectItem>
+                                                  ),
+                                                )}
                                               </SelectGroup>
                                             </SelectContent>
                                           </Select>
@@ -527,33 +692,48 @@ export default function RecipeSelection() {
                                                 className="w-[220px] h-11 justify-between text-black bg-white border-[#BCBCBC] hover:bg-white hover:text-black font-normal"
                                               >
                                                 <span className="truncate">
-                                                  {payload.members === undefined ||
-                                                    payload.members.length === members.length
+                                                  {payload.members ===
+                                                    undefined ||
+                                                    payload.members.length ===
+                                                    members.length
                                                     ? "All Members"
-                                                    : payload.members.length === 0
+                                                    : payload.members.length ===
+                                                      0
                                                       ? "Select Members"
                                                       : `${payload.members.length} selected`}
                                                 </span>
                                                 <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                               </Button>
                                             </PopoverTrigger>
-                                            <PopoverContent className="w-[220px] p-0 bg-white" align="start">
+                                            <PopoverContent
+                                              className="w-[220px] p-0 bg-white"
+                                              align="start"
+                                            >
                                               <Command>
                                                 <CommandInput placeholder="Search members..." />
                                                 <CommandList>
-                                                  <CommandEmpty>No member found.</CommandEmpty>
+                                                  <CommandEmpty>
+                                                    No member found.
+                                                  </CommandEmpty>
                                                   <CommandGroup>
                                                     <CommandItem
                                                       onSelect={() => {
-                                                        const allIds = members.map((m) => m.id);
+                                                        const allIds =
+                                                          members.map(
+                                                            (m) => m.id,
+                                                          );
                                                         const isAllSelected =
                                                           !payload.members ||
-                                                          payload.members.length === members.length;
+                                                          payload.members
+                                                            .length ===
+                                                          members.length;
 
                                                         generateRecipePayload(
                                                           slotKey,
                                                           "members",
-                                                          isAllSelected ? [] : allIds
+                                                          isAllSelected
+                                                            ? []
+                                                            : allIds,
                                                         );
                                                       }}
                                                     >
@@ -561,12 +741,18 @@ export default function RecipeSelection() {
                                                         className={cn(
                                                           "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
                                                           !payload.members ||
-                                                            payload.members.length === members.length
+                                                            payload.members
+                                                              .length ===
+                                                            members.length
                                                             ? "bg-primary text-primary-foreground"
-                                                            : "opacity-50 [&_svg]:invisible"
+                                                            : "opacity-50 [&_svg]:invisible",
                                                         )}
                                                       >
-                                                        <Check className={cn("h-4 w-4")} />
+                                                        <Check
+                                                          className={cn(
+                                                            "h-4 w-4",
+                                                          )}
+                                                        />
                                                       </div>
                                                       <span>Select All</span>
                                                     </CommandItem>
@@ -576,21 +762,28 @@ export default function RecipeSelection() {
                                                     {members.map((member) => {
                                                       const isSelected =
                                                         !payload.members ||
-                                                        payload.members.includes(member.id);
+                                                        payload.members.includes(
+                                                          member.id,
+                                                        );
                                                       return (
                                                         <CommandItem
                                                           key={member.id}
                                                           onSelect={() => {
-                                                            const allIds = members.map(
-                                                              (m) => m.id
-                                                            );
+                                                            const allIds =
+                                                              members.map(
+                                                                (m) => m.id,
+                                                              );
                                                             const currentIds =
-                                                              payload.members || allIds;
+                                                              payload.members ||
+                                                              allIds;
                                                             let newIds;
                                                             if (isSelected) {
-                                                              newIds = currentIds.filter(
-                                                                (id) => id !== member.id
-                                                              );
+                                                              newIds =
+                                                                currentIds.filter(
+                                                                  (id) =>
+                                                                    id !==
+                                                                    member.id,
+                                                                );
                                                             } else {
                                                               newIds = [
                                                                 ...currentIds,
@@ -600,7 +793,7 @@ export default function RecipeSelection() {
                                                             generateRecipePayload(
                                                               slotKey,
                                                               "members",
-                                                              newIds
+                                                              newIds,
                                                             );
                                                           }}
                                                         >
@@ -609,15 +802,21 @@ export default function RecipeSelection() {
                                                               "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
                                                               isSelected
                                                                 ? "bg-primary text-primary-foreground"
-                                                                : "opacity-50 [&_svg]:invisible"
+                                                                : "opacity-50 [&_svg]:invisible",
                                                             )}
                                                           >
-                                                            <Check className={cn("h-4 w-4")} />
+                                                            <Check
+                                                              className={cn(
+                                                                "h-4 w-4",
+                                                              )}
+                                                            />
                                                           </div>
                                                           <span>
                                                             {member.name ||
-                                                              member?.user?.firstName +
-                                                              (member?.user?.username
+                                                              member?.user
+                                                                ?.firstName +
+                                                              (member?.user
+                                                                ?.username
                                                                 ? ` (${member?.user?.username})`
                                                                 : "") ||
                                                               "Unnamed Member"}
@@ -632,9 +831,16 @@ export default function RecipeSelection() {
                                           </Popover>
 
                                           <Select
-                                            value={payload.recipeCount?.toString() || ''}
+                                            value={
+                                              payload.recipeCount?.toString() ||
+                                              ""
+                                            }
                                             onValueChange={(value) =>
-                                              generateRecipePayload(slotKey, "recipeCount", value)
+                                              generateRecipePayload(
+                                                slotKey,
+                                                "recipeCount",
+                                                value,
+                                              )
                                             }
                                           >
                                             <SelectTrigger className="w-[230px] h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-sm font-medium shadow-none">
@@ -643,8 +849,13 @@ export default function RecipeSelection() {
                                             <SelectContent>
                                               <SelectGroup>
                                                 {[1, 2, 3, 4, 5].map((num) => (
-                                                  <SelectItem key={num} value={num.toString()} className="text-sm">
-                                                    {num} Recipe{num > 1 ? 's' : ''}
+                                                  <SelectItem
+                                                    key={num}
+                                                    value={num.toString()}
+                                                    className="text-sm"
+                                                  >
+                                                    {num} Recipe
+                                                    {num > 1 ? "s" : ""}
                                                   </SelectItem>
                                                 ))}
                                               </SelectGroup>
@@ -662,16 +873,21 @@ export default function RecipeSelection() {
                                                 <Info className="w-3.5 h-3.5 text-gray-400" />
                                               </TooltipTrigger>
                                               <TooltipContent className="max-w-[190px] text-xs bg-black text-white p-2 rounded-md shadow-lg">
-                                                Choose how to use your pantry items in recipe generation
+                                                Choose how to use your pantry
+                                                items in recipe generation
                                               </TooltipContent>
                                             </Tooltip>
                                           </TooltipProvider>
                                         </label>
 
                                         <Select
-                                          value={payload.pantryOption || ''}
+                                          value={payload.pantryOption || ""}
                                           onValueChange={(value) =>
-                                            generateRecipePayload(slotKey, "pantryOption", value)
+                                            generateRecipePayload(
+                                              slotKey,
+                                              "pantryOption",
+                                              value,
+                                            )
                                           }
                                         >
                                           <SelectTrigger className="w-[180px] h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-sm font-medium shadow-none">
@@ -679,9 +895,24 @@ export default function RecipeSelection() {
                                           </SelectTrigger>
                                           <SelectContent>
                                             <SelectGroup>
-                                              <SelectItem value="can-use" className="text-sm">Can Use Pantry</SelectItem>
-                                              <SelectItem value="only-pantry" className="text-sm">Only Pantry Items</SelectItem>
-                                              <SelectItem value="ignore" className="text-sm">Ignore Pantry</SelectItem>
+                                              <SelectItem
+                                                value="can-use"
+                                                className="text-sm"
+                                              >
+                                                Can Use Pantry
+                                              </SelectItem>
+                                              <SelectItem
+                                                value="only-pantry"
+                                                className="text-sm"
+                                              >
+                                                Only Pantry Items
+                                              </SelectItem>
+                                              <SelectItem
+                                                value="ignore"
+                                                className="text-sm"
+                                              >
+                                                Ignore Pantry
+                                              </SelectItem>
                                             </SelectGroup>
                                           </SelectContent>
                                         </Select>
@@ -692,16 +923,27 @@ export default function RecipeSelection() {
                                       className="border-[#3d326d] hover:bg-[#2d2454] text-[#2d2454] hover:text-white font-medium text-base rounded-lg h-10 transition-all"
                                       variant={"outline"}
                                       onClick={() => generateRecipe(slot)}
-                                      disabled={isSlotProcessing[slotKey]?.isRecipeLoading}
+                                      disabled={
+                                        isSlotProcessing[slotKey]
+                                          ?.isRecipeLoading
+                                      }
                                     >
-                                      {isSlotProcessing[slotKey]?.isRecipeLoading ? 'Generating...' : 'Generate Recipes'}
+                                      {isSlotProcessing[slotKey]
+                                        ?.isRecipeLoading
+                                        ? "Generating..."
+                                        : "Generate Recipes"}
                                     </Button>
                                   </div>
 
                                   <div className="border border-[#DFF6C9] rounded-lg p-4 bg-gradient-to-r from-[#EFFAE4] to-[#effae450]">
                                     <div className="w-100">
-                                      <h5 className="font-medium text-[#7661d3] text-base">Custom Recipe Search</h5>
-                                      <p className="font-normal text-[#313131]">Search for specific recipes or ingredients</p>
+                                      <h5 className="font-medium text-[#7661d3] text-base">
+                                        Custom Recipe Search
+                                      </h5>
+                                      <p className="font-normal text-[#313131]">
+                                        Search for specific recipes or
+                                        ingredients
+                                      </p>
                                     </div>
                                     <div className="relative mt-3">
                                       <Search
@@ -711,18 +953,31 @@ export default function RecipeSelection() {
                                       <input
                                         type="text"
                                         placeholder="Search for recipes, ingredients, or cuisines..."
-                                        value={payload.customRecipe || ''}
+                                        value={payload.customRecipe || ""}
                                         onChange={(e) =>
-                                          generateRecipePayload(slotKey, "customRecipe", e.target.value)
+                                          generateRecipePayload(
+                                            slotKey,
+                                            "customRecipe",
+                                            e.target.value,
+                                          )
                                         }
                                         className="w-full pl-9 pr-3 py-2 bg-white/10 border border-[#E2E2E2] rounded-lg text-black placeholder-black/40 focus:outline-none focus:bg-white/20 transition-all text-sm font-normal h-13"
                                       />
                                       <Button
                                         className="text-white bg-(--primary) hover:bg-(--primary) font-medium ps-3! pe-3! py-1 h-10 rounded-lg text-base transition-all duration-300 cursor-pointer group relative flex items-center inset-shadow-[5px_5px_5px_rgba(0,0,0,0.30)] hover:inset-shadow-[-5px_-5px_5px_rgba(0,0,0,0.50)] min-w-26 justify-center absolute right-2 top-1/2 -translate-y-1/2"
-                                        onClick={() => generateCustomRecipe(slot)}
-                                        disabled={isSlotProcessing[slotKey]?.isCustomRecipeLoading || !payload.customRecipe}
+                                        onClick={() =>
+                                          generateCustomRecipe(slot)
+                                        }
+                                        disabled={
+                                          isSlotProcessing[slotKey]
+                                            ?.isCustomRecipeLoading ||
+                                          !payload.customRecipe
+                                        }
                                       >
-                                        {isSlotProcessing[slotKey]?.isCustomRecipeLoading ? 'Searching...' : 'Search'}
+                                        {isSlotProcessing[slotKey]
+                                          ?.isCustomRecipeLoading
+                                          ? "Searching..."
+                                          : "Search"}
                                       </Button>
                                     </div>
                                   </div>
@@ -738,67 +993,115 @@ export default function RecipeSelection() {
               </Accordion>
 
               <div className="lg:max-w-[550px] w-full flex flex-col gap-4">
-
                 <div className="w-full bg-[#e9e2fe] rounded-lg overflow-hidden flex-1">
                   <div className="bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white p-4 flex justify-between items-center">
                     AI Generated Recipes
                     <span className="text-sm font-normal">
-                      {Object.values(generatedRecipies).reduce((acc, val) => acc + (val?.length || 0), 0) +
-                        Object.values(generatedCustomRecipies).reduce((acc, val) => acc + (val?.length || 0), 0)} Results
+                      {Object.values(generatedRecipies).reduce(
+                        (acc, val) => acc + (val?.length || 0),
+                        0,
+                      ) +
+                        Object.values(generatedCustomRecipies).reduce(
+                          (acc, val) => acc + (val?.length || 0),
+                          0,
+                        )}{" "}
+                      Results
                     </span>
                   </div>
 
                   <ScrollArea className="w-full h-[calc(100vh-300px)] p-4">
                     <div className="space-y-2">
-                      {Object.entries(generatedRecipies).length === 0 && Object.entries(generatedCustomRecipies).length === 0 ? (
+                      {Object.entries(generatedRecipies).length === 0 &&
+                        Object.entries(generatedCustomRecipies).length === 0 ? (
                         <div className="text-center py-10 text-gray-500">
                           <p className="text-sm">No recipes generated yet</p>
-                          <p className="text-xs mt-1">Select options and click Generate Recipes</p>
+                          <p className="text-xs mt-1">
+                            Select options and click Generate Recipes
+                          </p>
                         </div>
                       ) : (
-                        Object.entries({ ...generatedRecipies, ...generatedCustomRecipies }).map(([slotKey, data]) => {
-                          const recipes = data || [];
+                        Array.from(new Set([
+                          ...Object.keys(generatedRecipies),
+                          ...Object.keys(generatedCustomRecipies)
+                        ])).map((slotKey) => {
+                          const normal = generatedRecipies[slotKey] || [];
+                          const custom = generatedCustomRecipies[slotKey] || [];
+                          const recipes = [...normal, ...custom];
+                          const data = recipes;
+
                           if (recipes.length === 0) return null;
 
-                          const [date, meal] = slotKey.split('-');
-                          const shortDate = new Date(date).toLocaleDateString('en-US', {
-                            weekday: 'short',
-                            month: 'short',
-                            day: 'numeric'
-                          });
+                          const [date, meal] = slotKey.split("-");
+                          const shortDate = new Date(date).toLocaleDateString(
+                            "en-US",
+                            {
+                              weekday: "short",
+                              month: "short",
+                              day: "numeric",
+                            },
+                          );
 
                           return (
                             <div key={slotKey} className="space-y-2">
                               <div className="flex justify-between items-center bg-white rounded-lg p-2 border border-[#DDD6FA] sticky top-0 z-10">
                                 <div>
-                                  <p className="font-semibold text-gray-900">{shortDate}</p>
-                                  <p className="text-xs text-gray-500">{recipes.length} Result{recipes.length > 1 ? 's' : ''}</p>
+                                  <p className="font-semibold text-gray-900">
+                                    {shortDate}
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    {recipes.length} Result
+                                    {recipes.length > 1 ? "s" : ""}
+                                  </p>
                                 </div>
-                                <span className="text-sm font-normal text-[var(--primary)]">{meal}</span>
+                                <span className="text-sm font-normal text-[var(--primary)]">
+                                  {meal}
+                                </span>
                               </div>
 
-                              {recipes.map((recipe: any) => {
-                                const isSelected = currentSelections[slotKey] === recipe.id;
+                              {recipes.map((recipeRaw: any) => {
+                                // Merge optimistic state
+                                const interactionState = interactions[
+                                  recipeRaw.id
+                                ] || {
+                                  isLiked: recipeRaw.isLiked || false,
+                                  isDisliked: recipeRaw.isDisliked || false,
+                                  isFavorite: recipeRaw.isFavorite || false,
+                                };
+                                const recipe = {
+                                  ...recipeRaw,
+                                  ...interactionState,
+                                };
+
+                                const isSelected =
+                                  currentSelections[slotKey] === recipe.id;
 
                                 return (
                                   <div
                                     key={recipe.id}
                                     className="bg-white rounded-xl p-3 relative cursor-pointer hover:shadow-lg transition-all border border-transparent hover:border-[#7dab4f]/20 group"
-                                    onClick={() => handleRecipeSelect(recipe, slotKey)}
+                                    onClick={() =>
+                                      handleRecipeSelect(recipe, slotKey)
+                                    }
                                   >
                                     <div className="flex gap-4">
                                       {/* Image Section */}
                                       <div className="h-28 w-28 shrink-0 rounded-lg bg-gray-50 overflow-hidden relative border border-gray-100">
                                         {recipe?.imageUrl ? (
                                           <img
-                                            src={getRecipeImageUrl(recipe.imageUrl)!}
+                                            src={
+                                              getRecipeImageUrl(
+                                                recipe.imageUrl,
+                                              )!
+                                            }
                                             alt={recipe.name}
                                             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                                           />
                                         ) : (
                                           <div className="h-full w-full flex flex-col items-center justify-center text-gray-300 gap-1">
                                             <ChefHat className="h-8 w-8" />
-                                            <span className="text-[9px] font-medium uppercase tracking-wider">No Image</span>
+                                            <span className="text-[9px] font-medium uppercase tracking-wider">
+                                              No Image
+                                            </span>
                                           </div>
                                         )}
 
@@ -813,11 +1116,12 @@ export default function RecipeSelection() {
                                         <div className="space-y-1">
                                           <div className="flex justify-between items-start gap-2 pr-8">
                                             <h3 className="font-bold text-gray-900 text-sm md:text-base leading-tight line-clamp-1">
-                                              {recipe.name || 'Untitled Recipe'}
+                                              {recipe.name || "Untitled Recipe"}
                                             </h3>
                                           </div>
                                           <p className="text-xs text-gray-500 line-clamp-2 font-medium leading-relaxed">
-                                            {recipe.description || 'No description available for this recipe.'}
+                                            {recipe.description ||
+                                              "No description available for this recipe."}
                                           </p>
                                         </div>
 
@@ -826,30 +1130,70 @@ export default function RecipeSelection() {
                                           <div className="flex items-center gap-3 text-xs text-gray-600 font-medium">
                                             <div className="flex items-center gap-1 bg-gray-50 px-1.5 py-0.5 rounded-md border border-gray-100">
                                               <Clock className="size-3 text-gray-400" />
-                                              <span>{recipe.prepTime || '30'}m</span>
+                                              <span>
+                                                {recipe.prepTime || "30"}m
+                                              </span>
                                             </div>
                                             <div className="flex items-center gap-1 bg-gray-50 px-1.5 py-0.5 rounded-md border border-gray-100">
                                               <Flame className="size-3 text-gray-400" />
-                                              <span>{recipe.nutrition?.calories || recipe.calories || '250'}</span>
+                                              <span>
+                                                {recipe.nutrition?.calories ||
+                                                  recipe.calories ||
+                                                  "250"}
+                                              </span>
                                             </div>
                                           </div>
 
                                           <div className="flex items-center gap-3">
                                             <div className="flex gap-2 text-gray-400">
-                                              <ThumbsUp onClick={(e) => {
-                                                e.stopPropagation();
-                                                toast({ title: "Feature Coming Soon", description: "You can like recipes soon!" });
+                                              <ThumbsUp
+                                                onClick={(e) =>
+                                                  handleInteraction(
+                                                    recipe,
+                                                    "like",
+                                                    e,
+                                                  )
+                                                }
+                                                className={`size-3.5 transition-colors hover:text-green-600 ${recipe.isLiked
+                                                  ? "text-green-600 fill-current"
+                                                  : ""
+                                                  }`}
+                                              />
 
-                                              }} className="size-3.5 hover:text-green-600 transition-colors" />
-                                              <Heart onClick={(e) => {
-                                                e.stopPropagation();
-                                                toast({ title: "Feature Coming Soon", description: "You can like love soon!" });
-                                              }} className="size-3.5 hover:text-pink-600 transition-colors" />
+                                              <ThumbsDown
+                                                onClick={(e) =>
+                                                  handleInteraction(
+                                                    recipe,
+                                                    "dislike",
+                                                    e,
+                                                  )
+                                                }
+                                                className={`size-3.5 transition-colors hover:text-red-600 ${recipe.isDisliked
+                                                  ? "text-red-600 fill-current"
+                                                  : ""
+                                                  }`}
+                                              />
+
+                                              <Heart
+                                                onClick={(e) =>
+                                                  handleInteraction(
+                                                    recipe,
+                                                    "favorite",
+                                                    e,
+                                                  )
+                                                }
+                                                className={`size-3.5 transition-colors hover:text-pink-600 ${recipe.isFavorite
+                                                  ? "text-pink-600 fill-current"
+                                                  : ""
+                                                  }`}
+                                              />
                                             </div>
                                             <button
                                               onClick={(e) => {
                                                 e.stopPropagation();
-                                                setDetailedRecipe(recipe as any);
+                                                setDetailedRecipe(
+                                                  recipe as any,
+                                                );
                                                 setIsDetailsOpen(true);
                                               }}
                                               className="text-[10px] font-semibold text-[var(--primary)] hover:underline uppercase tracking-wide"
@@ -867,7 +1211,7 @@ export default function RecipeSelection() {
                                         "absolute top-0 right-0 w-8 h-8 rounded-tr-xl rounded-bl-xl flex items-center justify-center transition-all duration-300",
                                         isSelected
                                           ? "bg-[var(--primary)] text-white shadow-md scale-100"
-                                          : "bg-gray-100 text-gray-300 hover:bg-gray-200 scale-90 opacity-70 hover:opacity-100"
+                                          : "bg-gray-100 text-gray-300 hover:bg-gray-200 scale-90 opacity-70 hover:opacity-100",
                                       )}
                                     >
                                       {isSelected ? (
@@ -889,8 +1233,12 @@ export default function RecipeSelection() {
 
                 <div className="bg-white p-4 rounded-lg border border-[#DDD6FA] shadow-sm">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium text-gray-700">Total Selected</span>
-                    <span className="text-lg font-bold text-[#7dab4f]">{Object.keys(currentSelections).length} Recipes</span>
+                    <span className="text-sm font-medium text-gray-700">
+                      Total Selected
+                    </span>
+                    <span className="text-lg font-bold text-[#7dab4f]">
+                      {Object.keys(currentSelections).length} Recipes
+                    </span>
                   </div>
                   <Button
                     className="w-full h-11 text-base font-semibold bg-[#7dab4f] hover:bg-[#6c9b42] shadow-sm transition-all"
@@ -904,13 +1252,12 @@ export default function RecipeSelection() {
             </>
           )}
         </div>
-
       </div>
       <RecipeDetailsDialog
         recipe={detailedRecipe}
         open={isDetailsOpen}
         onOpenChange={setIsDetailsOpen}
       />
-    </div >
+    </div>
   );
 }

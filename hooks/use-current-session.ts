@@ -10,6 +10,5 @@ export function useCurrentSession() {
 
   const response = useAuthMe();
 
-
   return { loading, reloadSession: response };
 }

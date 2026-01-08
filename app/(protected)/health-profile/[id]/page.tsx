@@ -257,8 +257,6 @@ export default function HealthProfilePage() {
     return <Loader />;
   }
 
- 
-
   const calculateBMI = () => {
     if (formData.height && formData.weight) {
       const heightInMeters = (formData.height * 2.54) / 100;

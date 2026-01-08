@@ -71,9 +71,6 @@ class ApiClient {
           const activeAccountId = localStorage.getItem(
             "foodmatrix_active_account_id",
           );
-  
-
-          
 
           if (activeAccountId) {
             config.headers = config.headers || {};

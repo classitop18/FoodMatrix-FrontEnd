@@ -131,7 +131,6 @@ export default function RecipeDetailsPage({
     setNutritionData(normalizeNutritionForChart(recipe?.nutrition));
   }, [recipe]);
 
-
   // Custom tooltip to show units
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -410,30 +409,30 @@ export default function RecipeDetailsPage({
                 {Array.isArray(recipe.instructions)
                   ? recipe.instructions
                   : JSON.parse(recipe.instructions)?.length > 0 && (
-                    <Card className="border-2 shadow-md">
-                      <CardContent className="p-6">
-                        <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                          <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-indigo-500 rounded-full" />
-                          Cooking Instructions
-                        </h2>
-                        <div className="space-y-4">
-                          {(Array.isArray(recipe.instructions)
-                            ? recipe.instructions
-                            : (JSON.parse(recipe.instructions) as any[])
-                          ).map((instruction: any, index: any) => (
-                            <div key={index} className="flex gap-4 group">
-                              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-500 text-white rounded-xl flex items-center justify-center font-bold text-lg shadow-md flex-shrink-0 group-hover:scale-110 transition-transform">
-                                {index + 1}
+                      <Card className="border-2 shadow-md">
+                        <CardContent className="p-6">
+                          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                            <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-indigo-500 rounded-full" />
+                            Cooking Instructions
+                          </h2>
+                          <div className="space-y-4">
+                            {(Array.isArray(recipe.instructions)
+                              ? recipe.instructions
+                              : (JSON.parse(recipe.instructions) as any[])
+                            ).map((instruction: any, index: any) => (
+                              <div key={index} className="flex gap-4 group">
+                                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-500 text-white rounded-xl flex items-center justify-center font-bold text-lg shadow-md flex-shrink-0 group-hover:scale-110 transition-transform">
+                                  {index + 1}
+                                </div>
+                                <p className="text-gray-700 dark:text-gray-300 leading-relaxed pt-2">
+                                  {instruction}
+                                </p>
                               </div>
-                              <p className="text-gray-700 dark:text-gray-300 leading-relaxed pt-2">
-                                {instruction}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
 
                 {/* Nutrition Information */}
                 {recipe.nutrition && (
@@ -543,31 +542,31 @@ export default function RecipeDetailsPage({
                       {/* Additional Nutrients */}
                       {(recipe.nutrition.sodium_mg ||
                         recipe.nutrition.cholesterol_mg) && (
-                          <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                            <div className="grid grid-cols-2 gap-3">
-                              {recipe.nutrition.sodium_mg && (
-                                <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-900 rounded-lg">
-                                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                                    Sodium
-                                  </span>
-                                  <span className="font-semibold text-gray-900 dark:text-white">
-                                    {recipe.nutrition.sodium_mg}mg
-                                  </span>
-                                </div>
-                              )}
-                              {recipe.nutrition.cholesterol_mg && (
-                                <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-900 rounded-lg">
-                                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                                    Cholesterol
-                                  </span>
-                                  <span className="font-semibold text-gray-900 dark:text-white">
-                                    {recipe.nutrition.cholesterol_mg}mg
-                                  </span>
-                                </div>
-                              )}
-                            </div>
+                        <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                          <div className="grid grid-cols-2 gap-3">
+                            {recipe.nutrition.sodium_mg && (
+                              <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-900 rounded-lg">
+                                <span className="text-sm text-gray-600 dark:text-gray-400">
+                                  Sodium
+                                </span>
+                                <span className="font-semibold text-gray-900 dark:text-white">
+                                  {recipe.nutrition.sodium_mg}mg
+                                </span>
+                              </div>
+                            )}
+                            {recipe.nutrition.cholesterol_mg && (
+                              <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-900 rounded-lg">
+                                <span className="text-sm text-gray-600 dark:text-gray-400">
+                                  Cholesterol
+                                </span>
+                                <span className="font-semibold text-gray-900 dark:text-white">
+                                  {recipe.nutrition.cholesterol_mg}mg
+                                </span>
+                              </div>
+                            )}
                           </div>
-                        )}
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 )}

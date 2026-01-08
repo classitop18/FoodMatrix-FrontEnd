@@ -61,8 +61,6 @@ const ProfilePage = () => {
     (state: RootState) => state.account,
   );
 
-  
-
   const [isMfaUpdating, setIsMfaUpdating] = useState(false);
 
   const checkIsExistMutation = useCheckProperty();
@@ -913,8 +911,7 @@ const ProfilePage = () => {
 
                 <CardContent className="p-6 space-y-4">
                   {/* MFA Toggle */}
-                  <div
-                    className="flex items-center justify-between p-5 bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] rounded-2xl border border-[#E6E1FF] shadow-md flex-wrap gap-3">
+                  <div className="flex items-center justify-between p-5 bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] rounded-2xl border border-[#E6E1FF] shadow-md flex-wrap gap-3">
                     <div className="flex items-center gap-3">
                       <div className="bg-[var(--primary)] p-3 rounded-xl shadow-lg">
                         <Shield className="w-5 h-5 text-white" />
@@ -951,9 +948,7 @@ const ProfilePage = () => {
                     />
                   )}
 
-                  <div
-                    className="flex items-center justify-between p-5 bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] rounded-2xl border border-[#E6E1FF] shadow-md flex-wrap gap-3"
-                  >
+                  <div className="flex items-center justify-between p-5 bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] rounded-2xl border border-[#E6E1FF] shadow-md flex-wrap gap-3">
                     <div className="flex items-center gap-3">
                       <div className="bg-[var(--green)] p-3 rounded-xl shadow-lg">
                         <Lock className="w-5 h-5 text-white" />
@@ -980,9 +975,7 @@ const ProfilePage = () => {
                   </div>
 
                   {/* Logout */}
-                  <div
-                    className="flex items-center justify-between p-5 bg-gradient-to-r from-red-50 to-red-100 rounded-2xl border border-red-200 shadow-md flex-wrap gap-3"
-                  >
+                  <div className="flex items-center justify-between p-5 bg-gradient-to-r from-red-50 to-red-100 rounded-2xl border border-red-200 shadow-md flex-wrap gap-3">
                     <div className="flex items-center gap-3">
                       <div className="bg-red-600 p-3 rounded-xl shadow-lg">
                         <LogOut className="w-5 h-5 text-white" />

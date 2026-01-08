@@ -88,7 +88,6 @@ export function FoodPreferencesForm({
   const [customInclusionInput, setCustomInclusionInput] = useState("");
 
   const toggleExcludedFood = (food: string) => {
-
     if (excludedFoods.includes(food)) {
       onExcludedFoodsChange(excludedFoods.filter((f) => f !== food));
     } else {

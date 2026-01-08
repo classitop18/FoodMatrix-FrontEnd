@@ -180,7 +180,6 @@ const validateAndCleanDates = () => {
       return isAfter(date, today) || date.getTime() === today.getTime();
     });
 
-
     const validPlan: Record<string, MealSlot> = {};
     validDates.forEach((d) => {
       if (plan[d.key]) {
@@ -302,21 +301,29 @@ export default function MealPlanning() {
   useEffect(() => {
     const loadRecipeSelections = () => {
       try {
-        const savedSelections = localStorage.getItem(LS_KEYS.RECIPE_SELECTIONS);
+        // Check primary storage from recipe-selection page
         const savedRecipesData = localStorage.getItem(LS_KEYS.SELECTED_RECIPES);
+        // Also check legacy/fallback storage
+        const savedSelections = localStorage.getItem(LS_KEYS.RECIPE_SELECTIONS);
 
-        if (savedSelections) {
-          const selections = JSON.parse(savedSelections);
-          setRecipeSelections(selections);
-          if (savedRecipesData) {
-            const recipesData = JSON.parse(savedRecipesData);
-            setSelectedRecipes(
-              recipesData.additionalRecipes
-                ? Object.values(recipesData.additionalRecipes).flat()
-                : [],
-            );
+        let selections = {};
+
+        if (savedRecipesData) {
+          const parsed = JSON.parse(savedRecipesData);
+          if (parsed.selections) {
+            selections = { ...selections, ...parsed.selections };
+          }
+          if (parsed.additionalRecipes) {
+            setSelectedRecipes(Object.values(parsed.additionalRecipes).flat());
           }
         }
+
+        if (savedSelections) {
+          const parsed = JSON.parse(savedSelections);
+          selections = { ...selections, ...parsed };
+        }
+
+        setRecipeSelections(selections);
       } catch (error) {
         console.error("Error loading recipe selections:", error);
       }
@@ -359,17 +366,119 @@ export default function MealPlanning() {
     }
   }, [selectedDates]);
 
-  const addDateToSelection = (date: Date) => {
+  const [conflictDate, setConflictDate] = useState<Date | null>(null);
+
+  const checkIfDateHasRecipes = (date: Date) => {
+    const iso = isoUTCDate(date);
+    // Check if any key in recipeSelections starts with this date's ISO string
+    return Object.keys(recipeSelections).some((k) => k.startsWith(iso));
+  };
+
+  const clearRecipesForDate = (date: Date) => {
+    const iso = isoUTCDate(date);
+
+    // 1. Update State
+    setRecipeSelections((prev) => {
+      const next = { ...prev };
+      Object.keys(next).forEach((k) => {
+        if (k.startsWith(iso)) delete next[k];
+      });
+      return next;
+    });
+
+    // 2. Update Local Storage (SELECTED_RECIPES)
+    try {
+      const savedData = localStorage.getItem(LS_KEYS.SELECTED_RECIPES);
+      if (savedData) {
+        const parsed = JSON.parse(savedData);
+        if (parsed.selections) {
+          let changed = false;
+          Object.keys(parsed.selections).forEach(k => {
+            if (k.startsWith(iso)) {
+              delete parsed.selections[k];
+              changed = true;
+            }
+          });
+          if (changed) {
+            localStorage.setItem(LS_KEYS.SELECTED_RECIPES, JSON.stringify(parsed));
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Error clearing recipes from storage:", e);
+    }
+
+    // 3. Update Legacy Storage if needed
+    try {
+      const savedLegacy = localStorage.getItem(LS_KEYS.RECIPE_SELECTIONS);
+      if (savedLegacy) {
+        const parsed = JSON.parse(savedLegacy);
+        let changed = false;
+        Object.keys(parsed).forEach(k => {
+          if (k.startsWith(iso)) {
+            delete parsed[k];
+            changed = true;
+          }
+        });
+        if (changed) {
+          localStorage.setItem(LS_KEYS.RECIPE_SELECTIONS, JSON.stringify(parsed));
+        }
+      }
+    } catch (e) { }
+
+    // 4. Update Generated Recipes Storage (Candidates)
+    try {
+      const savedGenerated = localStorage.getItem("foodmatrix-generated-recipes");
+      if (savedGenerated) {
+        const parsed = JSON.parse(savedGenerated);
+        let changed = false;
+
+        if (parsed.generated) {
+          Object.keys(parsed.generated).forEach(k => {
+            if (k.startsWith(iso)) {
+              delete parsed.generated[k];
+              changed = true;
+            }
+          });
+        }
+        if (parsed.custom) {
+          Object.keys(parsed.custom).forEach(k => {
+            if (k.startsWith(iso)) {
+              delete parsed.custom[k];
+              changed = true;
+            }
+          });
+        }
+
+        if (changed) {
+          localStorage.setItem("foodmatrix-generated-recipes", JSON.stringify(parsed));
+        }
+      }
+    } catch (e) {
+      console.error("Error clearing generated recipes:", e);
+    }
+  };
+
+
+  const addDateToSelection = (date: Date, force = false) => {
     const today = startOfDay(new Date());
     const selectedDay = startOfDay(date);
 
     if (isBefore(selectedDay, today)) {
-      // Minimal feedback, in production we might use a toast
+      return;
+    }
+
+    // Check for existing recipes logic
+    if (!force && checkIfDateHasRecipes(date)) {
+      setConflictDate(date);
       return;
     }
 
     const iso = isoUTCDate(date);
     if (selectedDates.find((d) => d.key === iso)) return;
+
+    // If forced new, we should rely on the previous clearing step, 
+    // or we can ensure it's cleared here if needed, but separation of concerns is better.
 
     const label = format(date, "EEEE, MMM d");
     setSelectedDates((prev) => [
@@ -563,9 +672,9 @@ export default function MealPlanning() {
 
         <div className="rounded-2xl overflow-hidden bg-white p-6">
           {/* Stats Cards - Premium Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-5 mb-6">
             {/* Card 1: Home Cooking */}
-            <div className="bg-white rounded-xl p-4 lg:p-6 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] border border-gray-100 relative overflow-hidden group hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-all duration-500">
+            <div className="bg-white rounded-xl p-4 lg:p-6 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] border border-gray-200 relative overflow-hidden group hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-all duration-500">
               <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50/50 rounded-bl-[100px] -mr-6 -mt-6 transition-transform group-hover:scale-110 duration-700" />
               <div className="relative z-10 flex flex-col justify-between h-full gap-3">
                 <div className="flex items-center gap-3">
@@ -588,7 +697,7 @@ export default function MealPlanning() {
             </div>
 
             {/* Card 2: Takeout */}
-            <div className="bg-white rounded-xl p-4 lg:p-6 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] border border-gray-100 relative overflow-hidden group hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-all duration-500">
+            <div className="bg-white rounded-xl p-4 lg:p-6 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] border border-gray-200 relative overflow-hidden group hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-all duration-500">
               <div className="absolute top-0 right-0 w-32 h-32 bg-rose-50/50 rounded-bl-[100px] -mr-6 -mt-6 transition-transform group-hover:scale-110 duration-700" />
               <div className="relative z-10 flex flex-col justify-between h-full gap-3">
                 <div className="flex items-center gap-3">
@@ -609,7 +718,7 @@ export default function MealPlanning() {
             </div>
 
             {/* Card 3: Dine Out */}
-            <div className="bg-white rounded-xl p-4 lg:p-6 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] border border-gray-100 relative overflow-hidden group hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-all duration-500">
+            <div className="bg-white rounded-xl p-4 lg:p-6 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] border border-gray-200 relative overflow-hidden group hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-all duration-500">
               <div className="absolute top-0 right-0 w-32 h-32 bg-purple-50/50 rounded-bl-[100px] -mr-6 -mt-6 transition-transform group-hover:scale-110 duration-700" />
               <div className="relative z-10 flex flex-col justify-between h-full gap-3">
                 <div className="flex items-center gap-3">
@@ -674,7 +783,7 @@ export default function MealPlanning() {
           {/* Date Selection Control */}
           {viewMode === "date" && !isReadOnly && (
             <div className="mb-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
-              <div className="bg-white rounded-lg p-3 border border-blue-100/50 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] flex flex-col sm:flex-row gap-3 items-center justify-between">
+              <div className="bg-white rounded-lg p-3 border border-gray-200 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] flex flex-col sm:flex-row gap-3 items-center justify-between">
                 <div className="flex-1 w-full flex items-center gap-3 pl-2">
                   <div className="w-10 h-10 rounded-full bg-blue-50 items-center justify-center text-blue-500 flex">
                     <CalendarIcon size={20} />
@@ -744,8 +853,7 @@ export default function MealPlanning() {
                                 head_cell:
                                   "text-gray-400 font-bold text-[0.8rem] uppercase tracking-wider",
                                 cell: "h-10 w-10 text-center text-sm p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
-                                day:
-                                  "h-10 w-10 p-0 font-bold text-gray-700 rounded-lg transition-all hover:bg-gray-100 aria-selected:bg-[#7dab4f] aria-selected:text-white aria-selected:shadow-lg aria-selected:shadow-[#7dab4f]/30",
+                                day: "h-10 w-10 p-0 font-bold text-gray-700 rounded-lg transition-all hover:bg-gray-100 aria-selected:bg-[#7dab4f] aria-selected:text-white aria-selected:shadow-lg aria-selected:shadow-[#7dab4f]/30",
                                 day_today: "bg-gray-100 text-gray-900",
                                 day_outside: "text-gray-300 opacity-50",
                                 day_disabled: "text-gray-300 opacity-30",
@@ -780,6 +888,51 @@ export default function MealPlanning() {
                     </DialogContent>
                   </Dialog>
 
+                  {/* Conflict Resolution Dialog */}
+                  <Dialog open={!!conflictDate} onOpenChange={(open) => !open && setConflictDate(null)}>
+                    <DialogContent className="sm:max-w-[425px]">
+                      <DialogHeader>
+                        <DialogTitle>Recipe Already Exists</DialogTitle>
+                        <div className="text-sm text-gray-500">
+                          You have already prepared/generated recipes for <strong>{conflictDate ? format(conflictDate, "PPP") : ""}</strong>.
+                        </div>
+                      </DialogHeader>
+                      <div className="py-4 text-sm text-gray-700">
+                        Do you want to proceed with the same recipes or generate new ones?
+                        <ul className="list-disc ml-5 mt-2 space-y-1 text-xs text-gray-500">
+                          <li><strong>Use Same:</strong> Keeps your previously generated recipes.</li>
+                          <li><strong>Generate New:</strong> Clears previous data for this date so you can start fresh.</li>
+                        </ul>
+                      </div>
+                      <div className="flex justify-end gap-3">
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            if (conflictDate) {
+                              clearRecipesForDate(conflictDate);
+                              addDateToSelection(conflictDate, true);
+                              setConflictDate(null);
+                            }
+                          }}
+                        >
+                          Generate New
+                        </Button>
+                        <Button
+                          className="bg-[#1a1a1a] text-white hover:bg-black"
+                          onClick={() => {
+                            if (conflictDate) {
+                              addDateToSelection(conflictDate, true); // Keep existing
+                              setConflictDate(null);
+                            }
+                          }}
+                        >
+                          Use Same
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+
+
                   <Button
                     onClick={() => {
                       if (selectedDate) {
@@ -811,7 +964,7 @@ export default function MealPlanning() {
           {/* Selected Dates / Week View Render */}
           <div className="space-y-5">
             {selectedDates.length === 0 && viewMode === "date" && (
-              <div className="border-2 border-dashed border-gray-200/60 rounded-lg p-10 text-center bg-white/40 backdrop-blur-md animate-in zoom-in-95 duration-500">
+              <div className="border-2 border-dashed border-gray-200 rounded-lg p-10 text-center bg-white/40 backdrop-blur-md animate-in zoom-in-95 duration-500">
                 <div className="w-20 h-20 bg-gray-50 border border-gray-200/50 rounded-lg flex items-center justify-center mx-auto mb-6">
                   <CalendarIcon className="w-8 h-8 text-[#7dab4f]" />
                 </div>
@@ -984,9 +1137,7 @@ export default function MealPlanning() {
                                 <div
                                   className={cn(
                                     "relative transition-all duration-300 rounded-lg",
-                                    isSkipped
-                                      ? "bg-gray-50/30"
-                                      : "bg-white",
+                                    isSkipped ? "bg-gray-50/30" : "bg-white",
                                   )}
                                 >
                                   <Select

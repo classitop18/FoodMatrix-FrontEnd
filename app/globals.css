@@ -298,11 +298,11 @@ button {
 }
 
 [data-slot="dialog-header"] {
-    padding-right: 70px;
+  padding-right: 70px;
 }
 
 [data-slot="dialog-close"] {
-  background: rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.1);
   color: #fff;
   width: 28px;
   display: flex;
@@ -313,5 +313,5 @@ button {
 }
 
 [data-slot="dialog-close"] svg {
-    stroke: #000;
+  stroke: #000;
 }

@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { HealProfileService } from "./health-profile.service";
 
 const healthProfileService = new HealProfileService();
@@ -13,32 +13,4 @@ export const useGetHealthProfile = (id: string) => {
   });
 };
 
-export const useCreateHealthProfile = () => {
-  const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: ({ memberId, data }: { memberId: string; data: any }) =>
-      healthProfileService.createHealthProfile(memberId, data),
-    onSuccess: (_, variables) => {
-      // Invalidate and refetch health profile query
-      queryClient.invalidateQueries({
-        queryKey: ["account", variables.memberId],
-      });
-    },
-  });
-};
-
-export const useUpdateHealthProfile = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ memberId, data }: { memberId: string; data: any }) =>
-      healthProfileService.updateHealthProfile(memberId, data),
-    onSuccess: (_, variables) => {
-      // Invalidate and refetch health profile query
-      queryClient.invalidateQueries({
-        queryKey: ["account", variables.memberId],
-      });
-    },
-  });
-};

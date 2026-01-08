@@ -338,418 +338,422 @@ const PantryPage: React.FC = () => {
             </div>
           </div>
 
-
-<div className="rounded-2xl overflow-hidden bg-white lg:p-6 p-4">
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-            {/* Total Items */}
-            <div className="bg-white rounded-xl lg:p-6 p-4 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] relative overflow-hidden group border border-gray-200 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] hover:border-[#7661d3]/20 transition-all">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#F3F0FD] to-transparent rounded-full -mr-8 -mt-8 transition-transform duration-500 group-hover:scale-125" />
-              <div className="relative z-10 flex items-center justify-between">
-                <div>
-                  <p className="text-gray-500 font-bold text-xs uppercase tracking-wide mb-1">
-                    Total Items
-                  </p>
-                  <h3 className="text-3xl font-extrabold text-[#313131]">
-                    {isLoading ? "..." : pagination.total}
-                  </h3>
-                </div>
-                <div className="h-12 w-12 bg-[#F3F0FD] rounded-xl flex items-center justify-center text-[#7661d3]">
-                  <Package size={24} />
-                </div>
-              </div>
-            </div>
-
-            {/* Expiring Soon */}
-            <div className="bg-white rounded-xl lg:p-6 p-4 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] relative overflow-hidden group border border-gray-200 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] hover:border-[#7661d3]/20 transition-all">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-orange-50 to-transparent rounded-full -mr-8 -mt-8 transition-transform duration-500 group-hover:scale-125" />
-              <div className="relative z-10 flex items-center justify-between">
-                <div>
-                  <p className="text-gray-500 font-bold text-xs uppercase tracking-wide mb-1">
-                    Alerts
-                  </p>
-                  <h3 className="text-3xl font-extrabold text-orange-600">
-                    {activeAlerts.length}
-                  </h3>
-                </div>
-                <div className="h-12 w-12 bg-orange-50 rounded-xl flex items-center justify-center text-orange-600">
-                  <Bell size={24} />
-                </div>
-              </div>
-            </div>
-
-            {/* Total Value */}
-            <div className="bg-white rounded-xl lg:p-6 p-4 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] relative overflow-hidden group border border-gray-200 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] hover:border-[#7661d3]/20 transition-all">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#e8f5e0] to-transparent rounded-full -mr-8 -mt-8 transition-transform duration-500 group-hover:scale-125" />
-              <div className="relative z-10 flex items-center justify-between">
-                <div>
-                  <p className="text-gray-500 font-bold text-xs uppercase tracking-wide mb-1">
-                    Value (Visible)
-                  </p>
-                  <h3 className="text-3xl font-extrabold text-[#7dab4f]">
-                    ${totalValue.toFixed(0)}
-                  </h3>
-                </div>
-                <div className="h-12 w-12 bg-[#e8f5e0] rounded-xl flex items-center justify-center text-[#7dab4f]">
-                  <TrendingUp size={24} />
-                </div>
-              </div>
-            </div>
-
-            {/* Storage Locations */}
-            <div className="bg-gradient-to-br from-[#3d326d] to-[#2d2454] rounded-2xl lg:p-6 p-4 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] text-white relative overflow-hidden group hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-all">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-10 -mt-10 group-hover:scale-110 transition-transform duration-700" />
-              <div className="absolute bottom-0 left-0 w-20 h-20 bg-[#7dab4f]/10 rounded-full -ml-6 -mb-6" />
-              <div className="relative z-10 flex items-center justify-between">
-                <div>
-                  <p className="text-white/70 font-bold text-xs uppercase tracking-wide mb-1">
-                    Locations
-                  </p>
-                  <h3 className="text-3xl font-extrabold text-white">5</h3>
-                </div>
-                <div className="h-12 w-12 bg-white/10 rounded-xl flex items-center justify-center text-white backdrop-blur-sm">
-                  <MapPin size={24} />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Active Alerts Section */}
-          {activeAlerts.length > 0 && (
-            <div className="mb-6 animate-fade-in-up">
-              <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-100 rounded-2xl p-4 shadow-sm">
-                <div
-                  className="flex items-center justify-between cursor-pointer"
-                  onClick={() => setShowAlerts(!showAlerts)}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-orange-100 rounded-lg text-orange-600">
-                      <AlertTriangle size={20} />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-orange-900 text-sm">
-                        {activeAlerts.length} Action Required
-                      </h3>
-                      <p className="text-xs text-orange-700">
-                        You have items expiring or expired.
-                      </p>
-                    </div>
+          <div className="rounded-2xl overflow-hidden bg-white lg:p-6 p-4">
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+              {/* Total Items */}
+              <div className="bg-white rounded-xl lg:p-6 p-4 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] relative overflow-hidden group border border-gray-200 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] hover:border-[#7661d3]/20 transition-all">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#F3F0FD] to-transparent rounded-full -mr-8 -mt-8 transition-transform duration-500 group-hover:scale-125" />
+                <div className="relative z-10 flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-500 font-bold text-xs uppercase tracking-wide mb-1">
+                      Total Items
+                    </p>
+                    <h3 className="text-3xl font-extrabold text-[#313131]">
+                      {isLoading ? "..." : pagination.total}
+                    </h3>
                   </div>
-                  <ChevronRight
-                    size={20}
-                    className={`text-orange-400 transition-transform ${showAlerts ? "rotate-90" : ""}`}
-                  />
-                </div>
-                {showAlerts && (
-                  <div className="mt-4 space-y-2 border-t border-orange-100 pt-3">
-                    {activeAlerts.map((alert: any) => (
-                      <div
-                        key={alert.id}
-                        className="flex justify-between items-start bg-white p-3 rounded-lg border border-orange-100 shadow-sm"
-                      >
-                        <div className="flex gap-3">
-                          {getAlertIcon(alert.alertType)}
-                          <div>
-                            <p className="text-sm font-medium text-gray-800">
-                              {alert.message}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {new Date(alert.createdAt).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => handleDismissAlert(alert.id)}
-                          className="text-gray-400 hover:text-gray-600"
-                        >
-                          <X size={16} />
-                        </button>
-                      </div>
-                    ))}
+                  <div className="h-12 w-12 bg-[#F3F0FD] rounded-xl flex items-center justify-center text-[#7661d3]">
+                    <Package size={24} />
                   </div>
-                )}
+                </div>
+              </div>
+
+              {/* Expiring Soon */}
+              <div className="bg-white rounded-xl lg:p-6 p-4 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] relative overflow-hidden group border border-gray-200 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] hover:border-[#7661d3]/20 transition-all">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-orange-50 to-transparent rounded-full -mr-8 -mt-8 transition-transform duration-500 group-hover:scale-125" />
+                <div className="relative z-10 flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-500 font-bold text-xs uppercase tracking-wide mb-1">
+                      Alerts
+                    </p>
+                    <h3 className="text-3xl font-extrabold text-orange-600">
+                      {activeAlerts.length}
+                    </h3>
+                  </div>
+                  <div className="h-12 w-12 bg-orange-50 rounded-xl flex items-center justify-center text-orange-600">
+                    <Bell size={24} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Total Value */}
+              <div className="bg-white rounded-xl lg:p-6 p-4 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] relative overflow-hidden group border border-gray-200 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] hover:border-[#7661d3]/20 transition-all">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#e8f5e0] to-transparent rounded-full -mr-8 -mt-8 transition-transform duration-500 group-hover:scale-125" />
+                <div className="relative z-10 flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-500 font-bold text-xs uppercase tracking-wide mb-1">
+                      Value (Visible)
+                    </p>
+                    <h3 className="text-3xl font-extrabold text-[#7dab4f]">
+                      ${totalValue.toFixed(0)}
+                    </h3>
+                  </div>
+                  <div className="h-12 w-12 bg-[#e8f5e0] rounded-xl flex items-center justify-center text-[#7dab4f]">
+                    <TrendingUp size={24} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Storage Locations */}
+              <div className="bg-gradient-to-br from-[#3d326d] to-[#2d2454] rounded-2xl lg:p-6 p-4 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.04)] text-white relative overflow-hidden group hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-all">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-10 -mt-10 group-hover:scale-110 transition-transform duration-700" />
+                <div className="absolute bottom-0 left-0 w-20 h-20 bg-[#7dab4f]/10 rounded-full -ml-6 -mb-6" />
+                <div className="relative z-10 flex items-center justify-between">
+                  <div>
+                    <p className="text-white/70 font-bold text-xs uppercase tracking-wide mb-1">
+                      Locations
+                    </p>
+                    <h3 className="text-3xl font-extrabold text-white">5</h3>
+                  </div>
+                  <div className="h-12 w-12 bg-white/10 rounded-xl flex items-center justify-center text-white backdrop-blur-sm">
+                    <MapPin size={24} />
+                  </div>
+                </div>
               </div>
             </div>
-          )}
 
-          {/* Main Content Area */}
-          <div className="border-gray-200 border bg-white rounded-xl overflow-hidden animate-scale-in">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white p-4 flex flex-col lg:flex-row justify-between lg:items-center gap-4">
-              <h3 className="flex items-center gap-3 text-xl font-bold">
-                <Package className="h-6 w-6" />
-                Inventory
-              </h3>
-
-              {/* Filters */}
-              <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:gap-4 justify-end">
-                {/* Search */}
-                <div className="relative">
-                  <Search
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                    size={16}
-                  />
-                  <input
-                    type="text"
-                    value={tableSearchQuery}
-                    onChange={(e) => setTableSearchQuery(e.target.value)}
-                    placeholder="Search..."
-                    className="w-full h-11 pl-9 pr-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:bg-white/20 transition-all text-sm font-medium"/>
-                </div>
-
-                {/* Location Filter */}
-                <div className="w-full md:w-56 shrink-0">
-                  <Select
-                    value={filterLocation}
-                    onValueChange={(val) => {
-                      setFilterLocation(val);
-                      setCurrentPage(1);
-                    }}
+            {/* Active Alerts Section */}
+            {activeAlerts.length > 0 && (
+              <div className="mb-6 animate-fade-in-up">
+                <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-100 rounded-2xl p-4 shadow-sm">
+                  <div
+                    className="flex items-center justify-between cursor-pointer"
+                    onClick={() => setShowAlerts(!showAlerts)}
                   >
-                    <SelectTrigger className="h-11 rounded-lg !border !border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-sm font-medium shadow-none">
-                      <SelectValue placeholder="Location" />
-                    </SelectTrigger>
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-orange-100 rounded-lg text-orange-600">
+                        <AlertTriangle size={20} />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-orange-900 text-sm">
+                          {activeAlerts.length} Action Required
+                        </h3>
+                        <p className="text-xs text-orange-700">
+                          You have items expiring or expired.
+                        </p>
+                      </div>
+                    </div>
+                    <ChevronRight
+                      size={20}
+                      className={`text-orange-400 transition-transform ${showAlerts ? "rotate-90" : ""}`}
+                    />
+                  </div>
+                  {showAlerts && (
+                    <div className="mt-4 space-y-2 border-t border-orange-100 pt-3">
+                      {activeAlerts.map((alert: any) => (
+                        <div
+                          key={alert.id}
+                          className="flex justify-between items-start bg-white p-3 rounded-lg border border-orange-100 shadow-sm"
+                        >
+                          <div className="flex gap-3">
+                            {getAlertIcon(alert.alertType)}
+                            <div>
+                              <p className="text-sm font-medium text-gray-800">
+                                {alert.message}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {new Date(alert.createdAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handleDismissAlert(alert.id)}
+                            className="text-gray-400 hover:text-gray-600"
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
-                    <SelectContent className="rounded-xl border border-gray-200 shadow-xl p-1 bg-white">
-                      <SelectItem
-                        value="all"
-                        className="
+            {/* Main Content Area */}
+            <div className="border-gray-200 border bg-white rounded-xl overflow-hidden animate-scale-in">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white p-4 flex flex-col lg:flex-row justify-between lg:items-center gap-4">
+                <h3 className="flex items-center gap-3 text-xl font-bold">
+                  <Package className="h-6 w-6" />
+                  Inventory
+                </h3>
+
+                {/* Filters */}
+                <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:gap-4 justify-end">
+                  {/* Search */}
+                  <div className="relative">
+                    <Search
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                      size={16}
+                    />
+                    <input
+                      type="text"
+                      value={tableSearchQuery}
+                      onChange={(e) => setTableSearchQuery(e.target.value)}
+                      placeholder="Search..."
+                      className="w-full h-11 pl-9 pr-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:bg-white/20 transition-all text-sm font-medium"
+                    />
+                  </div>
+
+                  {/* Location Filter */}
+                  <div className="w-full md:w-56 shrink-0">
+                    <Select
+                      value={filterLocation}
+                      onValueChange={(val) => {
+                        setFilterLocation(val);
+                        setCurrentPage(1);
+                      }}
+                    >
+                      <SelectTrigger className="h-11 rounded-lg !border !border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-sm font-medium shadow-none">
+                        <SelectValue placeholder="Location" />
+                      </SelectTrigger>
+
+                      <SelectContent className="rounded-xl border border-gray-200 shadow-xl p-1 bg-white">
+                        <SelectItem
+                          value="all"
+                          className="
             rounded-lg px-3 py-2 cursor-pointer
             transition-colors
             focus:bg-[#F3F0FD]
             data-[state=checked]:bg-[#7661d3]
             data-[state=checked]:text-white
           "
-                      >
-                        All Locations
-                      </SelectItem>
+                        >
+                          All Locations
+                        </SelectItem>
 
-                      {LOCATIONS.map((loc) => (
-                        <SelectItem
-                          key={loc}
-                          value={loc}
-                          className="
+                        {LOCATIONS.map((loc) => (
+                          <SelectItem
+                            key={loc}
+                            value={loc}
+                            className="
               capitalize rounded-lg px-3 py-2 cursor-pointer
               transition-colors
               focus:bg-[#F3F0FD]
               data-[state=checked]:bg-[#7661d3]
               data-[state=checked]:text-white
             "
-                        >
-                          {loc}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-
-            {/* Table */}
-            <div className="p-0">
-              {isLoading ? (
-                <div className="flex flex-col items-center justify-center py-20">
-                  <Loader2
-                    className="animate-spin text-[#7661d3] mb-4"
-                    size={48}
-                  />
-                  <p className="text-gray-500">Loading pantry items...</p>
-                </div>
-              ) : isError ? (
-                <div className="text-center py-20">
-                  <AlertCircle
-                    size={48}
-                    className="text-red-500 mx-auto mb-4"
-                  />
-                  <p className="text-gray-800 font-medium">
-                    Failed to load items
-                  </p>
-                  <Button
-                    onClick={() => refetch()}
-                    variant="outline"
-                    className="mt-4"
-                  >
-                    Try Again
-                  </Button>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="bg-gray-50/50 border-b border-gray-200">
-                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                          Ingredient
-                        </th>
-                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                          Quantity
-                        </th>
-                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                          Location
-                        </th>
-                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                          Expiration
-                        </th>
-                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                          Cost
-                        </th>
-                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {pantryItems.length > 0 ? (
-                        pantryItems.map((item: any) => {
-                          const expStatus = getExpirationStatus(
-                            item.expirationDate,
-                          );
-                          return (
-                            <tr
-                              key={item.id}
-                              className="hover:bg-gray-50/50 transition-colors group"
-                            >
-                              <td className="px-6 py-4">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-10 h-10 rounded-lg bg-[#F3F0FD] flex items-center justify-center text-[#7661d3] font-bold text-lg">
-                                    {item.ingredientName.charAt(0)}
-                                  </div>
-                                  <div>
-                                    <div className="font-bold text-[#313131] text-sm">
-                                      {item.ingredientName}
-                                    </div>
-                                    <div className="text-gray-400 text-xs capitalize">
-                                      {item.category}
-                                    </div>
-                                  </div>
-                                </div>
-                              </td>
-                              <td className="px-6 py-4">
-                                <span className="font-semibold text-gray-700 text-sm">
-                                  {item.quantity}{" "}
-                                  <span className="text-gray-400 text-xs ml-0.5">
-                                    {item.unit}
-                                  </span>
-                                </span>
-                              </td>
-                              <td className="px-6 py-4">
-                                <Badge
-                                  variant="outline"
-                                  className={`capitalize font-medium border ${getLocationBadgeColor(item.location)}`}
-                                >
-                                  {item.location}
-                                </Badge>
-                              </td>
-                              <td className="px-6 py-4">
-                                <div
-                                  className={`px-2.5 py-1 rounded-md inline-block ${expStatus.bgColor}`}
-                                >
-                                  <div className="flex items-center gap-1.5">
-                                    <div
-                                      className={`w-1.5 h-1.5 rounded-full ${expStatus.color.replace("text", "bg")}`}
-                                    ></div>
-                                    <span
-                                      className={`text-xs font-bold ${expStatus.color}`}
-                                    >
-                                      {expStatus.status}
-                                    </span>
-                                  </div>
-                                  {item.expirationDate && (
-                                    <div className="text-[10px] text-gray-400 mt-0.5 ml-3">
-                                      {item.expirationDate}
-                                    </div>
-                                  )}
-                                </div>
-                              </td>
-                              <td className="px-6 py-4">
-                                {item.costPaid ? (
-                                  <span className="font-bold text-[#7dab4f] text-sm">
-                                    ${item.costPaid}
-                                  </span>
-                                ) : (
-                                  <span className="text-gray-300">—</span>
-                                )}
-                              </td>
-                              <td className="px-6 py-4 text-right">
-                                <div className="flex items-center justify-end gap-2">
-                                  <button
-                                    onClick={() => handleEdit(item)}
-                                    className="p-2 hover:bg-[#F3F0FD] rounded-lg text-gray-400 hover:text-[#7661d3] transition-colors"
-                                  >
-                                    <Edit2 size={16} />
-                                  </button>
-                                  <button
-                                    onClick={() => handleDeleteItem(item.id)}
-                                    className="p-2 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500 transition-colors"
-                                  >
-                                    <Trash2 size={16} />
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })
-                      ) : (
-                        <tr>
-                          <td colSpan={6} className="px-6 py-10 text-center">
-                            <div className="flex flex-col items-center gap-3">
-                              <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-2">
-                                <Package size={24} className="text-gray-300" />
-                              </div>
-                              <h3 className="text-gray-800 font-bold">
-                                No items found
-                              </h3>
-                              <p className="text-gray-500 text-sm max-w-xs mx-auto">
-                                {debouncedSearch || filterLocation !== "all"
-                                  ? "Try adjusting your filters."
-                                  : "Your pantry is empty. Add some items to get started."}
-                              </p>
-                              {!debouncedSearch && filterLocation === "all" && (
-                                <Button
-                                  onClick={() => setIsAddModalOpen(true)}
-                                  className="mt-4 bg-[#313131] hover:bg-black text-white px-6"
-                                >
-                                  Add First Item
-                                </Button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              {/* Pagination */}
-              {pagination.totalPages > 1 && (
-                <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between bg-gray-50/30">
-                  <span className="text-xs font-bold text-gray-400 uppercase tracking-wide">
-                    Page {pagination.page} of {pagination.totalPages}
-                  </span>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={currentPage === 1}
-                      onClick={() => setCurrentPage((p) => p - 1)}
-                      className="h-8 w-8 p-0"
-                    >
-                      <ChevronLeft size={14} />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={currentPage === pagination.totalPages}
-                      onClick={() => setCurrentPage((p) => p + 1)}
-                      className="h-8 w-8 p-0"
-                    >
-                      <ChevronRight size={14} />
-                    </Button>
+                          >
+                            {loc}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
-              )}
+              </div>
+
+              {/* Table */}
+              <div className="p-0">
+                {isLoading ? (
+                  <div className="flex flex-col items-center justify-center py-20">
+                    <Loader2
+                      className="animate-spin text-[#7661d3] mb-4"
+                      size={48}
+                    />
+                    <p className="text-gray-500">Loading pantry items...</p>
+                  </div>
+                ) : isError ? (
+                  <div className="text-center py-20">
+                    <AlertCircle
+                      size={48}
+                      className="text-red-500 mx-auto mb-4"
+                    />
+                    <p className="text-gray-800 font-medium">
+                      Failed to load items
+                    </p>
+                    <Button
+                      onClick={() => refetch()}
+                      variant="outline"
+                      className="mt-4"
+                    >
+                      Try Again
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-gray-50/50 border-b border-gray-200">
+                          <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                            Ingredient
+                          </th>
+                          <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                            Quantity
+                          </th>
+                          <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                            Location
+                          </th>
+                          <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                            Expiration
+                          </th>
+                          <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                            Cost
+                          </th>
+                          <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {pantryItems.length > 0 ? (
+                          pantryItems.map((item: any) => {
+                            const expStatus = getExpirationStatus(
+                              item.expirationDate,
+                            );
+                            return (
+                              <tr
+                                key={item.id}
+                                className="hover:bg-gray-50/50 transition-colors group"
+                              >
+                                <td className="px-6 py-4">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-lg bg-[#F3F0FD] flex items-center justify-center text-[#7661d3] font-bold text-lg">
+                                      {item.ingredientName.charAt(0)}
+                                    </div>
+                                    <div>
+                                      <div className="font-bold text-[#313131] text-sm">
+                                        {item.ingredientName}
+                                      </div>
+                                      <div className="text-gray-400 text-xs capitalize">
+                                        {item.category}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <span className="font-semibold text-gray-700 text-sm">
+                                    {item.quantity}{" "}
+                                    <span className="text-gray-400 text-xs ml-0.5">
+                                      {item.unit}
+                                    </span>
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <Badge
+                                    variant="outline"
+                                    className={`capitalize font-medium border ${getLocationBadgeColor(item.location)}`}
+                                  >
+                                    {item.location}
+                                  </Badge>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <div
+                                    className={`px-2.5 py-1 rounded-md inline-block ${expStatus.bgColor}`}
+                                  >
+                                    <div className="flex items-center gap-1.5">
+                                      <div
+                                        className={`w-1.5 h-1.5 rounded-full ${expStatus.color.replace("text", "bg")}`}
+                                      ></div>
+                                      <span
+                                        className={`text-xs font-bold ${expStatus.color}`}
+                                      >
+                                        {expStatus.status}
+                                      </span>
+                                    </div>
+                                    {item.expirationDate && (
+                                      <div className="text-[10px] text-gray-400 mt-0.5 ml-3">
+                                        {item.expirationDate}
+                                      </div>
+                                    )}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4">
+                                  {item.costPaid ? (
+                                    <span className="font-bold text-[#7dab4f] text-sm">
+                                      ${item.costPaid}
+                                    </span>
+                                  ) : (
+                                    <span className="text-gray-300">—</span>
+                                  )}
+                                </td>
+                                <td className="px-6 py-4 text-right">
+                                  <div className="flex items-center justify-end gap-2">
+                                    <button
+                                      onClick={() => handleEdit(item)}
+                                      className="p-2 hover:bg-[#F3F0FD] rounded-lg text-gray-400 hover:text-[#7661d3] transition-colors"
+                                    >
+                                      <Edit2 size={16} />
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteItem(item.id)}
+                                      className="p-2 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500 transition-colors"
+                                    >
+                                      <Trash2 size={16} />
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })
+                        ) : (
+                          <tr>
+                            <td colSpan={6} className="px-6 py-10 text-center">
+                              <div className="flex flex-col items-center gap-3">
+                                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-2">
+                                  <Package
+                                    size={24}
+                                    className="text-gray-300"
+                                  />
+                                </div>
+                                <h3 className="text-gray-800 font-bold">
+                                  No items found
+                                </h3>
+                                <p className="text-gray-500 text-sm max-w-xs mx-auto">
+                                  {debouncedSearch || filterLocation !== "all"
+                                    ? "Try adjusting your filters."
+                                    : "Your pantry is empty. Add some items to get started."}
+                                </p>
+                                {!debouncedSearch &&
+                                  filterLocation === "all" && (
+                                    <Button
+                                      onClick={() => setIsAddModalOpen(true)}
+                                      className="mt-4 bg-[#313131] hover:bg-black text-white px-6"
+                                    >
+                                      Add First Item
+                                    </Button>
+                                  )}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {/* Pagination */}
+                {pagination.totalPages > 1 && (
+                  <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between bg-gray-50/30">
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wide">
+                      Page {pagination.page} of {pagination.totalPages}
+                    </span>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={currentPage === 1}
+                        onClick={() => setCurrentPage((p) => p - 1)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <ChevronLeft size={14} />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={currentPage === pagination.totalPages}
+                        onClick={() => setCurrentPage((p) => p + 1)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <ChevronRight size={14} />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
           </div>
         </div>
 

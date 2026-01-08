@@ -76,7 +76,6 @@ export default function AccountPage() {
     loading,
   } = useSelector((state: RootState) => state.account);
 
-
   const user = useSelector((state: RootState) => state.auth.user);
 
   // Handle tab change with lazy loading tracking
@@ -96,7 +95,6 @@ export default function AccountPage() {
   if (loading && !account) {
     return <Loader />;
   }
-
 
   return (
     <div className="h-[calc(100vh-57px)] bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] relative overflow-auto">

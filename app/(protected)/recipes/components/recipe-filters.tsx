@@ -1,6 +1,6 @@
 "use client";
 
-import { RecipeFilters } from "@/api/recipe";
+import { RecipeFilters } from "@/services/recipe";
 import {
   Accordion,
   AccordionContent,
@@ -68,7 +68,7 @@ export function RecipeFiltersSidebar({
   };
 
   return (
-    <div className={`space-y-6 ${className}`}>
+    <div className={`space-y-4 ${className}`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-[#313131]">
           <div className="bg-[#3d326d]/10 p-2 rounded-lg text-[#3d326d]">
@@ -80,34 +80,34 @@ export function RecipeFiltersSidebar({
           localFilters.mealTypes ||
           localFilters.maxBudget ||
           localFilters.maxPrepTime) && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() =>
-              onFilterChange({
-                page: 1,
-                pageSize: filters.pageSize,
-                sortBy: filters.sortBy,
-                sortOrder: filters.sortOrder,
-                dateFilter: filters.dateFilter,
-                search: filters.search,
-                cuisines: "",
-                mealTypes: "",
-                difficulty: "",
-                minPrepTime: undefined,
-                maxPrepTime: undefined,
-                minCalories: undefined,
-                maxCalories: undefined,
-                minBudget: undefined,
-                maxBudget: undefined,
-              })
-            }
-            className="h-8 px-2 text-xs text-red-500 hover:text-red-600 hover:bg-red-50 font-bold"
-          >
-            Reset
-            <X className="ml-1 h-3 w-3" />
-          </Button>
-        )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() =>
+                onFilterChange({
+                  page: 1,
+                  pageSize: filters.pageSize,
+                  sortBy: filters.sortBy,
+                  sortOrder: filters.sortOrder,
+                  dateFilter: filters.dateFilter,
+                  search: filters.search,
+                  cuisines: "",
+                  mealTypes: "",
+                  difficulty: "",
+                  minPrepTime: undefined,
+                  maxPrepTime: undefined,
+                  minCalories: undefined,
+                  maxCalories: undefined,
+                  minBudget: undefined,
+                  maxBudget: undefined,
+                })
+              }
+              className="h-8 px-2 text-xs text-red-500 hover:text-red-600 hover:bg-red-50 font-bold"
+            >
+              Reset
+              <X className="ml-1 h-3 w-3" />
+            </Button>
+          )}
       </div>
 
       <Separator className="bg-gray-100" />
@@ -125,8 +125,8 @@ export function RecipeFiltersSidebar({
               Budget / Serving
             </div>
           </AccordionTrigger>
-          <AccordionContent className="pt-2 px-1">
-            <div className="bg-gray-50 p-5 rounded-xl border border-gray-100">
+          <AccordionContent className="p-0 pb-3">
+            <div className="bg-gray-50 p-5 rounded-lg border border-gray-100">
               <div className="flex justify-between items-end mb-4">
                 <span className="text-xs font-medium text-gray-500">Range</span>
                 <div className="flex items-center gap-2">
@@ -176,8 +176,8 @@ export function RecipeFiltersSidebar({
               Prep Time
             </div>
           </AccordionTrigger>
-          <AccordionContent className="pt-2 px-1">
-            <div className="bg-gray-50 p-5 rounded-xl border border-gray-100">
+          <AccordionContent className="p-0 pb-3">
+            <div className="bg-gray-50 p-5 rounded-lg border border-gray-100">
               <div className="flex justify-between items-end mb-4">
                 <span className="text-xs font-medium text-gray-500">
                   Duration

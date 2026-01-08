@@ -1,6 +1,6 @@
 "use client";
 
-import { Recipe } from "@/api/recipe";
+import { Recipe, useInteractWithRecipeMutation } from "@/services/recipe";
 import { getRecipeImageUrl } from "@/lib/recipe-utils";
 import {
   Dialog,
@@ -25,6 +25,9 @@ import {
   Flame,
   X as XIcon,
   Sparkles,
+  ThumbsUp,
+  ThumbsDown,
+  Heart,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -57,6 +60,13 @@ export function RecipeDetailsDialog({
   const [viewMode, setViewMode] = useState<"details" | "graph">("details");
   const [nutritionData, setNutritionData] = useState<any[]>([]);
   const [chartType, setChartType] = useState<"bar" | "line" | "pie">("bar");
+  const { mutate: interact } = useInteractWithRecipeMutation();
+
+  const handleInteraction = (action: "like" | "dislike" | "favorite") => {
+    if (recipe) {
+      interact({ id: recipe.id, action });
+    }
+  };
 
   // Theme Colors
   const COLORS = ["#3d326d", "#7661d3", "#7dab4f", "#f97316", "#ef4444"];
@@ -246,27 +256,70 @@ export function RecipeDetailsDialog({
             <div className="flex bg-gray-100 p-1 rounded-xl">
               <button
                 onClick={() => setViewMode("details")}
-                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
-                  viewMode === "details"
+                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${viewMode === "details"
                     ? "bg-white text-[#3d326d] shadow-sm"
                     : "text-gray-500 hover:text-[#313131]"
-                }`}
+                  }`}
               >
                 <LayoutList className="w-3.5 h-3.5" />
                 Details
               </button>
               <button
                 onClick={() => setViewMode("graph")}
-                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
-                  viewMode === "graph"
+                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${viewMode === "graph"
                     ? "bg-white text-[#3d326d] shadow-sm"
                     : "text-gray-500 hover:text-[#313131]"
-                }`}
+                  }`}
               >
                 <BarChart3 className="w-3.5 h-3.5" />
                 Analysis
               </button>
             </div>
+
+            <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl">
+              <Button
+                size="icon"
+                variant="ghost"
+                className={`h-8 w-8 hover:bg-white hover:shadow-sm rounded-lg ${recipe.isLiked
+                    ? "text-green-600 bg-white shadow-sm"
+                    : "text-gray-500"
+                  }`}
+                onClick={() => handleInteraction("like")}
+              >
+                <ThumbsUp
+                  className={`w-4 h-4 ${recipe.isLiked ? "fill-current" : ""}`}
+                />
+              </Button>
+              <div className="w-[1px] h-4 bg-gray-300" />
+              <Button
+                size="icon"
+                variant="ghost"
+                className={`h-8 w-8 hover:bg-white hover:shadow-sm rounded-lg ${recipe.isDisliked
+                    ? "text-red-500 bg-white shadow-sm"
+                    : "text-gray-500"
+                  }`}
+                onClick={() => handleInteraction("dislike")}
+              >
+                <ThumbsDown
+                  className={`w-4 h-4 ${recipe.isDisliked ? "fill-current" : ""
+                    }`}
+                />
+              </Button>
+            </div>
+
+            <Button
+              size="icon"
+              variant="ghost"
+              className={`h-10 w-10 rounded-full border transition-all ${recipe.isFavorite
+                  ? "bg-red-50 text-red-500 border-red-200 hover:bg-red-100"
+                  : "bg-white text-gray-400 border-gray-200 hover:border-red-200 hover:text-red-400"
+                }`}
+              onClick={() => handleInteraction("favorite")}
+            >
+              <Heart
+                className={`w-5 h-5 ${recipe.isFavorite ? "fill-current" : ""}`}
+              />
+            </Button>
 
             <Button
               onClick={() => onOpenChange(false)}
@@ -495,8 +548,8 @@ export function RecipeDetailsDialog({
                           {(Array.isArray(recipe.ingredients)
                             ? recipe.ingredients
                             : (JSON.parse(
-                                (recipe.ingredients as any) || "[]",
-                              ) as any[])
+                              (recipe.ingredients as any) || "[]",
+                            ) as any[])
                           ).map((ingredient, index) => (
                             <div
                               key={index}
@@ -703,11 +756,10 @@ export function RecipeDetailsDialog({
                           <button
                             key={type}
                             onClick={() => setChartType(type)}
-                            className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all ${
-                              chartType === type
+                            className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all ${chartType === type
                                 ? "bg-white text-[#3d326d] shadow-sm scale-105"
                                 : "text-gray-500 hover:text-[#313131]"
-                            }`}
+                              }`}
                           >
                             {type} Chart
                           </button>

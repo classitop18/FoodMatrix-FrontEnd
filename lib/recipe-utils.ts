@@ -1,4 +1,4 @@
-import { Recipe } from "@/api/recipe";
+import { Recipe } from "@/services/recipe";
 import { format, startOfWeek, endOfWeek, parseISO } from "date-fns";
 
 export interface GroupedRecipes {

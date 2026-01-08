@@ -70,7 +70,7 @@ export default function Navbar() {
             </li>
 
             <li className="relative group">
-              <Link   
+              <Link
                 href="/"
                 className={
                   "text-black block text-base leading-[22px] font-medium transition-colors duration-200"

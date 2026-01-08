@@ -1,31 +1,33 @@
 import { apiClient } from "@/lib/api";
+import { API_ENDPOINTS } from "@/lib/api/endpoints";
+import {
+  InvitationPayload,
+  ApproveInvitationPayload,
+  RejectInvitationPayload,
+  Invitation,
+} from "./types/invitation.types";
 
 export class InvitationService {
-  // ============ SEND INVITATION ============
-  static async sendInvitation(payload: {
-    email: string;
-    accountId: string;
-    proposedRole?: string;
-  }) {
-    const response = await apiClient.post("/invitations/send", payload);
+  async sendInvitation(payload: InvitationPayload) {
+    const response = await apiClient.post(API_ENDPOINTS.INVITATION.SEND, payload);
     return response.data;
   }
 
-  // ============ ACCEPT INVITATION ============
-  static async acceptInvitation(token: string) {
-    const response = await apiClient.post("/invitations/accept", { token });
+  async acceptInvitation(token: string) {
+    const response = await apiClient.post(API_ENDPOINTS.INVITATION.ACCEPT, {
+      token,
+    });
     return response.data;
   }
 
-  // ============ APPROVE INVITATION (ADMIN) ============
-  static async approveInvitation(
+  async approveInvitation(
     invitationId: string,
     role: string,
     accountId?: string,
   ) {
     const config = accountId ? { headers: { "x-account-id": accountId } } : {};
     const response = await apiClient.post(
-      "/invitations/approve",
+      API_ENDPOINTS.INVITATION.APPROVE,
       {
         invitationId,
         role,
@@ -35,15 +37,14 @@ export class InvitationService {
     return response.data;
   }
 
-  // ============ REJECT INVITATION (ADMIN) ============
-  static async rejectInvitation(
+  async rejectInvitation(
     invitationId: string,
     reason?: string,
     accountId?: string,
   ) {
     const config = accountId ? { headers: { "x-account-id": accountId } } : {};
     const response = await apiClient.post(
-      "/invitations/reject",
+      API_ENDPOINTS.INVITATION.REJECT,
       {
         invitationId,
         reason,
@@ -53,11 +54,10 @@ export class InvitationService {
     return response.data;
   }
 
-  // ============ RESEND INVITATION ============
-  static async resendInvitation(invitationId: string, accountId?: string) {
+  async resendInvitation(invitationId: string, accountId?: string) {
     const config = accountId ? { headers: { "x-account-id": accountId } } : {};
     const response = await apiClient.post(
-      "/invitations/resend",
+      API_ENDPOINTS.INVITATION.RESEND,
       {
         invitationId,
       },
@@ -66,33 +66,30 @@ export class InvitationService {
     return response.data;
   }
 
-  // ============ CANCEL INVITATION ============
-  static async cancelInvitation(invitationId: string, accountId?: string) {
+  async cancelInvitation(invitationId: string, accountId?: string) {
     const config = accountId ? { headers: { "x-account-id": accountId } } : {};
-    const response = await apiClient.delete("/invitations/cancel", {
+    const response = await apiClient.delete(API_ENDPOINTS.INVITATION.CANCEL, {
       data: { invitationId },
       ...config,
     });
     return response.data;
   }
 
-  // ============ GET ALL INVITATIONS (FOR ACCOUNT) ============
-  static async getInvitations(accountId?: string, status?: string) {
-    const response = await apiClient.get("/invitations", {
+  async getInvitations(accountId?: string, status?: string) {
+    const response = await apiClient.get(API_ENDPOINTS.INVITATION.GET_ALL, {
       params: { accountId, status },
     });
     return response.data;
   }
 
-  // ============ GET MY INVITATIONS (RECEIVED) ============
-  static async getMyInvitations() {
-    const response = await apiClient.get("/invitations/my-invitations");
+  async getMyInvitations() {
+    const response = await apiClient.get(API_ENDPOINTS.INVITATION.GET_MY);
     return response.data;
   }
-  // ============ VALIDATE TOKEN ============
-  static async validateToken(token: string) {
+
+  async validateToken(token: string) {
     const response = await apiClient.get(
-      `/invitations/validate-token/${token}`,
+      API_ENDPOINTS.INVITATION.VALIDATE_TOKEN(token),
     );
     return response.data;
   }

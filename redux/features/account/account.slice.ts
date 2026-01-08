@@ -181,7 +181,7 @@ export const fetchAccountDetail = createAsyncThunk(
   "account/fetchAccountDetail",
   async (accountId: string) => {
     const res = await new AccountService().getAccountById(accountId);
- 
+
     return res.data;
   },
 );

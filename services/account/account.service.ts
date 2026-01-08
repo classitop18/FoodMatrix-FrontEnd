@@ -8,7 +8,6 @@ export class AccountService {
       API_ENDPOINTS.ACCOUNT.CREATE_ACCOUNT,
       payload,
     );
-
   }
 
   async getMyAccount() {

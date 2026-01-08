@@ -1,13 +1,10 @@
 import { apiClient } from "@/lib/api";
 import { API_ENDPOINTS } from "@/lib/api/endpoints";
-
-export interface GetMembersParams {
-  accountId: string;
-  page?: number;
-  limit?: number;
-  sortBy?: string;
-  sortOrder?: "asc" | "desc";
-}
+import {
+  GetMembersParams,
+  CreateMemberPayload,
+  UpdateMemberPayload,
+} from "./types/member.types";
 
 export class MemberService {
   async getMembers(params: GetMembersParams) {
@@ -24,14 +21,7 @@ export class MemberService {
     return response.data;
   }
 
-  async createMember(data: {
-    accountId: string;
-    name: string;
-    age?: number | null;
-    sex?: string;
-    role?: string;
-    userId?: string | null;
-  }) {
+  async createMember(data: CreateMemberPayload) {
     const response = await apiClient.post(
       API_ENDPOINTS.MEMBER.CREATE_MEMBER,
       data,
@@ -41,12 +31,7 @@ export class MemberService {
 
   async updateMember(
     memberId: string,
-    data: {
-      name?: string;
-      age?: number | null;
-      sex?: string;
-      role?: string;
-    },
+    data: UpdateMemberPayload,
     accountId?: string,
   ) {
     const config = accountId ? { headers: { "x-account-id": accountId } } : {};
