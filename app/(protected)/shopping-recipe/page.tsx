@@ -170,11 +170,11 @@ export default function ShoppingRecipe() {
                         Add Grocery Items
                     </div>
 
-                    <div className="flex flex-wrap gap-4 lg:gap-6">
+                    <div className="flex flex-wrap lg:flex-nowrap overflow-auto gap-4 lg:gap-6">
                         <Dialog>
                             {categories.map((cat) => (
                                 <DialogTrigger key={cat.id} asChild onClick={() => { setActiveCategory(cat.id); setSearchTerm(""); setSelectedItemToAdd(null); }}>
-                                    <button type="button" className="border border-[#EDE9FF] rounded-xl p-4 bg-white text-sm font-medium flex flex-col gap-2 justify-center items-center hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-all group min-w-[108px]">
+                                    <button type="button" className="border border-[#EDE9FF] rounded-xl p-4 bg-white text-sm font-medium flex flex-col gap-2 justify-center items-center hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-all group min-w-[108px] w-full">
                                         <span className="w-16 h-16 flex items-center justify-center bg-[#F4F1FD] rounded-full">
                                             <cat.icon className="size-8 group-hover:hidden transition-all" strokeWidth={1.2} />
                                             <Plus className="size-8 hidden group-hover:flex transition-all" strokeWidth={1.2} />
@@ -189,9 +189,9 @@ export default function ShoppingRecipe() {
                                 <DialogHeader>
                                     <DialogTitle>Add {categories.find(c => c.id === activeCategory)?.label}</DialogTitle>
                                 </DialogHeader>
-                                <div className="flex flex-col md:flex-row gap-6 h-[500px]">
+                                <div className="flex flex-col md:flex-row gap-5">
                                     {/* Left Side: Search & List */}
-                                    <div className="flex-1 flex flex-col gap-4 border-r border-gray-100 pr-4">
+                                    <div className="flex-1 flex flex-col gap-4 border-b lg:border-b-0 border-r-0 lg:border-r border-gray-100 pb-5 lg:pr-5">
                                         <div className="relative">
                                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                                             <input
@@ -202,8 +202,8 @@ export default function ShoppingRecipe() {
                                                 className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-[#E2E2E2] rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[var(--primary)] text-black"
                                             />
                                         </div>
-                                        <ScrollArea className="flex-1">
-                                            <div className="grid grid-cols-2 gap-3 p-1">
+                                        <ScrollArea className="max-h-[158px] lg:max-h-[338px] overflow-auto">
+                                            <div className="grid grid-cols-2 gap-3">
                                                 {categories.find(c => c.id === activeCategory)?.data
                                                     .filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()))
                                                     .map((item, idx) => (
@@ -218,7 +218,7 @@ export default function ShoppingRecipe() {
                                                                 flex items-center gap-3 p-2 rounded-lg border cursor-pointer transition-all
                                                                 ${selectedItemToAdd?.name === item.name
                                                                     ? 'border-[var(--primary)] bg-[#F4F1FD]'
-                                                                    : 'border-transparent hover:bg-gray-50 hover:border-gray-200'}
+                                                                    : 'bg-gray-50 border-gray-200 hover:bg-gray-100 hover:border-gray-300'}
                                                             `}
                                                         >
                                                             <div className="w-10 h-10 rounded bg-white flex items-center justify-center overflow-hidden border border-gray-100 shrink-0">
@@ -241,7 +241,7 @@ export default function ShoppingRecipe() {
                                                         <img src={selectedItemToAdd.image} alt={selectedItemToAdd.name} className="w-full h-full object-cover" />
                                                     </div>
                                                     <h3 className="text-xl font-bold text-gray-900 mb-1">{selectedItemToAdd.name}</h3>
-                                                    <p className="text-sm text-gray-500 capitalize mb-6">{selectedItemToAdd.category} • {selectedItemToAdd.unit}</p>
+                                                    <p className="text-sm text-gray-500 capitalize mb-4">{selectedItemToAdd.category} • {selectedItemToAdd.unit}</p>
 
                                                     <div className="space-y-4">
                                                         <div className="space-y-2">
@@ -253,7 +253,7 @@ export default function ShoppingRecipe() {
                                                                 <Input
                                                                     value={addItemQuantity}
                                                                     readOnly
-                                                                    className="h-8 border-0 text-center focus-visible:ring-0 w-full"
+                                                                    className="h-full border-0 text-center focus-visible:ring-0 w-full shadow-none"
                                                                 />
                                                                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setAddItemQuantity(addItemQuantity + 1)}>
                                                                     <Plus className="h-4 w-4" />
@@ -264,16 +264,16 @@ export default function ShoppingRecipe() {
                                                     </div>
                                                 </div>
 
-                                                <Button className="w-full bg-[var(--primary)] hover:bg-[var(--primary)]/90 mt-4" onClick={handleAddItem}>
+                                                <Button className="h-11 text-white w-full bg-[var(--primary)] hover:bg-[var(--primary)]/90 mt-4" onClick={handleAddItem}>
                                                     Add to List
                                                 </Button>
                                             </div>
                                         ) : (
                                             <div className="h-full flex flex-col items-center justify-center text-center text-gray-400 p-4 border-2 border-dashed border-gray-100 rounded-xl">
-                                                <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mb-3">
-                                                    <ShoppingCart className="h-6 w-6 text-gray-300" />
+                                                <div className="w-20 h-20 rounded-full bg-gray-50 flex items-center justify-center mb-3">
+                                                    <ShoppingCart className="h-8 w-8 text-gray-300" />
                                                 </div>
-                                                <p className="text-sm">Select an item to add details</p>
+                                                <p className="text-sm font-normal">Select an item to add details</p>
                                             </div>
                                         )}
                                     </div>
@@ -291,52 +291,51 @@ export default function ShoppingRecipe() {
                             Shopping List Preview
                             <span className="rounded-full bg-[#F2EEFF] border border-[#e7e0fc] text-[var(--primary)] text-xs h-7 flex items-center px-3">{allIngredients.length} Items</span>
                         </div>
-
-                        <div className="border border-[#EDE9FF] p-4 rounded-xl bg-white max-h-[600px] overflow-y-auto">
-                            {allIngredients.length === 0 ? (
-                                <div className="text-center py-10 text-gray-400">
-                                    <p>No ingredients yet.</p>
-                                    <p className="text-sm">Select recipes or add items manually.</p>
-                                </div>
-                            ) : (
-                                <div className="flex flex-col gap-4">
-                                    {/* Group by category logic could go here, for now linear list */}
-                                    {allIngredients.map((ing, idx) => (
-                                        <div key={idx} className="flex gap-4 flex-wrap justify-between w-full items-center border-b border-gray-50 pb-3 last:border-0 hover:bg-gray-50/50 p-2 rounded-lg transition-all">
-                                            <div className="flex gap-4 items-center w-full xl:w-60">
-                                                <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 shrink-0 border border-gray-100 flex items-center justify-center">
-                                                    {ing.image ? (
-                                                        <img src={ing.image} alt={ing.name} className="w-full h-full object-cover" />
-                                                    ) : <span className="text-xs text-gray-400">Img</span>}
+                        <ScrollArea className="max-h-[400px] lg:max-h-[500px] overflow-auto border border-[#EDE9FF] p-4 rounded-xl bg-white">
+                                {allIngredients.length === 0 ? (
+                                    <div className="text-center py-10 text-gray-400">
+                                        <p>No ingredients yet.</p>
+                                        <p className="text-sm">Select recipes or add items manually.</p>
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col gap-4">
+                                        {/* Group by category logic could go here, for now linear list */}
+                                        {allIngredients.map((ing, idx) => (
+                                            <div key={idx} className="flex gap-4 flex-wrap justify-between w-full items-center border-b border-gray-50 pb-3 last:border-0 hover:bg-gray-50/50 p-2 rounded-lg transition-all">
+                                                <div className="flex gap-4 items-center w-full xl:w-60">
+                                                    <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 shrink-0 border border-gray-100 flex items-center justify-center">
+                                                        {ing.image ? (
+                                                            <img src={ing.image} alt={ing.name} className="w-full h-full object-cover" />
+                                                        ) : <span className="text-xs text-gray-400">Img</span>}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h5 className="line-clamp-1 text-sm font-medium text-gray-900">{ing.name || ing.item}</h5>
+                                                        <p className="text-gray-400 text-xs truncate">
+                                                            {ing.quantity || 1} {ing.unit} • {ing.source === 'Recipe' ? 'From Recipe' : 'Manual'}
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <h5 className="line-clamp-1 text-sm font-medium text-gray-900">{ing.name || ing.item}</h5>
-                                                    <p className="text-gray-400 text-xs truncate">
-                                                        {ing.quantity || 1} {ing.unit} • {ing.source === 'Recipe' ? 'From Recipe' : 'Manual'}
-                                                    </p>
+                                                <div className="flex items-center gap-4">
+                                                    <span className="text-sm font-medium text-[var(--primary)] whitespace-nowrap">
+                                                        <IndianRupee className="size-3 inline mr-1" />
+                                                        {ing.price || 0}
+                                                    </span>
+                                                    {ing.source === 'Manual' && (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-8 w-8 text-red-400 hover:text-red-500 hover:bg-red-50"
+                                                            onClick={() => handleRemoveExtraItem(allIngredients.indexOf(ing) - (allIngredients.length - extraItems.length))} // Determine functionality relative to extra items array
+                                                        >
+                                                            <Trash className="size-4" />
+                                                        </Button>
+                                                    )}
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-4">
-                                                <span className="text-sm font-medium text-[var(--primary)] whitespace-nowrap">
-                                                    <IndianRupee className="size-3 inline mr-1" />
-                                                    {ing.price || 0}
-                                                </span>
-                                                {ing.source === 'Manual' && (
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8 text-red-400 hover:text-red-500 hover:bg-red-50"
-                                                        onClick={() => handleRemoveExtraItem(allIngredients.indexOf(ing) - (allIngredients.length - extraItems.length))} // Determine functionality relative to extra items array
-                                                    >
-                                                        <Trash className="size-4" />
-                                                    </Button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+                                        ))}
+                                    </div>
+                                )}
+                        </ScrollArea>
                     </div>
 
                     <div className="lg:max-w-[550px] w-full bg-[#e9e2fe] rounded-lg overflow-hidden">
@@ -347,12 +346,13 @@ export default function ShoppingRecipe() {
                             </span>
                         </div>
 
-                        <ScrollArea className="w-full p-4 h-[calc(100vh-280px)]">
+                        {/* <ScrollArea className="w-full p-4 h-[calc(100vh-280px)]"> */}
+                        <ScrollArea className="w-full p-4 h-full">
                             <div className="space-y-2">
                                 {Object.keys(plans).length === 0 ? (
-                                    <div className="text-center py-10 text-gray-500">
-                                        <p className="text-sm">No recipes selected yet</p>
-                                        <p className="text-xs mt-1">Go back to select recipes</p>
+                                    <div className="text-center text-gray-500">
+                                        <p className="text-base">No recipes selected yet</p>
+                                        <p className="text-sm mt-1">Go back to select recipes</p>
                                     </div>
                                 ) : (
                                     Object.entries(plans).map(([date, meals]) => {

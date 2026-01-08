@@ -489,7 +489,7 @@ export default function RecipeSelection() {
                                       <p className="font-normal text-[#313131]">Search for specific recipes or ingredients</p>
                                     </div> */}
 
-                                    <div className="flex flex-wrap justify-between gap-4 my-4 mb-6">
+                                    <div className="flex flex-wrap justify-between gap-4 mb-6">
                                       <div className="flex flex-col gap-2">
                                         <label className="text-sm font-medium text-gray-700">
                                           AI Recipe Controls
@@ -689,7 +689,7 @@ export default function RecipeSelection() {
                                     </div>
 
                                     <Button
-                                      className="border-[#3d326d] hover:bg-[#2d2454] text-[#2d2454] hover:text-white font-medium text-base rounded-lg h-10 transition-all"
+                                      className="border-[#3d326d] hover:bg-[#2d2454] text-[#2d2454] hover:text-white font-medium text-sm rounded-lg h-10 transition-all"
                                       variant={"outline"}
                                       onClick={() => generateRecipe(slot)}
                                       disabled={isSlotProcessing[slotKey]?.isRecipeLoading}
@@ -703,7 +703,7 @@ export default function RecipeSelection() {
                                       <h5 className="font-medium text-[#7661d3] text-base">Custom Recipe Search</h5>
                                       <p className="font-normal text-[#313131]">Search for specific recipes or ingredients</p>
                                     </div>
-                                    <div className="relative mt-3">
+                                    <div className="relative mt-3 bg-white">
                                       <Search
                                         className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                                         size={16}
@@ -715,10 +715,10 @@ export default function RecipeSelection() {
                                         onChange={(e) =>
                                           generateRecipePayload(slotKey, "customRecipe", e.target.value)
                                         }
-                                        className="w-full pl-9 pr-3 py-2 bg-white/10 border border-[#E2E2E2] rounded-lg text-black placeholder-black/40 focus:outline-none focus:bg-white/20 transition-all text-sm font-normal h-13"
+                                        className="w-full pl-9 pr-[130px] py-2 bg-white/10 border border-[#E2E2E2] rounded-lg text-black placeholder-black/40 focus:outline-none focus:bg-white/20 transition-all text-sm font-normal h-13"
                                       />
                                       <Button
-                                        className="text-white bg-(--primary) hover:bg-(--primary) font-medium ps-3! pe-3! py-1 h-10 rounded-lg text-base transition-all duration-300 cursor-pointer group relative flex items-center inset-shadow-[5px_5px_5px_rgba(0,0,0,0.30)] hover:inset-shadow-[-5px_-5px_5px_rgba(0,0,0,0.50)] min-w-26 justify-center absolute right-2 top-1/2 -translate-y-1/2"
+                                        className="text-white bg-(--primary) hover:bg-(--primary) font-medium ps-3! pe-3! py-1 h-10 rounded-lg text-sm transition-all duration-300 cursor-pointer group flex items-center inset-shadow-[5px_5px_5px_rgba(0,0,0,0.30)] hover:inset-shadow-[-5px_-5px_5px_rgba(0,0,0,0.50)] min-w-26 justify-center absolute right-2 top-1/2 -translate-y-1/2 z-10"
                                         onClick={() => generateCustomRecipe(slot)}
                                         disabled={isSlotProcessing[slotKey]?.isCustomRecipeLoading || !payload.customRecipe}
                                       >
@@ -751,9 +751,9 @@ export default function RecipeSelection() {
                   <ScrollArea className="w-full h-[calc(100vh-300px)] p-4">
                     <div className="space-y-2">
                       {Object.entries(generatedRecipies).length === 0 && Object.entries(generatedCustomRecipies).length === 0 ? (
-                        <div className="text-center py-10 text-gray-500">
-                          <p className="text-sm">No recipes generated yet</p>
-                          <p className="text-xs mt-1">Select options and click Generate Recipes</p>
+                        <div className="text-center text-gray-500">
+                          <p className="text-base">No recipes generated yet</p>
+                          <p className="text-sm mt-1">Select options and click Generate Recipes</p>
                         </div>
                       ) : (
                         Object.entries({ ...generatedRecipies, ...generatedCustomRecipies }).map(([slotKey, data]) => {
@@ -886,14 +886,24 @@ export default function RecipeSelection() {
                     </div>
                   </ScrollArea>
                 </div>
+              </div>
+            </>
+          )}
+        </div>
 
-                <div className="bg-white p-4 rounded-lg border border-[#DDD6FA] shadow-sm">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium text-gray-700">Total Selected</span>
-                    <span className="text-lg font-bold text-[#7dab4f]">{Object.keys(currentSelections).length} Recipes</span>
+        
+
+              <div className="rounded-lg bg-[#e9e2fe] mt-5 p-4">
+                <div className="flex gap-3 items-center font-bold justify-between flex-wrap">
+                  <div className="flex flex-col">
+                    <div className="text-[var(--primary)]">Total Selected</div>
+                    <span className="text-sm font-medium text-black/60">{Object.keys(currentSelections).length} Recipes</span>
                   </div>
+
                   <Button
-                    className="w-full h-11 text-base font-semibold bg-[#7dab4f] hover:bg-[#6c9b42] shadow-sm transition-all"
+                    variant={"outline"}
+                    type="button"
+                    className="border border-[var(--primary)] bg-white text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white transition-all shadow-sm"
                     onClick={handleGenerateShoppingList}
                     disabled={Object.keys(currentSelections).length === 0}
                   >
@@ -901,9 +911,6 @@ export default function RecipeSelection() {
                   </Button>
                 </div>
               </div>
-            </>
-          )}
-        </div>
 
       </div>
       <RecipeDetailsDialog
