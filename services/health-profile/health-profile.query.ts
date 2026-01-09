@@ -12,5 +12,3 @@ export const useGetHealthProfile = (id: string) => {
     refetchOnWindowFocus: false,
   });
 };
-
-

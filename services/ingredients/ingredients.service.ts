@@ -1,10 +1,15 @@
 import { apiClient } from "@/lib/api";
 import { API_ENDPOINTS } from "@/lib/api/endpoints";
-import type { Ingredient, GetIngredientsParams } from "./types/ingredients.types";
+import type {
+  Ingredient,
+  GetIngredientsParams,
+} from "./types/ingredients.types";
 
 export class IngredientsService {
   // Get all ingredients with optional filters
-  async getAllIngredients(params?: GetIngredientsParams): Promise<Ingredient[]> {
+  async getAllIngredients(
+    params?: GetIngredientsParams,
+  ): Promise<Ingredient[]> {
     const queryString = new URLSearchParams();
 
     if (params?.category) queryString.append("category", params.category);

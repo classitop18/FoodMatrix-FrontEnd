@@ -55,7 +55,6 @@ export function RecipeCard({ recipe, onViewDetails }: RecipeCardProps) {
             className="object-cover transition-transform duration-700 group-hover:scale-110"
             sizes="(max-width: 768px) 100vw, 33vw"
             onError={(err) => {
-
               setHasError(true);
             }}
             unoptimized
@@ -65,8 +64,9 @@ export function RecipeCard({ recipe, onViewDetails }: RecipeCardProps) {
 
         {/* Fallback Gradient (shown if no image or on error) */}
         <div
-          className={`absolute inset-0 bg-gradient-to-br from-[#3d326d] to-[#7661d3] group-hover:from-[#2d2454] group-hover:to-[#604abd] transition-colors duration-500 ${imageUrl && !hasError ? "hidden" : ""
-            }`}
+          className={`absolute inset-0 bg-gradient-to-br from-[#3d326d] to-[#7661d3] group-hover:from-[#2d2454] group-hover:to-[#604abd] transition-colors duration-500 ${
+            imageUrl && !hasError ? "hidden" : ""
+          }`}
         >
           <div className="absolute inset-0 flex items-center justify-center">
             <Utensils className="w-12 h-12 text-white/30 group-hover:scale-110 transition-transform duration-500" />
@@ -92,10 +92,11 @@ export function RecipeCard({ recipe, onViewDetails }: RecipeCardProps) {
         <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
           <button
             onClick={(e) => handleInteraction(e, "favorite")}
-            className={`p-2 rounded-full backdrop-blur-md border shadow-sm transition-all duration-300 ${recipe.isFavorite
-              ? "bg-red-500 text-white border-red-500"
-              : "bg-white/20 text-white border-white/30 hover:bg-white/40"
-              }`}
+            className={`p-2 rounded-full backdrop-blur-md border shadow-sm transition-all duration-300 ${
+              recipe.isFavorite
+                ? "bg-red-500 text-white border-red-500"
+                : "bg-white/20 text-white border-white/30 hover:bg-white/40"
+            }`}
           >
             <Heart
               className={`w-4 h-4 ${recipe.isFavorite ? "fill-current" : ""}`}

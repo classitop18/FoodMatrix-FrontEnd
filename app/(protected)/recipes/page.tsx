@@ -73,8 +73,6 @@ import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function RecipesPage() {
-
-
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -117,7 +115,6 @@ export default function RecipesPage() {
 
   const [searchInput, setSearchInput] = useState(filters.search || "");
 
-
   const debouncedSearch = useDebounce(searchInput, 500);
 
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
@@ -159,7 +156,6 @@ export default function RecipesPage() {
     isFetchingNextPage,
     refetch,
   } = useRecipesInfiniteQuery(filters);
-
 
   const { ref, inView } = useInView();
 
@@ -336,29 +332,28 @@ export default function RecipesPage() {
           <div className="bg-gray-100 p-1 rounded-lg flex items-center gap-1">
             <button
               onClick={() => handleFilterChange({ viewScope: "personal" })}
-              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${filters.viewScope === "personal"
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
-                }`}
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+                filters.viewScope === "personal"
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
             >
               My Recipes
             </button>
             <button
               onClick={() => handleFilterChange({ viewScope: "global" })}
-              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${filters.viewScope === "global"
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
-                }`}
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+                filters.viewScope === "global"
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
             >
               Explore All
             </button>
           </div>
         </div>
 
-
-
         <div className="rounded-2xl overflow-hidden bg-white p-6">
-
           {/* Stats Grid - Mimics Account Page Cards */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
             {/* Hero Card - 5 cols */}
@@ -477,10 +472,11 @@ export default function RecipesPage() {
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id as any)}
-                      className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all duration-300 whitespace-nowrap flex items-center gap-2 ${isActive
-                        ? "bg-[#3d326d] text-white shadow-none border"
-                        : "text-gray-600 bg-gray-50 border border-gray-200"
-                        }`}
+                      className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all duration-300 whitespace-nowrap flex items-center gap-2 ${
+                        isActive
+                          ? "bg-[#3d326d] text-white shadow-none border"
+                          : "text-gray-600 bg-gray-50 border border-gray-200"
+                      }`}
                     >
                       <Icon className="w-4 h-4" />
                       {tab.label}
@@ -536,7 +532,9 @@ export default function RecipesPage() {
                   <SelectContent className="rounded-xl border-gray-200 shadow-xl">
                     <SelectItem value="createdAt-desc">Newest First</SelectItem>
                     <SelectItem value="createdAt-asc">Oldest First</SelectItem>
-                    <SelectItem value="totalTimeMinutes-asc">Quickest</SelectItem>
+                    <SelectItem value="totalTimeMinutes-asc">
+                      Quickest
+                    </SelectItem>
                     <SelectItem value="estimatedCostPerServing-asc">
                       Details: Lowest Cost
                     </SelectItem>
@@ -553,10 +551,11 @@ export default function RecipesPage() {
                       viewScope: "global",
                     })
                   }
-                  className={`h-9 px-4 rounded-lg text-xs font-bold uppercase tracking-wide transition-all flex items-center gap-2 ${filters.sortBy === "score"
-                    ? "bg-[#3d326d] text-white shadow-none"
-                    : "text-gray-600 bg-gray-100"
-                    }`}
+                  className={`h-9 px-4 rounded-lg text-xs font-bold uppercase tracking-wide transition-all flex items-center gap-2 ${
+                    filters.sortBy === "score"
+                      ? "bg-[#3d326d] text-white shadow-none"
+                      : "text-gray-600 bg-gray-100"
+                  }`}
                 >
                   <TrendingUp size={14} />
                   All (High Score)
@@ -632,7 +631,8 @@ export default function RecipesPage() {
                     Failed to load recipes
                   </h3>
                   <p className="text-gray-500 text-sm mt-1 max-w-xs">
-                    Something went wrong while fetching your culinary collection.
+                    Something went wrong while fetching your culinary
+                    collection.
                   </p>
                   <Button
                     variant="outline"
@@ -785,9 +785,9 @@ export default function RecipesPage() {
                                 </TableCell>
                                 <TableCell className="text-[#3d326d] font-bold">
                                   $
-                                  {Number(recipe.estimatedCostPerServing).toFixed(
-                                    2,
-                                  )}
+                                  {Number(
+                                    recipe.estimatedCostPerServing,
+                                  ).toFixed(2)}
                                 </TableCell>
                                 <TableCell>
                                   <div className="flex items-center gap-1">
@@ -802,16 +802,18 @@ export default function RecipesPage() {
                                 <TableCell>
                                   {recipe.cookingStatus === "cooked" && (
                                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                      <CheckCircle2 className="w-3 h-3" /> Cooked
+                                      <CheckCircle2 className="w-3 h-3" />{" "}
+                                      Cooked
                                     </span>
                                   )}
                                   {(!recipe.cookingStatus ||
                                     recipe.cookingStatus === "not_cooked") && (
-                                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                        Pending
-                                      </span>
-                                    )}
-                                  {recipe.cookingStatus === "not_interested" && (
+                                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                      Pending
+                                    </span>
+                                  )}
+                                  {recipe.cookingStatus ===
+                                    "not_interested" && (
                                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                       <Ban className="w-3 h-3" /> Not Interested
                                     </span>
@@ -824,7 +826,9 @@ export default function RecipesPage() {
                                         variant="ghost"
                                         className="h-8 w-8 p-0"
                                       >
-                                        <span className="sr-only">Open menu</span>
+                                        <span className="sr-only">
+                                          Open menu
+                                        </span>
                                         <MoreHorizontal className="h-4 w-4" />
                                       </Button>
                                     </DropdownMenuTrigger>
@@ -836,7 +840,9 @@ export default function RecipesPage() {
                                         Actions
                                       </DropdownMenuLabel>
                                       <DropdownMenuItem
-                                        onClick={() => openRecipeDetails(recipe)}
+                                        onClick={() =>
+                                          openRecipeDetails(recipe)
+                                        }
                                         className="cursor-pointer"
                                       >
                                         <Eye className="mr-2 h-4 w-4" /> View
@@ -895,7 +901,8 @@ export default function RecipesPage() {
                                       </DropdownMenuSub>
 
                                       <DropdownMenuItem className="cursor-pointer">
-                                        <FileEdit className="mr-2 h-4 w-4" /> Edit
+                                        <FileEdit className="mr-2 h-4 w-4" />{" "}
+                                        Edit
                                       </DropdownMenuItem>
                                       <DropdownMenuSeparator />
                                       <DropdownMenuItem
@@ -904,7 +911,8 @@ export default function RecipesPage() {
                                         }
                                         className="text-red-600 cursor-pointer focus:bg-red-50 focus:text-red-600"
                                       >
-                                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                        <Trash2 className="mr-2 h-4 w-4" />{" "}
+                                        Delete
                                       </DropdownMenuItem>
                                     </DropdownMenuContent>
                                   </DropdownMenu>
@@ -947,6 +955,6 @@ export default function RecipesPage() {
           />
         </div>
       </div>
-    </div >
+    </div>
   );
 }

@@ -16,7 +16,7 @@ class ApiClient {
   private refreshClient: AxiosInstance;
   private refreshing = false;
   private refreshSubscribers: RefreshSubscriber[] = [];
-  private accessToken: string | null = null;
+  // private accessToken: string | null = null;
 
   constructor() {
     this.client = axios.create({
@@ -32,25 +32,25 @@ class ApiClient {
       withCredentials: true,
     });
 
-    this.loadTokenFromStorage();
+    // this.loadTokenFromStorage();
     this.setupInterceptors();
   }
 
-  private loadTokenFromStorage() {
-    if (typeof window !== "undefined") {
-      this.accessToken = localStorage.getItem("accessToken");
-    }
-  }
+  // private loadTokenFromStorage() {
+  //   if (typeof window !== "undefined") {
+  //     this.accessToken = localStorage.getItem("accessToken");
+  //   }
+  // }
 
   private saveToken(token: string) {
-    this.accessToken = token;
+    // this.accessToken = token;
     if (typeof window !== "undefined") {
       localStorage.setItem("accessToken", token);
     }
   }
 
   private clearToken() {
-    this.accessToken = null;
+    // this.accessToken = null;
     if (typeof window !== "undefined") {
       localStorage.removeItem("accessToken");
     }
@@ -92,10 +92,11 @@ class ApiClient {
         const isTokenAvailable = localStorage.getItem("accessToken");
         const originalRequest = error.config as RetriableRequestConfig;
 
+        console.log({ error }, "errro");
         // Handle token expiration
         if (
           error.response?.status === 401 &&
-          (error.response?.data as any)?.errorCode === "TOKEN_EXPIRED" &&
+          (error.response?.data as any)?.error === "TOKEN_EXPIRED" &&
           !originalRequest._retry &&
           isTokenAvailable
         ) {

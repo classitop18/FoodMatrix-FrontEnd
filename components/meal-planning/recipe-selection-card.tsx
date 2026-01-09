@@ -129,14 +129,18 @@ export default function RecipeSelectionCard(props: RecipeSelectionCardProps) {
 
   // Optimized preference handler - only one can be active
   const handlePreferenceToggle = useCallback(
-    (recipeId: string, preference: "like" | "dislike" | "favorite", e: React.MouseEvent) => {
+    (
+      recipeId: string,
+      preference: "like" | "dislike" | "favorite",
+      e: React.MouseEvent,
+    ) => {
       e.stopPropagation();
 
       setRecipePreferences((prev) => {
         const currentPref = prev[recipeId];
         // If clicking same preference, remove it (toggle off)
-        // Note: For 'like'/'dislike', user might switch directly. 
-        // Logic: if current is 'like' and user clicks 'dislike', new is 'dislike'. 
+        // Note: For 'like'/'dislike', user might switch directly.
+        // Logic: if current is 'like' and user clicks 'dislike', new is 'dislike'.
         // If current is 'like' and user clicks 'like', new is null.
 
         let shouldInteract = true;
@@ -144,31 +148,30 @@ export default function RecipeSelectionCard(props: RecipeSelectionCardProps) {
         // Optimistic update logic
         const newPref = currentPref === preference ? null : preference;
 
-        if (preference === 'favorite') {
-          // For favorite, it's a toggle independent of like/dislike in many apps, 
+        if (preference === "favorite") {
+          // For favorite, it's a toggle independent of like/dislike in many apps,
           // but here the code seems to treat them as mutually exclusive in `recipePreferences` state map (string | null).
-          // However, types say: "like" | "dislike" | "favorite". 
-          // A recipe usually can be Liked AND Favorited. 
+          // However, types say: "like" | "dislike" | "favorite".
+          // A recipe usually can be Liked AND Favorited.
           // But the UI seems to treat them as a single 'preference' state in this component.
           // Let's stick to the existing behavior: Only one active preference state per recipe in this UI context?
           // Checking original code: `const newPref = currentPref === preference ? null : preference;`
-          // This implies mutual exclusivity. 
-          // User Request: "account specific... help krega ki user ko kis tarah ki recipes pasand h". 
-          // Usually Like/Dislike are one axis, Favorite is another. 
+          // This implies mutual exclusivity.
+          // User Request: "account specific... help krega ki user ko kis tarah ki recipes pasand h".
+          // Usually Like/Dislike are one axis, Favorite is another.
           // But let's assume valid "preference" actions are these three.
-
           // API expects action: "like" | "dislike" | "favorite".
           // API likely handles toggling logic (if already liked, unlike).
-          // But `interactWithRecipe` endpoint usually is "do this action". 
+          // But `interactWithRecipe` endpoint usually is "do this action".
           // Let's assume sending "like" when already liked might not toggle it off unless backend handles it.
-          // The backend `updateRecipeInteraction` takes `{ isLiked?: boolean; ... }`. 
-          // The service `interactWithRecipe` sends `action`. 
+          // The backend `updateRecipeInteraction` takes `{ isLiked?: boolean; ... }`.
+          // The service `interactWithRecipe` sends `action`.
           // Let's assume the frontend logic manages the toggle state and sends the action to APPLY.
-          // Wait, if I want to UNLIKE, what do I send? 
+          // Wait, if I want to UNLIKE, what do I send?
           // The previous logic was `updateRecipe` dealing with scores manually.
-          // New logic: `interactWithRecipe` with action. 
-          // Does `interactWithRecipe` support "unlike"? 
-          // Looking at `frontend/services/recipe/recipe.service.ts`: calls `/recipes/${id}/interact`. 
+          // New logic: `interactWithRecipe` with action.
+          // Does `interactWithRecipe` support "unlike"?
+          // Looking at `frontend/services/recipe/recipe.service.ts`: calls `/recipes/${id}/interact`.
           // Looking at `backend/src/modules/recipe/recipe.repository.ts`, `updateRecipeInteraction` applies updates.
           // The controller handling `/interact` likely interprets the action.
           // If I don't see the controller, I should assume standard "toggle" or "set" behavior.
@@ -177,7 +180,7 @@ export default function RecipeSelectionCard(props: RecipeSelectionCardProps) {
 
         interactWithRecipeMutation.mutate({
           id: recipeId,
-          action: preference // 'like', 'dislike', 'favorite'
+          action: preference, // 'like', 'dislike', 'favorite'
         });
 
         return { ...prev, [recipeId]: newPref };
@@ -246,12 +249,13 @@ export default function RecipeSelectionCard(props: RecipeSelectionCardProps) {
           onClick={() => {
             if (!cannotGenerate && onRecipeSelect) onRecipeSelect(recipe);
           }}
-          className={`relative p-4 rounded-lg transition-all duration-200 cursor-pointer border ${cannotGenerate
-            ? "bg-red-50 border-red-200 opacity-60 cursor-not-allowed"
-            : isSelected
-              ? "border-indigo-400 bg-indigo-50/50 shadow-md ring-2 ring-indigo-100"
-              : "bg-white border-gray-200 hover:border-gray-300 hover:shadow-md"
-            }`}
+          className={`relative p-4 rounded-lg transition-all duration-200 cursor-pointer border ${
+            cannotGenerate
+              ? "bg-red-50 border-red-200 opacity-60 cursor-not-allowed"
+              : isSelected
+                ? "border-indigo-400 bg-indigo-50/50 shadow-md ring-2 ring-indigo-100"
+                : "bg-white border-gray-200 hover:border-gray-300 hover:shadow-md"
+          }`}
         >
           {/* Interaction Buttons */}
           {!cannotGenerate && (
@@ -274,22 +278,22 @@ export default function RecipeSelectionCard(props: RecipeSelectionCardProps) {
 
               <button
                 onClick={(e) => handlePreferenceToggle(recipe?.id, "like", e)}
-                className={`w-7 h-7 flex items-center justify-center rounded-md transition-all ${preference === "like"
-                  ? "bg-green-500 text-white shadow-sm"
-                  : "bg-gray-100 text-gray-500 hover:bg-green-50 hover:text-green-600"
-                  }`}
+                className={`w-7 h-7 flex items-center justify-center rounded-md transition-all ${
+                  preference === "like"
+                    ? "bg-green-500 text-white shadow-sm"
+                    : "bg-gray-100 text-gray-500 hover:bg-green-50 hover:text-green-600"
+                }`}
               >
                 <ThumbsUp className="w-3 h-3" />
               </button>
 
               <button
-                onClick={(e) =>
-                  handlePreferenceToggle(recipe.id, "dislike", e)
-                }
-                className={`w-7 h-7 flex items-center justify-center rounded-md transition-all ${preference === "dislike"
-                  ? "bg-red-500 text-white shadow-sm"
-                  : "bg-gray-100 text-gray-500 hover:bg-red-50 hover:text-red-600"
-                  }`}
+                onClick={(e) => handlePreferenceToggle(recipe.id, "dislike", e)}
+                className={`w-7 h-7 flex items-center justify-center rounded-md transition-all ${
+                  preference === "dislike"
+                    ? "bg-red-500 text-white shadow-sm"
+                    : "bg-gray-100 text-gray-500 hover:bg-red-50 hover:text-red-600"
+                }`}
               >
                 <ThumbsDown className="w-3 h-3" />
               </button>
@@ -298,10 +302,11 @@ export default function RecipeSelectionCard(props: RecipeSelectionCardProps) {
                 onClick={(e) =>
                   handlePreferenceToggle(recipe.id, "favorite", e)
                 }
-                className={`w-7 h-7 flex items-center justify-center rounded-md transition-all ${preference === "favorite"
-                  ? "bg-rose-500 text-white shadow-sm"
-                  : "bg-gray-100 text-gray-500 hover:bg-rose-50 hover:text-rose-600"
-                  }`}
+                className={`w-7 h-7 flex items-center justify-center rounded-md transition-all ${
+                  preference === "favorite"
+                    ? "bg-rose-500 text-white shadow-sm"
+                    : "bg-gray-100 text-gray-500 hover:bg-rose-50 hover:text-rose-600"
+                }`}
               >
                 <Heart
                   className={`w-3 h-3 ${preference === "favorite" ? "fill-current" : ""}`}

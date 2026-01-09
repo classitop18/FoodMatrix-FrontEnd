@@ -9,7 +9,10 @@ import {
 
 export class InvitationService {
   async sendInvitation(payload: InvitationPayload) {
-    const response = await apiClient.post(API_ENDPOINTS.INVITATION.SEND, payload);
+    const response = await apiClient.post(
+      API_ENDPOINTS.INVITATION.SEND,
+      payload,
+    );
     return response.data;
   }
 

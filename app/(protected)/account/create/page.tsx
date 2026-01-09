@@ -212,17 +212,8 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
         },
       };
 
-      toast({
-        title: "Creating Account...",
-        description:
-          "Please wait while we set up your account and preferences.",
-      });
       await createAccountMutation.mutateAsync(accountData);
-
-      toast({
-        title: "Account Created Successfully",
-        description: "Redirecting......",
-      });
+      setIsPreparing(true);
 
       router.push("/dashboard");
     } catch (error) {
@@ -431,9 +422,9 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
             />
           </div>
 
-          {/* Preparing Dashboard Overlay */}
-          {isPreparing && (
-            <div className="fixed inset-0 bg-gradient-to-br from-[var(--primary)]/20 to-[var(--green)]/20 backdrop-blur-md flex items-center justify-center z-50">
+          {/* Creating Account / Preparing Dashboard Overlay */}
+          {(createAccountMutation.isPending || isPreparing) && (
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[50000]">
               <motion.div
                 className="p-8 bg-white rounded-3xl shadow-2xl text-center max-w-md border-2 border-[var(--primary)]/30"
                 initial={{ scale: 0.8, opacity: 0 }}
@@ -442,10 +433,14 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
               >
                 <Loader2 className="w-16 h-16 animate-spin mx-auto mb-4 text-[var(--primary)]" />
                 <h2 className="text-2xl font-bold mb-2 text-[var(--primary)]">
-                  Preparing your dashboard
+                  {createAccountMutation.isPending
+                    ? "Creating your account"
+                    : "Preparing your dashboard"}
                 </h2>
                 <p className="text-gray-600">
-                  Please wait while we personalize your experience...
+                  {createAccountMutation.isPending
+                    ? "Please wait while we set up your account and preferences..."
+                    : "Success! Redirecting you to your dashboard..."}
                 </p>
               </motion.div>
             </div>

@@ -25,8 +25,10 @@ import {
   CheckSquare2,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/redux/store.redux";
+import { hydrateMealPlans } from "@/redux/features/meal-plan/meal-plan.slice";
+import { Recipe } from "@/lib/recipe-constants";
 import { useMembers } from "@/services/member/member.query";
 import {
   format,
@@ -55,6 +57,8 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import ConfirmDialog from "@/components/common/confirmation-dialog";
+import ConfirmationModal from "@/components/common/ConfirmationModal";
 
 type MealType =
   | "skip"
@@ -210,10 +214,11 @@ const validateAndCleanDates = () => {
 
 export default function MealPlanning() {
   const [recipeSelections, setRecipeSelections] = useState<
-    Record<string, string>
+    Record<string, string | string[]>
   >({});
   const [selectedRecipes, setSelectedRecipes] = useState<any[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>("date");
+  const [isClearAllDialogOpen, setIsClearAllDialogOpen] = useState(false);
 
   const { can } = usePermissions();
   const isReadOnly = !can(PERMISSIONS.MEAL_CREATE);
@@ -224,6 +229,7 @@ export default function MealPlanning() {
   );
 
   const { activeAccountId } = useSelector((state: RootState) => state.account);
+  const dispatch = useDispatch();
 
   const { data: membersData, isLoading: membersLoading } = useMembers(
     {
@@ -252,13 +258,13 @@ export default function MealPlanning() {
 
       const isInit = !!localStorage.getItem(LS_KEYS.INITIALIZED);
       setInitialized(isInit);
-    } catch { }
+    } catch {}
   }, []);
 
   useEffect(() => {
     try {
       localStorage.setItem(LS_KEYS.VIEW_MODE, viewMode);
-    } catch { }
+    } catch {}
   }, [viewMode]);
 
   useEffect(() => {
@@ -393,14 +399,17 @@ export default function MealPlanning() {
         const parsed = JSON.parse(savedData);
         if (parsed.selections) {
           let changed = false;
-          Object.keys(parsed.selections).forEach(k => {
+          Object.keys(parsed.selections).forEach((k) => {
             if (k.startsWith(iso)) {
               delete parsed.selections[k];
               changed = true;
             }
           });
           if (changed) {
-            localStorage.setItem(LS_KEYS.SELECTED_RECIPES, JSON.stringify(parsed));
+            localStorage.setItem(
+              LS_KEYS.SELECTED_RECIPES,
+              JSON.stringify(parsed),
+            );
           }
         }
       }
@@ -414,27 +423,32 @@ export default function MealPlanning() {
       if (savedLegacy) {
         const parsed = JSON.parse(savedLegacy);
         let changed = false;
-        Object.keys(parsed).forEach(k => {
+        Object.keys(parsed).forEach((k) => {
           if (k.startsWith(iso)) {
             delete parsed[k];
             changed = true;
           }
         });
         if (changed) {
-          localStorage.setItem(LS_KEYS.RECIPE_SELECTIONS, JSON.stringify(parsed));
+          localStorage.setItem(
+            LS_KEYS.RECIPE_SELECTIONS,
+            JSON.stringify(parsed),
+          );
         }
       }
-    } catch (e) { }
+    } catch (e) {}
 
     // 4. Update Generated Recipes Storage (Candidates)
     try {
-      const savedGenerated = localStorage.getItem("foodmatrix-generated-recipes");
+      const savedGenerated = localStorage.getItem(
+        "foodmatrix-generated-recipes",
+      );
       if (savedGenerated) {
         const parsed = JSON.parse(savedGenerated);
         let changed = false;
 
         if (parsed.generated) {
-          Object.keys(parsed.generated).forEach(k => {
+          Object.keys(parsed.generated).forEach((k) => {
             if (k.startsWith(iso)) {
               delete parsed.generated[k];
               changed = true;
@@ -442,7 +456,7 @@ export default function MealPlanning() {
           });
         }
         if (parsed.custom) {
-          Object.keys(parsed.custom).forEach(k => {
+          Object.keys(parsed.custom).forEach((k) => {
             if (k.startsWith(iso)) {
               delete parsed.custom[k];
               changed = true;
@@ -451,14 +465,16 @@ export default function MealPlanning() {
         }
 
         if (changed) {
-          localStorage.setItem("foodmatrix-generated-recipes", JSON.stringify(parsed));
+          localStorage.setItem(
+            "foodmatrix-generated-recipes",
+            JSON.stringify(parsed),
+          );
         }
       }
     } catch (e) {
       console.error("Error clearing generated recipes:", e);
     }
   };
-
 
   const addDateToSelection = (date: Date, force = false) => {
     const today = startOfDay(new Date());
@@ -477,20 +493,41 @@ export default function MealPlanning() {
     const iso = isoUTCDate(date);
     if (selectedDates.find((d) => d.key === iso)) return;
 
-    // If forced new, we should rely on the previous clearing step, 
-    // or we can ensure it's cleared here if needed, but separation of concerns is better.
-
     const label = format(date, "EEEE, MMM d");
     setSelectedDates((prev) => [
       ...prev,
       { key: iso, label, actualDate: date },
     ]);
-    setWeekPlan((prev) => ({ ...prev, [iso]: prev[iso] ?? createEmptySlot() }));
+
+    setWeekPlan((prev) => {
+      // If plan already exists for this date, preserve it.
+      // This happens if the user just hides the date but data was kept in state (though usually removing date removes from state).
+      if (prev[iso]) return { ...prev, [iso]: prev[iso] };
+
+      // Otherwise create new, but check if we should auto-fill based on existing recipes (Use Same case)
+      const newSlot = createEmptySlot();
+
+      // If we are forcing (Use Same) or if recipes just exist, we try to restore the 'cook-home' status
+      if (force || checkIfDateHasRecipes(date)) {
+        (["breakfast", "lunch", "dinner"] as const).forEach((meal) => {
+          // Match keys like YYYY-MM-DD-breakfast or YYYY-MM-DD-BREAKFAST
+          const target = `${iso}-${meal}`.toLowerCase();
+          const hasRec = Object.keys(recipeSelections).some(
+            (k) => k.toLowerCase() === target,
+          );
+          if (hasRec) {
+            newSlot[meal].type = "cook-home";
+          }
+        });
+      }
+
+      return { ...prev, [iso]: newSlot };
+    });
 
     try {
       localStorage.setItem(LS_KEYS.INITIALIZED, "1");
       setInitialized(true);
-    } catch { }
+    } catch {}
   };
 
   const addNextDay = () => {
@@ -535,14 +572,23 @@ export default function MealPlanning() {
 
   const getRecipeName = (dateKey: string, meal: MealTime) => {
     const slotKey = `${dateKey.toUpperCase()}-${meal.toUpperCase()}`;
-    const recipeId = recipeSelections[slotKey];
-    if (!recipeId) return null;
-    const found = selectedRecipes.find((r) => r.id === recipeId);
-    return found ? found.name : null;
+    const selection = recipeSelections[slotKey];
+    if (!selection) return null;
+
+    const ids = Array.isArray(selection) ? selection : [selection];
+    if (ids.length === 0) return null;
+
+    const names = ids
+      .map((id) => selectedRecipes.find((r) => r.id === id)?.name)
+      .filter(Boolean);
+
+    if (names.length === 0) return null;
+    if (names.length === 1) return names[0];
+    return `${names[0]} + ${names.length - 1} more`;
   };
 
   const clearAllPlans = () => {
-    if (!confirm("Are you sure you want to clear all meal plans?")) return;
+    // if (!confirm("Are you sure you want to clear all meal plans?")) return;
     setSelectedDate(undefined);
     if (viewMode === "date") setSelectedDates([]);
     else {
@@ -599,6 +645,51 @@ export default function MealPlanning() {
         actualDate: d.actualDate.toISOString(),
       }));
       localStorage.setItem(LS_KEYS.SELECTED_DATES, JSON.stringify(serial));
+    }
+
+    // Hydrate Redux from LocalStorage to ensure "Use Same" or existing recipes are carried over
+    try {
+      const savedRecipesData = localStorage.getItem(LS_KEYS.SELECTED_RECIPES);
+      if (savedRecipesData) {
+        const parsed = JSON.parse(savedRecipesData);
+        if (parsed.selections && parsed.additionalRecipes) {
+          const plans: Record<string, Record<string, Recipe[]>> = {};
+
+          Object.entries(parsed.selections).forEach(([slotKey, recipeIds]) => {
+            // slotKey format: DATE-MEAL (e.g. 2023-10-27-BREAKFAST)
+            // We need to split sensibly. Last hyphen?
+            // NOTE: Dates are usually YYYY-MM-DD.
+            // Let's find the last hyphen to separate meal.
+            const lastHyphen = slotKey.lastIndexOf("-");
+            if (lastHyphen === -1) return;
+
+            const date = slotKey.substring(0, lastHyphen);
+            const meal = slotKey.substring(lastHyphen + 1);
+
+            if (!parsed.additionalRecipes) return;
+
+            const ids = Array.isArray(recipeIds) ? recipeIds : [recipeIds];
+
+            // Map IDs to full Recipe objects
+            // The additionalRecipes in LS is a Record<id, Recipe>
+            // We need to cast it or trust it.
+            const recipes: Recipe[] = (ids as string[])
+              .map((id) => parsed.additionalRecipes[id])
+              .filter(Boolean);
+
+            if (recipes.length > 0) {
+              if (!plans[date]) plans[date] = {};
+              plans[date][meal] = recipes;
+            }
+          });
+
+          if (Object.keys(plans).length > 0) {
+            dispatch(hydrateMealPlans(plans));
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Error hydrating meal plans before continue:", e);
     }
 
     router.push("/recipe-selection");
@@ -815,7 +906,10 @@ export default function MealPlanning() {
                         </span>
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-[400px] p-0 overflow-hidden border-0 shadow-2xl rounded-lg">
+                    <DialogContent
+                      showCloseButton={false}
+                      className="sm:max-w-[400px] p-0 overflow-hidden border-0 shadow-2xl rounded-lg"
+                    >
                       <div className="relative">
                         {/* Premium Header Background */}
                         <div className="absolute inset-0 bg-gradient-to-br from-[#7dab4f] to-[#5a8c3e] z-0" />
@@ -889,49 +983,93 @@ export default function MealPlanning() {
                   </Dialog>
 
                   {/* Conflict Resolution Dialog */}
-                  <Dialog open={!!conflictDate} onOpenChange={(open) => !open && setConflictDate(null)}>
-                    <DialogContent className="sm:max-w-[425px]">
-                      <DialogHeader>
-                        <DialogTitle>Recipe Already Exists</DialogTitle>
-                        <div className="text-sm text-gray-500">
-                          You have already prepared/generated recipes for <strong>{conflictDate ? format(conflictDate, "PPP") : ""}</strong>.
+                  <Dialog
+                    open={!!conflictDate}
+                    onOpenChange={(open) => !open && setConflictDate(null)}
+                  >
+                    <DialogContent className="sm:max-w-[425px] p-0 overflow-hidden border-0 shadow-2xl rounded-lg bg-transparent">
+                      <div className="relative">
+                        {/* Premium Header Background */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#7dab4f] to-[#5a8c3e] z-0" />
+
+                        <DialogHeader className="relative z-10 p-6 text-white flex flex-row items-center gap-4">
+                          <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center shadow-inner border border-white/10 shrink-0">
+                            <UtensilsCrossed className="w-6 h-6 text-white" />
+                          </div>
+
+                          <div className="flex flex-col text-left">
+                            <DialogTitle className="text-lg font-black tracking-tight text-white">
+                              Recipe Already Exists
+                            </DialogTitle>
+                            <p className="text-white/80 text-sm font-medium leading-tight">
+                              You have existing plans for{" "}
+                              {conflictDate
+                                ? format(conflictDate, "MMM d")
+                                : "this date"}
+                              .
+                            </p>
+                          </div>
+                        </DialogHeader>
+
+                        <div className="relative z-10 bg-white rounded-t-xl mt-[-10px] p-6 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)]">
+                          <div className="text-sm text-gray-600 mb-6 bg-gray-50/50 p-4 rounded-lg border border-gray-100/50">
+                            <p className="mb-3 font-medium text-gray-900">
+                              How would you like to proceed?
+                            </p>
+                            <ul className="space-y-3">
+                              <li className="flex gap-3 text-xs leading-relaxed items-start">
+                                <div className="w-1.5 h-1.5 rounded-full bg-[#1a1a1a] mt-1.5 shrink-0" />
+                                <span>
+                                  <strong className="text-gray-900 block mb-0.5">
+                                    Use Same Recipes
+                                  </strong>
+                                  Keeps your previously generated recipes and
+                                  effectively restores the day's plan.
+                                </span>
+                              </li>
+                              <li className="flex gap-3 text-xs leading-relaxed items-start">
+                                <div className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0" />
+                                <span>
+                                  <strong className="text-gray-900 block mb-0.5">
+                                    Generate New
+                                  </strong>
+                                  Clears all data for this date. You will need
+                                  to select cuisines and generate new recipes.
+                                </span>
+                              </li>
+                            </ul>
+                          </div>
+
+                          <div className="flex justify-end gap-3">
+                            <Button
+                              variant="ghost"
+                              onClick={() => {
+                                if (conflictDate) {
+                                  clearRecipesForDate(conflictDate);
+                                  addDateToSelection(conflictDate, true);
+                                  setConflictDate(null);
+                                }
+                              }}
+                              className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 font-semibold"
+                            >
+                              Generate New
+                            </Button>
+                            <Button
+                              className="bg-[#1a1a1a] text-white hover:bg-black font-bold shadow-lg shadow-black/10 transition-all hover:-translate-y-0.5"
+                              onClick={() => {
+                                if (conflictDate) {
+                                  addDateToSelection(conflictDate, true); // Keep existing
+                                  setConflictDate(null);
+                                }
+                              }}
+                            >
+                              Use Same
+                            </Button>
+                          </div>
                         </div>
-                      </DialogHeader>
-                      <div className="py-4 text-sm text-gray-700">
-                        Do you want to proceed with the same recipes or generate new ones?
-                        <ul className="list-disc ml-5 mt-2 space-y-1 text-xs text-gray-500">
-                          <li><strong>Use Same:</strong> Keeps your previously generated recipes.</li>
-                          <li><strong>Generate New:</strong> Clears previous data for this date so you can start fresh.</li>
-                        </ul>
-                      </div>
-                      <div className="flex justify-end gap-3">
-                        <Button
-                          variant="outline"
-                          onClick={() => {
-                            if (conflictDate) {
-                              clearRecipesForDate(conflictDate);
-                              addDateToSelection(conflictDate, true);
-                              setConflictDate(null);
-                            }
-                          }}
-                        >
-                          Generate New
-                        </Button>
-                        <Button
-                          className="bg-[#1a1a1a] text-white hover:bg-black"
-                          onClick={() => {
-                            if (conflictDate) {
-                              addDateToSelection(conflictDate, true); // Keep existing
-                              setConflictDate(null);
-                            }
-                          }}
-                        >
-                          Use Same
-                        </Button>
                       </div>
                     </DialogContent>
                   </Dialog>
-
 
                   <Button
                     onClick={() => {
@@ -948,7 +1086,7 @@ export default function MealPlanning() {
                   </Button>
 
                   <Button
-                    onClick={clearAllPlans}
+                    onClick={() => setIsClearAllDialogOpen(true)}
                     disabled={selectedDates.length === 0}
                     variant="ghost"
                     className="h-10 w-10 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 transition-colors"
@@ -956,6 +1094,16 @@ export default function MealPlanning() {
                   >
                     <X className="w-5 h-5" />
                   </Button>
+                  <ConfirmationModal
+                    isOpen={isClearAllDialogOpen}
+                    title="Clear All Meal Plans"
+                    message="Are you sure you want to clear all selected dates and meal plans?"
+                    onConfirm={() => {
+                      clearAllPlans();
+                      setIsClearAllDialogOpen(false);
+                    }}
+                    onClose={() => setIsClearAllDialogOpen(false)}
+                  />
                 </div>
               </div>
             </div>
@@ -1174,12 +1322,12 @@ export default function MealPlanning() {
                                                 isSkipped
                                                   ? "bg-gray-200/50 text-gray-400"
                                                   : cn(
-                                                    "bg-opacity-10",
-                                                    selectedOption?.color?.replace(
-                                                      "text-",
-                                                      "bg-",
+                                                      "bg-opacity-10",
+                                                      selectedOption?.color?.replace(
+                                                        "text-",
+                                                        "bg-",
+                                                      ),
                                                     ),
-                                                  ),
                                               )}
                                             >
                                               <Icon

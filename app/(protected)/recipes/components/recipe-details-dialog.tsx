@@ -256,20 +256,22 @@ export function RecipeDetailsDialog({
             <div className="flex bg-gray-100 p-1 rounded-xl">
               <button
                 onClick={() => setViewMode("details")}
-                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${viewMode === "details"
+                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
+                  viewMode === "details"
                     ? "bg-white text-[#3d326d] shadow-sm"
                     : "text-gray-500 hover:text-[#313131]"
-                  }`}
+                }`}
               >
                 <LayoutList className="w-3.5 h-3.5" />
                 Details
               </button>
               <button
                 onClick={() => setViewMode("graph")}
-                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${viewMode === "graph"
+                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
+                  viewMode === "graph"
                     ? "bg-white text-[#3d326d] shadow-sm"
                     : "text-gray-500 hover:text-[#313131]"
-                  }`}
+                }`}
               >
                 <BarChart3 className="w-3.5 h-3.5" />
                 Analysis
@@ -280,10 +282,11 @@ export function RecipeDetailsDialog({
               <Button
                 size="icon"
                 variant="ghost"
-                className={`h-8 w-8 hover:bg-white hover:shadow-sm rounded-lg ${recipe.isLiked
+                className={`h-8 w-8 hover:bg-white hover:shadow-sm rounded-lg ${
+                  recipe.isLiked
                     ? "text-green-600 bg-white shadow-sm"
                     : "text-gray-500"
-                  }`}
+                }`}
                 onClick={() => handleInteraction("like")}
               >
                 <ThumbsUp
@@ -294,15 +297,17 @@ export function RecipeDetailsDialog({
               <Button
                 size="icon"
                 variant="ghost"
-                className={`h-8 w-8 hover:bg-white hover:shadow-sm rounded-lg ${recipe.isDisliked
+                className={`h-8 w-8 hover:bg-white hover:shadow-sm rounded-lg ${
+                  recipe.isDisliked
                     ? "text-red-500 bg-white shadow-sm"
                     : "text-gray-500"
-                  }`}
+                }`}
                 onClick={() => handleInteraction("dislike")}
               >
                 <ThumbsDown
-                  className={`w-4 h-4 ${recipe.isDisliked ? "fill-current" : ""
-                    }`}
+                  className={`w-4 h-4 ${
+                    recipe.isDisliked ? "fill-current" : ""
+                  }`}
                 />
               </Button>
             </div>
@@ -310,10 +315,11 @@ export function RecipeDetailsDialog({
             <Button
               size="icon"
               variant="ghost"
-              className={`h-10 w-10 rounded-full border transition-all ${recipe.isFavorite
+              className={`h-10 w-10 rounded-full border transition-all ${
+                recipe.isFavorite
                   ? "bg-red-50 text-red-500 border-red-200 hover:bg-red-100"
                   : "bg-white text-gray-400 border-gray-200 hover:border-red-200 hover:text-red-400"
-                }`}
+              }`}
               onClick={() => handleInteraction("favorite")}
             >
               <Heart
@@ -548,8 +554,8 @@ export function RecipeDetailsDialog({
                           {(Array.isArray(recipe.ingredients)
                             ? recipe.ingredients
                             : (JSON.parse(
-                              (recipe.ingredients as any) || "[]",
-                            ) as any[])
+                                (recipe.ingredients as any) || "[]",
+                              ) as any[])
                           ).map((ingredient, index) => (
                             <div
                               key={index}
@@ -756,10 +762,11 @@ export function RecipeDetailsDialog({
                           <button
                             key={type}
                             onClick={() => setChartType(type)}
-                            className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all ${chartType === type
+                            className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all ${
+                              chartType === type
                                 ? "bg-white text-[#3d326d] shadow-sm scale-105"
                                 : "text-gray-500 hover:text-[#313131]"
-                              }`}
+                            }`}
                           >
                             {type} Chart
                           </button>

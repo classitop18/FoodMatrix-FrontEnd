@@ -74,12 +74,12 @@ export default function ShoppingRecipe() {
   } = useSelector((state: RootState) => state.mealPlan);
 
   // Derived selections
-  const currentSelections: Record<string, string> = {};
+  const currentSelections: Record<string, string[]> = {};
   Object.entries(plans).forEach(([date, meals]) => {
-    Object.entries(meals).forEach(([mealType, recipe]) => {
+    Object.entries(meals).forEach(([mealType, recipes]) => {
       const slotKey = `${date}-${mealType}`;
-      if (recipe && recipe.id) {
-        currentSelections[slotKey] = recipe.id;
+      if (Array.isArray(recipes)) {
+        currentSelections[slotKey] = recipes.map((r) => r.id);
       }
     });
   });
@@ -103,13 +103,16 @@ export default function ShoppingRecipe() {
   // Derived Ingredients List
   const allIngredients = [
     ...Object.values(plans).flatMap((day) =>
-      Object.values(day).flatMap((recipe) =>
-        (recipe?.ingredients || []).map((ing: any) => ({
-          ...ing,
-          source: "Recipe",
-          recipeName: recipe?.name,
-        })),
-      ),
+      Object.values(day).flatMap((recipes) => {
+        const list = Array.isArray(recipes) ? recipes : [recipes];
+        return list.flatMap((recipe) =>
+          (recipe?.ingredients || []).map((ing: any) => ({
+            ...ing,
+            source: "Recipe",
+            recipeName: recipe?.name,
+          })),
+        );
+      }),
     ),
     ...extraItems,
   ];
@@ -212,7 +215,7 @@ export default function ShoppingRecipe() {
             Add Grocery Items
           </div>
 
-          <div className="flex flex-wrap gap-4 lg:gap-6">
+          <div className="flex flex-wrap lg:flex-nowrap overflow-auto gap-4 lg:gap-6">
             <Dialog>
               {categories.map((cat) => (
                 <DialogTrigger
@@ -226,7 +229,7 @@ export default function ShoppingRecipe() {
                 >
                   <button
                     type="button"
-                    className="border border-[#EDE9FF] rounded-xl p-4 bg-white text-sm font-medium flex flex-col gap-2 justify-center items-center hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-all group min-w-[108px]"
+                    className="border border-[#EDE9FF] rounded-xl p-4 bg-white text-sm font-medium flex flex-col gap-2 justify-center items-center hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-all group min-w-[108px] w-full"
                   >
                     <span className="w-16 h-16 flex items-center justify-center bg-[#F4F1FD] rounded-full">
                       <cat.icon
@@ -254,9 +257,9 @@ export default function ShoppingRecipe() {
                     Add {categories.find((c) => c.id === activeCategory)?.label}
                   </DialogTitle>
                 </DialogHeader>
-                <div className="flex flex-col md:flex-row gap-6 h-[500px]">
+                <div className="flex flex-col md:flex-row gap-5">
                   {/* Left Side: Search & List */}
-                  <div className="flex-1 flex flex-col gap-4 border-r border-gray-100 pr-4">
+                  <div className="flex-1 flex flex-col gap-4 border-b lg:border-b-0 border-r-0 lg:border-r border-gray-100 pb-5 lg:pr-5">
                     <div className="relative">
                       <Search
                         className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -270,8 +273,8 @@ export default function ShoppingRecipe() {
                         className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-[#E2E2E2] rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[var(--primary)] text-black"
                       />
                     </div>
-                    <ScrollArea className="flex-1">
-                      <div className="grid grid-cols-2 gap-3 p-1">
+                    <ScrollArea className="max-h-[158px] lg:max-h-[338px] overflow-auto">
+                      <div className="grid grid-cols-2 gap-3">
                         {categories
                           .find((c) => c.id === activeCategory)
                           ?.data.filter((item) =>
@@ -289,11 +292,12 @@ export default function ShoppingRecipe() {
                               }}
                               className={`
                                                                 flex items-center gap-3 p-2 rounded-lg border cursor-pointer transition-all
-                                                                ${selectedItemToAdd?.name ===
-                                  item.name
-                                  ? "border-[var(--primary)] bg-[#F4F1FD]"
-                                  : "border-transparent hover:bg-gray-50 hover:border-gray-200"
-                                }
+                                                                ${
+                                                                  selectedItemToAdd?.name ===
+                                                                  item.name
+                                                                    ? "border-[var(--primary)] bg-[#F4F1FD]"
+                                                                    : "bg-gray-50 border-gray-200 hover:bg-gray-100 hover:border-gray-300"
+                                                                }
                                                             `}
                             >
                               <div className="w-10 h-10 rounded bg-white flex items-center justify-center overflow-hidden border border-gray-100 shrink-0">
@@ -327,7 +331,7 @@ export default function ShoppingRecipe() {
                           <h3 className="text-xl font-bold text-gray-900 mb-1">
                             {selectedItemToAdd.name}
                           </h3>
-                          <p className="text-sm text-gray-500 capitalize mb-6">
+                          <p className="text-sm text-gray-500 capitalize mb-4">
                             {selectedItemToAdd.category} •{" "}
                             {selectedItemToAdd.unit}
                           </p>
@@ -351,7 +355,7 @@ export default function ShoppingRecipe() {
                                 <Input
                                   value={addItemQuantity}
                                   readOnly
-                                  className="h-8 border-0 text-center focus-visible:ring-0 w-full"
+                                  className="h-full border-0 text-center focus-visible:ring-0 w-full shadow-none"
                                 />
                                 <Button
                                   variant="ghost"
@@ -369,7 +373,7 @@ export default function ShoppingRecipe() {
                         </div>
 
                         <Button
-                          className="w-full bg-[var(--primary)] hover:bg-[var(--primary)]/90 mt-4"
+                          className="h-11 text-white w-full bg-[var(--primary)] hover:bg-[var(--primary)]/90 mt-4"
                           onClick={handleAddItem}
                         >
                           Add to List
@@ -377,10 +381,12 @@ export default function ShoppingRecipe() {
                       </div>
                     ) : (
                       <div className="h-full flex flex-col items-center justify-center text-center text-gray-400 p-4 border-2 border-dashed border-gray-100 rounded-xl">
-                        <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mb-3">
-                          <ShoppingCart className="h-6 w-6 text-gray-300" />
+                        <div className="w-20 h-20 rounded-full bg-gray-50 flex items-center justify-center mb-3">
+                          <ShoppingCart className="h-8 w-8 text-gray-300" />
                         </div>
-                        <p className="text-sm">Select an item to add details</p>
+                        <p className="text-sm font-normal">
+                          Select an item to add details
+                        </p>
                       </div>
                     )}
                   </div>
@@ -451,7 +457,7 @@ export default function ShoppingRecipe() {
                             onClick={() =>
                               handleRemoveExtraItem(
                                 allIngredients.indexOf(ing) -
-                                (allIngredients.length - extraItems.length),
+                                  (allIngredients.length - extraItems.length),
                               )
                             } // Determine functionality relative to extra items array
                           >
@@ -471,7 +477,13 @@ export default function ShoppingRecipe() {
               Selected Recipes
               <span className="text-sm font-normal">
                 {Object.values(plans).reduce(
-                  (acc, day) => acc + Object.keys(day).length,
+                  (acc, day) =>
+                    acc +
+                    Object.values(day).reduce(
+                      (dAcc, recipes) =>
+                        dAcc + (Array.isArray(recipes) ? recipes.length : 1),
+                      0,
+                    ),
                   0,
                 )}{" "}
                 Items
@@ -502,12 +514,15 @@ export default function ShoppingRecipe() {
                           </p>
                         </div>
 
-                        {Object.entries(meals).map(([mealType, recipe]) => {
-                          if (!recipe) return null;
-                          return (
+                        {Object.entries(meals).map(([mealType, recipes]) => {
+                          if (!recipes) return null;
+                          const recipeList = Array.isArray(recipes)
+                            ? recipes
+                            : [recipes];
+                          return recipeList.map((recipe) => (
                             <div
-                              key={`${date}-${mealType}`}
-                              className="bg-white rounded-lg p-3 space-y-3 relative cursor-pointer hover:shadow-md transition-shadow border border-transparent hover:border-[var(--primary)]/20"
+                              key={`${date}-${mealType}-${recipe.id}`}
+                              className="bg-white rounded-lg p-3 space-y-3 relative cursor-pointer hover:shadow-md transition-shadow border border-transparent hover:border-[var(--primary)]/20 mb-2"
                               onClick={() => {
                                 setDetailedRecipe(recipe as any);
                                 setIsDetailsOpen(true);
@@ -520,7 +535,7 @@ export default function ShoppingRecipe() {
                                       src={
                                         getRecipeImageUrl(
                                           recipe.image ||
-                                          (recipe as any).imageUrl,
+                                            (recipe as any).imageUrl,
                                         )!
                                       }
                                       alt={recipe.name}
@@ -562,7 +577,7 @@ export default function ShoppingRecipe() {
                                 </div>
                               </div>
                             </div>
-                          );
+                          ));
                         })}
                       </div>
                     );

@@ -80,34 +80,34 @@ export function RecipeFiltersSidebar({
           localFilters.mealTypes ||
           localFilters.maxBudget ||
           localFilters.maxPrepTime) && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() =>
-                onFilterChange({
-                  page: 1,
-                  pageSize: filters.pageSize,
-                  sortBy: filters.sortBy,
-                  sortOrder: filters.sortOrder,
-                  dateFilter: filters.dateFilter,
-                  search: filters.search,
-                  cuisines: "",
-                  mealTypes: "",
-                  difficulty: "",
-                  minPrepTime: undefined,
-                  maxPrepTime: undefined,
-                  minCalories: undefined,
-                  maxCalories: undefined,
-                  minBudget: undefined,
-                  maxBudget: undefined,
-                })
-              }
-              className="h-8 px-2 text-xs text-red-500 hover:text-red-600 hover:bg-red-50 font-bold"
-            >
-              Reset
-              <X className="ml-1 h-3 w-3" />
-            </Button>
-          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() =>
+              onFilterChange({
+                page: 1,
+                pageSize: filters.pageSize,
+                sortBy: filters.sortBy,
+                sortOrder: filters.sortOrder,
+                dateFilter: filters.dateFilter,
+                search: filters.search,
+                cuisines: "",
+                mealTypes: "",
+                difficulty: "",
+                minPrepTime: undefined,
+                maxPrepTime: undefined,
+                minCalories: undefined,
+                maxCalories: undefined,
+                minBudget: undefined,
+                maxBudget: undefined,
+              })
+            }
+            className="h-8 px-2 text-xs text-red-500 hover:text-red-600 hover:bg-red-50 font-bold"
+          >
+            Reset
+            <X className="ml-1 h-3 w-3" />
+          </Button>
+        )}
       </div>
 
       <Separator className="bg-gray-100" />
