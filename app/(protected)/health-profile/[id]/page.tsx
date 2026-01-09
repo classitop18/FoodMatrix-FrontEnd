@@ -32,17 +32,17 @@ import {
   RefreshCw,
 } from "lucide-react";
 import Loader from "@/components/common/Loader";
-import {
-  useGetHealthProfile,
-  useCreateHealthProfile,
-  useUpdateHealthProfile,
-} from "@/services/health-profile/health-profile.query";
+import { useGetHealthProfile } from "@/services/health-profile/health-profile.query";
 import { useGetMember } from "@/services/member/member.query";
 import { useAuthMe } from "@/services/auth/auth.query";
 
 import { toast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { log } from "console";
+import {
+  useCreateHealthProfile,
+  useUpdateHealthProfile,
+} from "@/services/health-profile";
 
 export default function HealthProfilePage() {
   const params = useParams();
@@ -195,7 +195,7 @@ export default function HealthProfilePage() {
       if (healthProfileExists) {
         // Update existing health profile
         await updateMutation.mutateAsync({
-          memberId: memberId!,
+          id: memberId!,
           data: transformedData,
         });
         toast({

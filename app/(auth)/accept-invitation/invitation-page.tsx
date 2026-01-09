@@ -9,6 +9,8 @@ import ThemeButton from "@/components/common/buttons/theme-button";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store.redux";
 
+const invitationService = new InvitationService();
+
 export default function InvitationPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -36,14 +38,14 @@ export default function InvitationPage() {
     const handleInvitation = async () => {
       try {
         // 1. Validate token and get invitation info
-        const response = await InvitationService.validateToken(token);
+        const response = await invitationService.validateToken(token);
         const details = response.data;
         setInvitationDetails(details);
 
         // 2. If authenticated, attempt to accept automatically
         if (isAuthenticated && user) {
           if (user.email.toLowerCase() === details.email.toLowerCase()) {
-            await InvitationService.acceptInvitation(token);
+            await invitationService.acceptInvitation(token);
             setStatus("success");
             toast({
               variant: "success",
