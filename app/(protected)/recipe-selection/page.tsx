@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +22,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  PopoverAnchor,
 } from "@/components/ui/popover";
 import {
   Command,
@@ -64,6 +65,7 @@ import {
   useGenerateAICustomRecipeMutation,
   useGenerateAIRecipeMutation,
   useInteractWithRecipeMutation,
+  RecipeService
 } from "@/services/recipe";
 import {
   cuisineOptions,
@@ -149,10 +151,20 @@ export default function RecipeSelection() {
 
   const [isReduxHydrated, setIsReduxHydrated] = useState(false);
 
+  const searchTimeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
+
+  const [suggestions, setSuggestions] = useState<
+    Record<string, ApiRecipe[]>
+  >({});
+  const [isSearchingSuggestions, setIsSearchingSuggestions] = useState<
+    Record<string, boolean>
+  >({});
+
   // Mutations
   const generateRecipeWithAi = useGenerateAIRecipeMutation();
   const generateCustomRecipeWithAi = useGenerateAICustomRecipeMutation();
   const interactWithRecipeMutation = useInteractWithRecipeMutation();
+  const recipeService = new RecipeService();
 
   const handleInteraction = async (
     recipe: any,
@@ -395,7 +407,10 @@ export default function RecipeSelection() {
   };
 
   // Custom Recipe Logic
-  const generateCustomRecipe = async (slot: Slot) => {
+  const generateCustomRecipe = async (
+    slot: Slot,
+    isBackground: boolean = false,
+  ) => {
     const slotKey = `${slot.date}-${slot.meal}`;
     const customName = recipePayload[slotKey]?.customRecipe;
 
@@ -412,26 +427,150 @@ export default function RecipeSelection() {
         mealType: slot.meal.toLowerCase(),
         servings: 4,
       });
+      console.log(response?.data, "Custom Recipe Response");
 
-      const recipe = response.data?.recipe;
-      if (recipe) {
-        const processed = {
+      const recipesData = Array.isArray(response.data)
+        ? response.data
+        : response.data
+          ? [response.data]
+          : [];
+
+      if (recipesData.length > 0) {
+        const processed = recipesData.map((recipe: any, index: number) => ({
           ...recipe,
-          id: recipe.id || `custom-${slotKey}-${Date.now()}`,
+          id: recipe.id || `custom-${slotKey}-${Date.now()}-${index}`,
           isAIGenerated: true,
-        };
+          isCustomSearch: true,
+          image: recipe.imageUrl || recipe.image, // Ensure image compatibility
+        }));
+
+        const existingCustomRecipes = generatedCustomRecipies[slotKey] || [];
+        const existingIds = new Set(existingCustomRecipes.map((r) => r.id));
+
+        // Filter out duplicates based on ID or Name similarity if needed
+        // For now, strict ID check, but AI might generate new ID for same recipe.
+        // Let's filter by Name to avoid cluttering "Chicken" with 10 "Chicken"s
+        const existingNames = new Set(
+          existingCustomRecipes.map((r) => r.name.toLowerCase()),
+        );
+
+        const uniqueNewRecipes = processed.filter(
+          (r: any) =>
+            !existingIds.has(r.id) && !existingNames.has(r.name.toLowerCase()),
+        );
+
+        if (uniqueNewRecipes.length > 0) {
+          dispatch(
+            setGeneratedCustomRecipes({
+              slotKey,
+              recipes: [...uniqueNewRecipes, ...existingCustomRecipes],
+            }),
+          );
+        }
+        if (!isBackground) {
+          toast({
+            title: "Custom Search",
+            description: `Found ${recipesData.length} recipes`,
+          });
+        }
+      }
+    } catch {
+      if (!isBackground) {
+        toast({
+          title: "Error",
+          description: "Could not find custom recipe.",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setIsSlotProcessing((prev) => ({
+        ...prev,
+        [slotKey]: { ...prev[slotKey], isCustomRecipeLoading: false },
+      }));
+    }
+  };
+
+  const handleCustomRecipeChange = (slot: Slot, value: string) => {
+    const slotKey = `${slot.date}-${slot.meal}`;
+
+    // Update state immediately
+    generateRecipePayload(slotKey, "customRecipe", value);
+
+    // Clear existing timeout
+    if (searchTimeoutRef.current[slotKey]) {
+      clearTimeout(searchTimeoutRef.current[slotKey]);
+    }
+
+    // Set new timeout (Debounce 600ms)
+    // If value is empty, clear suggestions
+    if (!value || value.length < 3) {
+      setSuggestions((prev) => ({ ...prev, [slotKey]: [] }));
+      return;
+    }
+
+    if (value && value.length >= 3) {
+      searchTimeoutRef.current[slotKey] = setTimeout(async () => {
+        // Trigger generic search for suggestions
+        setIsSearchingSuggestions((prev) => ({ ...prev, [slotKey]: true }));
+        try {
+          const response = await recipeService.getRecipes({
+            search: value,
+            page: 1,
+            pageSize: 5
+          });
+          const recipes = response.recipes || [];
+          setSuggestions((prev) => ({ ...prev, [slotKey]: recipes as ApiRecipe[] }));
+        } catch (e) {
+          console.error("Failed to fetch suggestions", e);
+        } finally {
+          setIsSearchingSuggestions((prev) => ({ ...prev, [slotKey]: false }));
+        }
+      }, 600);
+    }
+  };
+
+  const handleSelectSuggestion = async (recipeId: string, slot: Slot) => {
+    const slotKey = `${slot.date}-${slot.meal}`;
+
+    // Clear suggestions
+    setSuggestions((prev) => ({ ...prev, [slotKey]: [] }));
+    generateRecipePayload(slotKey, "customRecipe", ""); // Clear input or keep it? User might want to search again. Let's clear for now as it moves to right.
+
+    setIsSlotProcessing((prev) => ({
+      ...prev,
+      [slotKey]: { ...prev[slotKey], isCustomRecipeLoading: true },
+    }));
+
+    try {
+      // Fetch full details
+      const fullRecipe = await recipeService.getRecipeById(recipeId);
+
+      const processed = {
+        ...fullRecipe,
+        // Ensure ID is unique if added multiple times? No, reuse ID for actual recipe.
+        isAIGenerated: false, // It's from DB
+        isCustomSearch: true,
+        image: fullRecipe.imageUrl,
+      };
+
+      const existingCustomRecipes = generatedCustomRecipies[slotKey] || [];
+      // Check for duplicates
+      if (!existingCustomRecipes.find(r => r.id === processed.id)) {
         dispatch(
           setGeneratedCustomRecipes({
             slotKey,
-            recipes: [processed],
+            recipes: [processed as any, ...existingCustomRecipes],
           }),
         );
-        toast({ title: "Recipe Found!", description: `Found ${customName}` });
+        toast({ title: "Recipe Added", description: `Added ${fullRecipe.name}` });
+      } else {
+        toast({ title: "Already Added", description: `Recipe already in list` });
       }
-    } catch {
+
+    } catch (e) {
       toast({
         title: "Error",
-        description: "Could not find custom recipe.",
+        description: "Failed to load recipe details",
         variant: "destructive",
       });
     } finally {
@@ -440,7 +579,7 @@ export default function RecipeSelection() {
         [slotKey]: { ...prev[slotKey], isCustomRecipeLoading: false },
       }));
     }
-  };
+  }
 
   const handleRecipeSelect = (recipe: any, slotKey: string) => {
     // We need to parse slotKey to get date and mealType
@@ -711,11 +850,11 @@ export default function RecipeSelection() {
                                                 <span className="truncate">
                                                   {payload.members ===
                                                     undefined ||
-                                                  payload.members.length ===
+                                                    payload.members.length ===
                                                     members.length
                                                     ? "All Members"
                                                     : payload.members.length ===
-                                                        0
+                                                      0
                                                       ? "Select Members"
                                                       : `${payload.members.length} selected`}
                                                 </span>
@@ -743,7 +882,7 @@ export default function RecipeSelection() {
                                                           !payload.members ||
                                                           payload.members
                                                             .length ===
-                                                            members.length;
+                                                          members.length;
 
                                                         generateRecipePayload(
                                                           slotKey,
@@ -760,7 +899,7 @@ export default function RecipeSelection() {
                                                           !payload.members ||
                                                             payload.members
                                                               .length ===
-                                                              members.length
+                                                            members.length
                                                             ? "bg-primary text-primary-foreground"
                                                             : "opacity-50 [&_svg]:invisible",
                                                         )}
@@ -832,10 +971,10 @@ export default function RecipeSelection() {
                                                             {member.name ||
                                                               member?.user
                                                                 ?.firstName +
-                                                                (member?.user
-                                                                  ?.username
-                                                                  ? ` (${member?.user?.username})`
-                                                                  : "") ||
+                                                              (member?.user
+                                                                ?.username
+                                                                ? ` (${member?.user?.username})`
+                                                                : "") ||
                                                               "Unnamed Member"}
                                                           </span>
                                                         </CommandItem>
@@ -962,41 +1101,104 @@ export default function RecipeSelection() {
                                         ingredients
                                       </p>
                                     </div>
-                                    <div className="relative mt-3 bg-white">
-                                      <Search
-                                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                                        size={16}
-                                      />
-                                      <input
-                                        type="text"
-                                        placeholder="Search for recipes, ingredients, or cuisines..."
-                                        value={payload.customRecipe || ""}
-                                        onChange={(e) =>
-                                          generateRecipePayload(
-                                            slotKey,
-                                            "customRecipe",
-                                            e.target.value,
-                                          )
-                                        }
-                                        className="w-full pl-9 pr-[130px] py-2 bg-white/10 border border-[#E2E2E2] rounded-lg text-black placeholder-black/40 focus:outline-none focus:bg-white/20 transition-all text-sm font-normal h-13"
-                                      />
-                                      <Button
-                                        className="text-white bg-(--primary) hover:bg-(--primary) font-medium ps-3! pe-3! py-1 h-10 rounded-lg text-sm transition-all duration-300 cursor-pointer group flex items-center inset-shadow-[5px_5px_5px_rgba(0,0,0,0.30)] hover:inset-shadow-[-5px_-5px_5px_rgba(0,0,0,0.50)] min-w-26 justify-center absolute right-2 top-1/2 -translate-y-1/2 z-10"
-                                        onClick={() =>
-                                          generateCustomRecipe(slot)
-                                        }
-                                        disabled={
-                                          isSlotProcessing[slotKey]
-                                            ?.isCustomRecipeLoading ||
-                                          !payload.customRecipe
-                                        }
+                                    <Popover
+                                      open={!!(suggestions[slotKey] && payload.customRecipe && payload.customRecipe.length >= 3)}
+                                      onOpenChange={() => { }} // Controlled by input state
+                                    >
+                                      <PopoverAnchor asChild>
+                                        <div className="relative mt-3 bg-white">
+                                          <Search
+                                            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                                            size={16}
+                                          />
+                                          <input
+                                            type="text"
+                                            placeholder="Search for recipes, ingredients, or cuisines..."
+                                            value={payload.customRecipe || ""}
+                                            onChange={(e) =>
+                                              handleCustomRecipeChange(
+                                                slot,
+                                                e.target.value,
+                                              )
+                                            }
+                                            className="w-full pl-9 pr-[130px] py-2 bg-white/10 border border-[#E2E2E2] rounded-lg text-black placeholder-black/40 focus:outline-none focus:bg-white/20 transition-all text-sm font-normal h-13"
+                                          />
+                                          <Button
+                                            className="text-white bg-(--primary) hover:bg-(--primary) font-medium ps-3! pe-3! py-1 h-10 rounded-lg text-sm transition-all duration-300 cursor-pointer group flex items-center inset-shadow-[5px_5px_5px_rgba(0,0,0,0.30)] hover:inset-shadow-[-5px_-5px_5px_rgba(0,0,0,0.50)] min-w-26 justify-center absolute right-2 top-1/2 -translate-y-1/2 z-10"
+                                            onClick={() =>
+                                              generateCustomRecipe(slot)
+                                            }
+                                            disabled={
+                                              isSlotProcessing[slotKey]
+                                                ?.isCustomRecipeLoading ||
+                                              !payload.customRecipe
+                                            }
+                                          >
+                                            {isSlotProcessing[slotKey]
+                                              ?.isCustomRecipeLoading
+                                              ? "Searching..."
+                                              : "Search"}
+                                          </Button>
+                                        </div>
+                                      </PopoverAnchor>
+
+                                      <PopoverContent
+                                        className="p-0 border-0 shadow-xl bg-transparent w-[var(--radix-popover-trigger-width)]"
+                                        align="start"
+                                        sideOffset={5}
+                                        onOpenAutoFocus={(e) => e.preventDefault()}
                                       >
-                                        {isSlotProcessing[slotKey]
-                                          ?.isCustomRecipeLoading
-                                          ? "Searching..."
-                                          : "Search"}
-                                      </Button>
-                                    </div>
+                                        <div className="bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto ring-1 ring-black/5">
+                                          {isSearchingSuggestions[
+                                            slotKey
+                                          ] ? (
+                                            <div className="p-3 text-sm text-gray-500 text-center">
+                                              Searching...
+                                            </div>
+                                          ) : suggestions[slotKey]
+                                            ?.length === 0 ? (
+                                            <div className="p-3 text-sm text-gray-500 text-center">
+                                              No matched item
+                                            </div>
+                                          ) : (
+                                            suggestions[slotKey]?.map(
+                                              (suggestion) => (
+                                                <div
+                                                  key={suggestion.id}
+                                                  className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0 flex gap-3 items-center"
+                                                  onClick={() =>
+                                                    handleSelectSuggestion(
+                                                      suggestion.id,
+                                                      slot,
+                                                    )
+                                                  }
+                                                >
+                                                  {suggestion.imageUrl && (
+                                                    <img
+                                                      src={getRecipeImageUrl(
+                                                        suggestion.imageUrl,
+                                                      )!}
+                                                      alt={suggestion.name}
+                                                      className="w-10 h-10 rounded object-cover bg-gray-100"
+                                                    />
+                                                  )}
+                                                  <div className="flex-1">
+                                                    <div className="text-sm font-medium text-gray-900">
+                                                      {suggestion.name}
+                                                    </div>
+                                                    <div className="text-xs text-gray-500 truncate">
+                                                      {
+                                                        suggestion.description
+                                                      }
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              ),
+                                            )
+                                          )}
+                                        </div>
+                                      </PopoverContent>
+                                    </Popover>
                                   </div>
                                 </AccordionContent>
                               </AccordionItem>
@@ -1029,7 +1231,7 @@ export default function RecipeSelection() {
                   <ScrollArea className="w-full h-[calc(100vh-300px)] p-4">
                     <div className="space-y-2">
                       {Object.entries(generatedRecipies).length === 0 &&
-                      Object.entries(generatedCustomRecipies).length === 0 ? (
+                        Object.entries(generatedCustomRecipies).length === 0 ? (
                         <div className="text-center text-gray-500">
                           <p className="text-base">No recipes generated yet</p>
                           <p className="text-sm mt-1">
@@ -1110,6 +1312,11 @@ export default function RecipeSelection() {
                                     <div className="flex gap-4">
                                       {/* Image Section */}
                                       <div className="h-28 w-28 shrink-0 rounded-lg bg-gray-50 overflow-hidden relative border border-gray-100">
+                                        {recipe.isCustomSearch && (
+                                          <Badge className="absolute top-1 left-1 z-10 bg-blue-500 text-white text-[10px] px-1.5 py-0.5 h-auto shadow-sm border-0">
+                                            Custom Recipe
+                                          </Badge>
+                                        )}
                                         {recipe?.imageUrl ? (
                                           <img
                                             src={
@@ -1178,11 +1385,10 @@ export default function RecipeSelection() {
                                                     e,
                                                   )
                                                 }
-                                                className={`size-3.5 transition-colors hover:text-green-600 ${
-                                                  recipe.isLiked
-                                                    ? "text-green-600 fill-current"
-                                                    : ""
-                                                }`}
+                                                className={`size-3.5 transition-colors hover:text-green-600 ${recipe.isLiked
+                                                  ? "text-green-600 fill-current"
+                                                  : ""
+                                                  }`}
                                               />
 
                                               <ThumbsDown
@@ -1193,11 +1399,10 @@ export default function RecipeSelection() {
                                                     e,
                                                   )
                                                 }
-                                                className={`size-3.5 transition-colors hover:text-red-600 ${
-                                                  recipe.isDisliked
-                                                    ? "text-red-600 fill-current"
-                                                    : ""
-                                                }`}
+                                                className={`size-3.5 transition-colors hover:text-red-600 ${recipe.isDisliked
+                                                  ? "text-red-600 fill-current"
+                                                  : ""
+                                                  }`}
                                               />
 
                                               <Heart
@@ -1208,11 +1413,10 @@ export default function RecipeSelection() {
                                                     e,
                                                   )
                                                 }
-                                                className={`size-3.5 transition-colors hover:text-pink-600 ${
-                                                  recipe.isFavorite
-                                                    ? "text-pink-600 fill-current"
-                                                    : ""
-                                                }`}
+                                                className={`size-3.5 transition-colors hover:text-pink-600 ${recipe.isFavorite
+                                                  ? "text-pink-600 fill-current"
+                                                  : ""
+                                                  }`}
                                               />
                                             </div>
                                             <button

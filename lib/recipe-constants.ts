@@ -137,6 +137,7 @@ export interface Recipe {
   pantryItemsUsedCount?: number;
   canGenerateRecipe?: boolean;
   totalTimeMinutes?: number;
+  isCustomSearch?: boolean;
 }
 
 // Recipe Database Mock

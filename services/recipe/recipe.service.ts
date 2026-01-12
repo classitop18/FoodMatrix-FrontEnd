@@ -9,6 +9,12 @@ import {
 } from "./types/recipe.types";
 
 export class RecipeService {
+  // Get specific recipe by ID
+  async getRecipeById(id: string): Promise<Recipe> {
+    const response = await apiClient.get(API_ENDPOINTS.RECIPE.GET_RECIPE_BY_ID(id));
+    return response.data?.data;
+  }
+
   // Get recipes with filtering and pagination
   async getRecipes(filters: RecipeFilters): Promise<RecipesResponse> {
     const params = new URLSearchParams();

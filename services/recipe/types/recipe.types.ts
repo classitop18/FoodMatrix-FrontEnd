@@ -97,6 +97,7 @@ export interface GenerateCustomRecipePayload {
   mealType: string;
   servings: number;
   dietaryRestrictions?: any[];
+  memberCount?: number; // Add this as it might be used
 }
 
 export interface RecipeFilters {
