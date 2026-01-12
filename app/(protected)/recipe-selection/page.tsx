@@ -747,11 +747,11 @@ export default function RecipeSelection() {
                           <span>{slotsForDate.length} meals planned</span>
                         </div>
                       </AccordionTrigger>
-                      <AccordionContent className="flex flex-col gap-4 text-balance border border-[#F1EEFF] rounded-lg p-4 bg-white mt-3">
+                      <AccordionContent className="flex flex-col gap-4 text-balance border border-[#F1EEFF] rounded-lg p-4 bg-gradient-to-r from-white via-[#F3F0FD] to-white mt-3">
                         <Accordion
                           type="single"
                           collapsible
-                          className="w-full"
+                          className="w-full flex gap-4 flex-col"
                           defaultValue={
                             slotsForDate.length > 0
                               ? `meal-${date}-${slotsForDate[0].meal}`
@@ -774,13 +774,12 @@ export default function RecipeSelection() {
                               <AccordionItem
                                 value={`meal-${slotKey}`}
                                 key={slotKey}
-                                className=""
-                              >
+                                className="border-none">
                                 <AccordionTrigger className="p-0 items-center hover:no-underline group">
                                   <div className="flex flex-row md:justify-between w-full gap-2 items-center">
-                                    <h3 className="truncate text-lg font-semibold text-black">
+                                    <h3 className="text-base font-semibold text-black">
                                       {slot.meal}{" "}
-                                      <span className="text-gray-500 font-normal">
+                                      <span className="text-gray-500 font-normal text-xs">
                                         ({slot.type})
                                       </span>
                                     </h3>
@@ -1179,14 +1178,14 @@ export default function RecipeSelection() {
                                                         suggestion.imageUrl,
                                                       )!}
                                                       alt={suggestion.name}
-                                                      className="w-10 h-10 rounded object-cover bg-gray-100"
+                                                      className="w-14 h-14 rounded-lg object-cover bg-gray-100"
                                                     />
                                                   )}
                                                   <div className="flex-1">
-                                                    <div className="text-sm font-medium text-gray-900">
+                                                    <div className="text-base font-medium text-gray-900">
                                                       {suggestion.name}
                                                     </div>
-                                                    <div className="text-xs text-gray-500 truncate">
+                                                    <div className="text-sm text-gray-500 truncate whitespace-normal line-clamp-2">
                                                       {
                                                         suggestion.description
                                                       }
