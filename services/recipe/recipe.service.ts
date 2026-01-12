@@ -11,7 +11,9 @@ import {
 export class RecipeService {
   // Get specific recipe by ID
   async getRecipeById(id: string): Promise<Recipe> {
-    const response = await apiClient.get(API_ENDPOINTS.RECIPE.GET_RECIPE_BY_ID(id));
+    const response = await apiClient.get(
+      API_ENDPOINTS.RECIPE.GET_RECIPE_BY_ID(id),
+    );
     return response.data?.data;
   }
 

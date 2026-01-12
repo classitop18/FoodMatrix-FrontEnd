@@ -212,6 +212,13 @@ export default function RecipesPage() {
   const allRecipes = data?.pages.flatMap((page) => page.recipes) || [];
   const groupedRecipes = groupRecipesByWeek(allRecipes);
 
+  // Derive selected recipe from live data to ensure updates (like favorite) are reflected immediately in Dialog
+  const selectedRecipeData = useMemo(() => {
+    return (
+      allRecipes.find((r) => r.id === selectedRecipe?.id) || selectedRecipe
+    );
+  }, [allRecipes, selectedRecipe]);
+
   // Active filters count and labels
   const activeFilters = useMemo(() => {
     const filters_list: { key: string; label: string; value: any }[] = [];
@@ -457,12 +464,12 @@ export default function RecipesPage() {
                   icon: LayoutGrid,
                   hidden: false,
                 },
-                {
-                  id: "table",
-                  label: "Table View",
-                  icon: TableIcon,
-                  hidden: filters.viewScope === "global",
-                },
+                // {
+                //   id: "table",
+                //   label: "Table View",
+                //   icon: TableIcon,
+                //   hidden: filters.viewScope === "global",
+                // },
               ]
                 .filter((tab) => !tab.hidden)
                 .map((tab) => {
@@ -709,15 +716,17 @@ export default function RecipesPage() {
                     )}
 
                     {activeTab === "grid" && (
-                      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                        {allRecipes.map((recipe) => (
-                          <RecipeCard
-                            key={recipe.id}
-                            recipe={recipe}
-                            onViewDetails={openRecipeDetails}
-                          />
-                        ))}
-                      </div>
+                      <ScrollArea className="overflow-auto max-h-screen pr-4">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 pb-20">
+                          {allRecipes.map((recipe) => (
+                            <RecipeCard
+                              key={recipe.id}
+                              recipe={recipe}
+                              onViewDetails={openRecipeDetails}
+                            />
+                          ))}
+                        </div>
+                      </ScrollArea>
                     )}
 
                     {activeTab === "table" && (
@@ -950,7 +959,7 @@ export default function RecipesPage() {
 
           <RecipeDetailsDialog
             onOpenChange={setIsDialogOpen}
-            recipe={selectedRecipe}
+            recipe={selectedRecipeData}
             open={isDialogOpen}
           />
         </div>

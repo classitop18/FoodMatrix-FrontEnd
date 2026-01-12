@@ -29,6 +29,12 @@ const nextConfig: NextConfig = {
         hostname: "upload.wikimedia.org",
         pathname: "/**",
       },
+      {
+        // https://www.freepik.com/
+        protocol: "https",
+        hostname: "www.freepik.com",
+        pathname: "/**",
+      },
     ],
   },
 };

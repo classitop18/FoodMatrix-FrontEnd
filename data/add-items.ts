@@ -649,11 +649,6 @@ export const vegitables = [
     image: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=400",
   },
   {
-    name: "Onion",
-    unit: "kg",
-    image: "https://images.unsplash.com/photo-1587049352846-4a222e784087?w=400",
-  },
-  {
     name: "Carrot",
     unit: "kg",
     image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=400",
@@ -1070,5 +1065,22 @@ export const desserts = [
     unit: "pack",
     category: "desserts",
     image: "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400",
+  },
+];
+
+export const others = [
+  {
+    name: "chicken breast",
+    unit: "kg",
+    category: "others",
+    image:
+      "https://images.unsplash.com/photo-1633096013004-e2cb4023b560?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Y2hpY2tlbiUyMGJyZWFzdHxlbnwwfHwwfHx8MA%3D%3D",
+  },
+  {
+    name: "oil",
+    unit: "liter",
+    category: "others",
+    image:
+      "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8b2lsfGVufDB8fDB8fHww",
   },
 ];

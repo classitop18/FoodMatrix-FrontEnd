@@ -65,7 +65,7 @@ import {
   useGenerateAICustomRecipeMutation,
   useGenerateAIRecipeMutation,
   useInteractWithRecipeMutation,
-  RecipeService
+  RecipeService,
 } from "@/services/recipe";
 import {
   cuisineOptions,
@@ -153,9 +153,9 @@ export default function RecipeSelection() {
 
   const searchTimeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
 
-  const [suggestions, setSuggestions] = useState<
-    Record<string, ApiRecipe[]>
-  >({});
+  const [suggestions, setSuggestions] = useState<Record<string, ApiRecipe[]>>(
+    {},
+  );
   const [isSearchingSuggestions, setIsSearchingSuggestions] = useState<
     Record<string, boolean>
   >({});
@@ -516,10 +516,13 @@ export default function RecipeSelection() {
           const response = await recipeService.getRecipes({
             search: value,
             page: 1,
-            pageSize: 5
+            pageSize: 5,
           });
           const recipes = response.recipes || [];
-          setSuggestions((prev) => ({ ...prev, [slotKey]: recipes as ApiRecipe[] }));
+          setSuggestions((prev) => ({
+            ...prev,
+            [slotKey]: recipes as ApiRecipe[],
+          }));
         } catch (e) {
           console.error("Failed to fetch suggestions", e);
         } finally {
@@ -555,18 +558,23 @@ export default function RecipeSelection() {
 
       const existingCustomRecipes = generatedCustomRecipies[slotKey] || [];
       // Check for duplicates
-      if (!existingCustomRecipes.find(r => r.id === processed.id)) {
+      if (!existingCustomRecipes.find((r) => r.id === processed.id)) {
         dispatch(
           setGeneratedCustomRecipes({
             slotKey,
             recipes: [processed as any, ...existingCustomRecipes],
           }),
         );
-        toast({ title: "Recipe Added", description: `Added ${fullRecipe.name}` });
+        toast({
+          title: "Recipe Added",
+          description: `Added ${fullRecipe.name}`,
+        });
       } else {
-        toast({ title: "Already Added", description: `Recipe already in list` });
+        toast({
+          title: "Already Added",
+          description: `Recipe already in list`,
+        });
       }
-
     } catch (e) {
       toast({
         title: "Error",
@@ -579,7 +587,7 @@ export default function RecipeSelection() {
         [slotKey]: { ...prev[slotKey], isCustomRecipeLoading: false },
       }));
     }
-  }
+  };
 
   const handleRecipeSelect = (recipe: any, slotKey: string) => {
     // We need to parse slotKey to get date and mealType
@@ -774,7 +782,8 @@ export default function RecipeSelection() {
                               <AccordionItem
                                 value={`meal-${slotKey}`}
                                 key={slotKey}
-                                className="border-none">
+                                className="border-none"
+                              >
                                 <AccordionTrigger className="p-0 items-center hover:no-underline group">
                                   <div className="flex flex-row md:justify-between w-full gap-2 items-center">
                                     <h3 className="text-base font-semibold text-black">
@@ -849,11 +858,11 @@ export default function RecipeSelection() {
                                                 <span className="truncate">
                                                   {payload.members ===
                                                     undefined ||
-                                                    payload.members.length ===
+                                                  payload.members.length ===
                                                     members.length
                                                     ? "All Members"
                                                     : payload.members.length ===
-                                                      0
+                                                        0
                                                       ? "Select Members"
                                                       : `${payload.members.length} selected`}
                                                 </span>
@@ -881,7 +890,7 @@ export default function RecipeSelection() {
                                                           !payload.members ||
                                                           payload.members
                                                             .length ===
-                                                          members.length;
+                                                            members.length;
 
                                                         generateRecipePayload(
                                                           slotKey,
@@ -898,7 +907,7 @@ export default function RecipeSelection() {
                                                           !payload.members ||
                                                             payload.members
                                                               .length ===
-                                                            members.length
+                                                              members.length
                                                             ? "bg-primary text-primary-foreground"
                                                             : "opacity-50 [&_svg]:invisible",
                                                         )}
@@ -970,10 +979,10 @@ export default function RecipeSelection() {
                                                             {member.name ||
                                                               member?.user
                                                                 ?.firstName +
-                                                              (member?.user
-                                                                ?.username
-                                                                ? ` (${member?.user?.username})`
-                                                                : "") ||
+                                                                (member?.user
+                                                                  ?.username
+                                                                  ? ` (${member?.user?.username})`
+                                                                  : "") ||
                                                               "Unnamed Member"}
                                                           </span>
                                                         </CommandItem>
@@ -1101,8 +1110,14 @@ export default function RecipeSelection() {
                                       </p>
                                     </div>
                                     <Popover
-                                      open={!!(suggestions[slotKey] && payload.customRecipe && payload.customRecipe.length >= 3)}
-                                      onOpenChange={() => { }} // Controlled by input state
+                                      open={
+                                        !!(
+                                          suggestions[slotKey] &&
+                                          payload.customRecipe &&
+                                          payload.customRecipe.length >= 3
+                                        )
+                                      }
+                                      onOpenChange={() => {}} // Controlled by input state
                                     >
                                       <PopoverAnchor asChild>
                                         <div className="relative mt-3 bg-white">
@@ -1142,20 +1157,20 @@ export default function RecipeSelection() {
                                       </PopoverAnchor>
 
                                       <PopoverContent
-                                        className="p-0 border-0 shadow-xl bg-transparent w-[var(--radix-popover-trigger-width)]"
+                                        className="p-0 border-0 shadow-xl bg-transparent w-[var(--radix-popover-trigger-width)] z-0"
                                         align="start"
                                         sideOffset={5}
-                                        onOpenAutoFocus={(e) => e.preventDefault()}
+                                        onOpenAutoFocus={(e) =>
+                                          e.preventDefault()
+                                        }
                                       >
-                                        <div className="bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto ring-1 ring-black/5">
-                                          {isSearchingSuggestions[
-                                            slotKey
-                                          ] ? (
+                                        <div className="bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto ring-1 ring-black/5 z-0">
+                                          {isSearchingSuggestions[slotKey] ? (
                                             <div className="p-3 text-sm text-gray-500 text-center">
                                               Searching...
                                             </div>
-                                          ) : suggestions[slotKey]
-                                            ?.length === 0 ? (
+                                          ) : suggestions[slotKey]?.length ===
+                                            0 ? (
                                             <div className="p-3 text-sm text-gray-500 text-center">
                                               No matched item
                                             </div>
@@ -1174,9 +1189,11 @@ export default function RecipeSelection() {
                                                 >
                                                   {suggestion.imageUrl && (
                                                     <img
-                                                      src={getRecipeImageUrl(
-                                                        suggestion.imageUrl,
-                                                      )!}
+                                                      src={
+                                                        getRecipeImageUrl(
+                                                          suggestion.imageUrl,
+                                                        )!
+                                                      }
                                                       alt={suggestion.name}
                                                       className="w-14 h-14 rounded-lg object-cover bg-gray-100"
                                                     />
@@ -1186,9 +1203,7 @@ export default function RecipeSelection() {
                                                       {suggestion.name}
                                                     </div>
                                                     <div className="text-sm text-gray-500 truncate whitespace-normal line-clamp-2">
-                                                      {
-                                                        suggestion.description
-                                                      }
+                                                      {suggestion.description}
                                                     </div>
                                                   </div>
                                                 </div>
@@ -1230,7 +1245,7 @@ export default function RecipeSelection() {
                   <ScrollArea className="w-full h-[calc(100vh-300px)] p-4">
                     <div className="space-y-2">
                       {Object.entries(generatedRecipies).length === 0 &&
-                        Object.entries(generatedCustomRecipies).length === 0 ? (
+                      Object.entries(generatedCustomRecipies).length === 0 ? (
                         <div className="text-center text-gray-500">
                           <p className="text-base">No recipes generated yet</p>
                           <p className="text-sm mt-1">
@@ -1384,10 +1399,11 @@ export default function RecipeSelection() {
                                                     e,
                                                   )
                                                 }
-                                                className={`size-3.5 transition-colors hover:text-green-600 ${recipe.isLiked
-                                                  ? "text-green-600 fill-current"
-                                                  : ""
-                                                  }`}
+                                                className={`size-3.5 transition-colors hover:text-green-600 ${
+                                                  recipe.isLiked
+                                                    ? "text-green-600 fill-current"
+                                                    : ""
+                                                }`}
                                               />
 
                                               <ThumbsDown
@@ -1398,10 +1414,11 @@ export default function RecipeSelection() {
                                                     e,
                                                   )
                                                 }
-                                                className={`size-3.5 transition-colors hover:text-red-600 ${recipe.isDisliked
-                                                  ? "text-red-600 fill-current"
-                                                  : ""
-                                                  }`}
+                                                className={`size-3.5 transition-colors hover:text-red-600 ${
+                                                  recipe.isDisliked
+                                                    ? "text-red-600 fill-current"
+                                                    : ""
+                                                }`}
                                               />
 
                                               <Heart
@@ -1412,10 +1429,11 @@ export default function RecipeSelection() {
                                                     e,
                                                   )
                                                 }
-                                                className={`size-3.5 transition-colors hover:text-pink-600 ${recipe.isFavorite
-                                                  ? "text-pink-600 fill-current"
-                                                  : ""
-                                                  }`}
+                                                className={`size-3.5 transition-colors hover:text-pink-600 ${
+                                                  recipe.isFavorite
+                                                    ? "text-pink-600 fill-current"
+                                                    : ""
+                                                }`}
                                               />
                                             </div>
                                             <button
