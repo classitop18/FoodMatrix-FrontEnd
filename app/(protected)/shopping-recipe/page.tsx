@@ -604,12 +604,11 @@ export default function ShoppingRecipe() {
                               }}
                               className={`
                                                                 flex items-center gap-3 p-2 rounded-lg border cursor-pointer transition-all
-                                                                ${
-                                                                  selectedItemToAdd?.name ===
-                                                                  item.name
-                                                                    ? "border-[var(--primary)] bg-[#F4F1FD]"
-                                                                    : "bg-gray-50 border-gray-200 hover:bg-gray-100 hover:border-gray-300"
-                                                                }
+                                                                ${selectedItemToAdd?.name ===
+                                  item.name
+                                  ? "border-[var(--primary)] bg-[#F4F1FD]"
+                                  : "bg-gray-50 border-gray-200 hover:bg-gray-100 hover:border-gray-300"
+                                }
                                                             `}
                             >
                               <div className="w-10 h-10 rounded bg-white flex items-center justify-center overflow-hidden border border-gray-100 shrink-0">
@@ -816,13 +815,80 @@ export default function ShoppingRecipe() {
                                     className="group/item flex items-center justify-between p-3 border-b border-gray-50 last:border-0 hover:bg-[#fafafa] transition-colors"
                                   >
                                     <div className="flex items-center gap-3">
-                                      <div className="w-12 h-12 rounded-lg bg-gray-50 border border-gray-100 overflow-hidden flex-shrink-0">
-                                        <img
-                                          src={item.image}
-                                          alt={item.name}
-                                          className="w-full h-full object-cover"
-                                        />
-                                      </div>
+                                      <Dialog>
+                                        <DialogTrigger asChild>
+                                          <div className="w-12 h-12 rounded-lg bg-gray-50 border border-gray-100 overflow-hidden flex-shrink-0 cursor-zoom-in relative group/image">
+                                            <div className="absolute inset-0 bg-black/0 group-hover/image:bg-black/10 transition-colors flex items-center justify-center">
+                                              <Search className="text-white w-4 h-4 opacity-0 group-hover/image:opacity-100 transition-opacity" />
+                                            </div>
+                                            <img
+                                              src={item.image}
+                                              alt={item.name}
+                                              className="w-full h-full object-cover"
+                                            />
+                                          </div>
+                                        </DialogTrigger>
+                                        <DialogContent className="sm:max-w-[425px] p-0 border-none bg-white overflow-hidden gap-0 shadow-2xl">
+                                          <div className="relative w-full aspect-[4/3] bg-gray-50">
+                                            <img
+                                              src={item.image}
+                                              alt={item.name}
+                                              className="w-full h-full object-cover"
+                                            />
+                                          </div>
+                                          <div className="p-6">
+                                            <div className="flex justify-between items-start mb-2">
+                                              <div>
+                                                <h3 className="text-xl font-bold text-gray-900 capitalize leading-tight">
+                                                  {item.name}
+                                                </h3>
+                                                <p className="text-sm text-gray-500 mt-1 capitalize font-medium">
+                                                  {item.category || "General"}
+                                                </p>
+                                              </div>
+                                              {item.price > 0 && (
+                                                <div className="text-right">
+                                                  <p className="text-lg font-bold text-[var(--primary)]">
+                                                    $
+                                                    {(
+                                                      (item.price || 0) *
+                                                      (item.displayQuantity || 1)
+                                                    ).toFixed(2)}
+                                                  </p>
+                                                  <p className="text-xs text-gray-400">
+                                                    ${item.price}/{item.unit}
+                                                  </p>
+                                                </div>
+                                              )}
+                                            </div>
+
+                                            <div className="flex gap-4 mt-6 pt-4 border-t border-gray-100">
+                                              <div className="flex-1 bg-gray-50 rounded-xl p-3 text-center border border-gray-100">
+                                                <span className="block text-[10px] text-gray-400 uppercase tracking-wider font-bold">
+                                                  Quantity
+                                                </span>
+                                                <span className="block text-lg font-bold text-gray-900 mt-0.5">
+                                                  {item.displayQuantity}{" "}
+                                                  {item.unit}
+                                                </span>
+                                              </div>
+                                              {item.source && (
+                                                <div className="flex-1 bg-gray-50 rounded-xl p-3 text-center border border-gray-100">
+                                                  <span className="block text-[10px] text-gray-400 uppercase tracking-wider font-bold">
+                                                    Source
+                                                  </span>
+                                                  <span className="block text-sm font-bold text-gray-900 mt-1.5 truncate max-w-[140px] mx-auto">
+                                                    {item.source === "Recipe"
+                                                      ? item.recipeName ||
+                                                      "Recipe"
+                                                      : "Manual Add"}
+                                                  </span>
+                                                </div>
+                                              )}
+                                            </div>
+                                          </div>
+                                        </DialogContent>
+                                      </Dialog>
                                       <div className="flex flex-col">
                                         <span className="font-medium text-gray-900 line-clamp-1 text-sm md:text-base">
                                           {item.name}
@@ -906,21 +972,21 @@ export default function ShoppingRecipe() {
                         acc + (item.price || 0) * (item.displayQuantity || 1),
                       0,
                     ) > 0 && (
-                    <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center text-lg font-bold">
-                      <span>Total Estimate</span>
-                      <span className="text-[var(--primary)]">
-                        $
-                        {Object.values(groupedIngredients)
-                          .flat()
-                          .reduce(
-                            (acc: number, item: any) =>
-                              acc +
-                              (item.price || 0) * (item.displayQuantity || 1),
-                            0,
-                          )}
-                      </span>
-                    </div>
-                  )}
+                      <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center text-lg font-bold">
+                        <span>Total Estimate</span>
+                        <span className="text-[var(--primary)]">
+                          $
+                          {Object.values(groupedIngredients)
+                            .flat()
+                            .reduce(
+                              (acc: number, item: any) =>
+                                acc +
+                                (item.price || 0) * (item.displayQuantity || 1),
+                              0,
+                            )}
+                        </span>
+                      </div>
+                    )}
                 </>
               )}
             </div>
@@ -989,7 +1055,7 @@ export default function ShoppingRecipe() {
                                       src={
                                         getRecipeImageUrl(
                                           recipe.image ||
-                                            (recipe as any).imageUrl,
+                                          (recipe as any).imageUrl,
                                         )!
                                       }
                                       alt={recipe.name}
