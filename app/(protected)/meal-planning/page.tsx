@@ -269,6 +269,13 @@ export default function MealPlanning() {
 
   useEffect(() => {
     if (viewMode === "week") {
+      // CLEAR ALL DATA FOR A FRESH START
+      setRecipeSelections({});
+      setSelectedRecipes([]);
+      localStorage.removeItem(LS_KEYS.SELECTED_RECIPES);
+      localStorage.removeItem(LS_KEYS.RECIPE_SELECTIONS);
+      localStorage.removeItem("foodmatrix-generated-recipes");
+
       const today = new Date();
       const start = startOfWeek(today, { weekStartsOn: 0 });
       const end = endOfWeek(today, { weekStartsOn: 0 });
@@ -286,19 +293,46 @@ export default function MealPlanning() {
 
       // Ensure weekPlan has entries for all these dates
       setWeekPlan((prev) => {
-        const updated = { ...prev };
+        // Since we want a fresh start, we should probably start with a fresh plan too?
+        // But the user might have some plan structure they want to keep...
+        // The prompt says "rcipes reset ho jaye". Explicitly recipes.
+        // However, if we clear recipes, we should probably ensure the plan reflects that (e.g. still "cook-home" but no recipe selected).
+        // This is fine. The plan structure (meal types) remains, but the specific recipes are gone.
+
+        const updated = {}; // Start fresh for week view as well to be safe?
+        // Actually, previous logic was: preserve `prev`.
+        // But if we cleared recipes, `prev` might have stale meal types?
+        // "fresh start" usually implies everything.
+        // But let's stick to clearing RECIPES as requested.
+
+        // Wait, if I switch to week view, I generate a new set of dates.
+        // If I keep `prev`, I might carry over plans for dates that happen to match.
+        // Let's keep the logic of creating empty slots if missing, but maybe we should rely on `cleanedPlan` or just blank?
+        // Let's stick to original logic for WeekPlan construction to avoid breaking meal type persistence if user wants it,
+        // BUT we definitely clear recipes.
+
+        const nextPlan = { ...prev };
         let hasChanges = false;
 
         newSelectedDates.forEach((d) => {
-          if (!updated[d.key]) {
-            updated[d.key] = createEmptySlot();
+          if (!nextPlan[d.key]) {
+            nextPlan[d.key] = createEmptySlot();
             hasChanges = true;
           }
         });
 
-        return hasChanges ? updated : prev;
+        // Current decision: Clear recipes (Done above), keep meal types (handled here).
+        return hasChanges ? nextPlan : prev;
       });
     } else {
+      // Date Mode
+      // User requested "fresh start" on view change.
+      setRecipeSelections({});
+      setSelectedRecipes([]);
+      localStorage.removeItem(LS_KEYS.SELECTED_RECIPES);
+      localStorage.removeItem(LS_KEYS.RECIPE_SELECTIONS);
+      localStorage.removeItem("foodmatrix-generated-recipes");
+
       setSelectedDates([]);
       setWeekPlan({});
     }
@@ -538,6 +572,31 @@ export default function MealPlanning() {
   };
 
   const updateMealSlot = (dateKey: string, meal: MealTime, value: MealType) => {
+    // Clear recipes for this slot when modified
+    setRecipeSelections((prev) => {
+      const next = { ...prev };
+      delete next[`${dateKey}-${meal}`];
+      delete next[`${dateKey}-${meal.toUpperCase()}`];
+      delete next[`${dateKey}-${meal.toLowerCase()}`];
+      return next;
+    });
+
+    try {
+      const savedData = localStorage.getItem(LS_KEYS.SELECTED_RECIPES);
+      if (savedData) {
+        const parsed = JSON.parse(savedData);
+        if (parsed.selections) {
+          delete parsed.selections[`${dateKey}-${meal}`];
+          delete parsed.selections[`${dateKey}-${meal.toUpperCase()}`];
+          delete parsed.selections[`${dateKey}-${meal.toLowerCase()}`];
+          localStorage.setItem(
+            LS_KEYS.SELECTED_RECIPES,
+            JSON.stringify(parsed),
+          );
+        }
+      }
+    } catch (e) {}
+
     setWeekPlan((prev) => {
       const base = prev[dateKey] ?? createEmptySlot();
       const updatedSlot: MemberSpecificMeal = {
@@ -598,6 +657,13 @@ export default function MealPlanning() {
     if (viewMode === "date") localStorage.removeItem(LS_KEYS.SELECTED_DATES);
     localStorage.removeItem(LS_KEYS.WEEK_PLAN);
     setWeekPlan({});
+
+    // CLEAR ALL RECIPES
+    setRecipeSelections({});
+    setSelectedRecipes([]);
+    localStorage.removeItem(LS_KEYS.SELECTED_RECIPES);
+    localStorage.removeItem(LS_KEYS.RECIPE_SELECTIONS);
+    localStorage.removeItem("foodmatrix-generated-recipes");
   };
 
   const { counts, costs } = useMemo(() => {

@@ -230,6 +230,8 @@ export default function RecipeSelectionCard(props: RecipeSelectionCardProps) {
   };
 
   // Recipe card component - optimized and reusable
+  // Replace your RecipeCard component with this fixed version
+
   const RecipeCard = useCallback(
     ({ recipe }: { recipe: any }) => {
       const cannotGenerate = recipe.canGenerateRecipe === false;
@@ -243,12 +245,24 @@ export default function RecipeSelectionCard(props: RecipeSelectionCardProps) {
         setIsPantryUpdateOpen(true);
       };
 
+      // Fixed: Separate handler for image click
+      const handleImageClick = (e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent card click
+        console.log("Image clicked for recipe:", recipe.name);
+        onRecipeView(recipe);
+      };
+
+      // Fixed: Separate handler for card click
+      const handleCardClick = () => {
+        if (!cannotGenerate && onRecipeSelect) {
+          onRecipeSelect(recipe);
+        }
+      };
+
       return (
         <div
           key={recipe.id}
-          onClick={() => {
-            if (!cannotGenerate && onRecipeSelect) onRecipeSelect(recipe);
-          }}
+          onClick={handleCardClick} // Card click handler
           className={`relative p-4 rounded-lg transition-all duration-200 cursor-pointer border ${
             cannotGenerate
               ? "bg-red-50 border-red-200 opacity-60 cursor-not-allowed"
@@ -316,11 +330,32 @@ export default function RecipeSelectionCard(props: RecipeSelectionCardProps) {
           )}
 
           {/* Content Layout - Horizontal */}
-          <div className="flex items-center justify-between gap-4 pr-24">
+          <div className="flex items-start gap-4 pr-24">
+            {/* Fixed: Image Thumbnail with proper click handling */}
+            <div
+              className="w-24 h-24 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 cursor-pointer hover:opacity-90 transition-opacity border border-gray-100 hover:ring-2 hover:ring-indigo-300"
+              onClick={handleImageClick} // Dedicated image click handler
+            >
+              {recipe?.imageUrl ? (
+                <img
+                  src={recipe.imageUrl}
+                  alt={recipe.name}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                  <ChefHat className="w-8 h-8" />
+                </div>
+              )}
+            </div>
+
             {/* Left: Title & Badges */}
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 py-1">
               <h4
-                className={`font-semibold text-base mb-1.5 truncate ${cannotGenerate ? "text-red-700" : "text-gray-900"}`}
+                className={`font-semibold text-base mb-1.5 truncate ${
+                  cannotGenerate ? "text-red-700" : "text-gray-900"
+                }`}
               >
                 {recipe.name}
               </h4>
@@ -348,6 +383,17 @@ export default function RecipeSelectionCard(props: RecipeSelectionCardProps) {
                   <Badge className="text-xs px-2 py-0.5 bg-green-50 border-green-200 text-green-700 font-medium">
                     Liked
                   </Badge>
+                )}
+                {/* Health Considerations Tags from AI */}
+                {recipe.healthConsiderations?.map(
+                  (tag: string, index: number) => (
+                    <Badge
+                      key={`health-${index}`}
+                      className="text-xs px-2 py-0.5 bg-purple-50 border-purple-200 text-purple-700 font-medium"
+                    >
+                      {tag}
+                    </Badge>
+                  ),
                 )}
               </div>
 

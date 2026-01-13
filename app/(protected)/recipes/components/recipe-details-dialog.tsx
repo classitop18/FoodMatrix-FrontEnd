@@ -28,6 +28,16 @@ import {
   ThumbsUp,
   ThumbsDown,
   Heart,
+  Package,
+  Leaf,
+  Info,
+  Zap,
+  Repeat,
+  Globe,
+  TrendingUp,
+  AlertCircle,
+  CheckCircle2,
+  Scale,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -61,6 +71,8 @@ export function RecipeDetailsDialog({
   const [nutritionData, setNutritionData] = useState<any[]>([]);
   const [chartType, setChartType] = useState<"bar" | "line" | "pie">("bar");
   const { mutate: interact } = useInteractWithRecipeMutation();
+
+  console.log({ recipe }, "112recipe")
 
   const handleInteraction = (action: "like" | "dislike" | "favorite") => {
     if (recipe) {
@@ -256,22 +268,20 @@ export function RecipeDetailsDialog({
             <div className="flex bg-gray-100 p-1 rounded-xl">
               <button
                 onClick={() => setViewMode("details")}
-                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
-                  viewMode === "details"
-                    ? "bg-white text-[#3d326d] shadow-sm"
-                    : "text-gray-500 hover:text-[#313131]"
-                }`}
+                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${viewMode === "details"
+                  ? "bg-white text-[#3d326d] shadow-sm"
+                  : "text-gray-500 hover:text-[#313131]"
+                  }`}
               >
                 <LayoutList className="w-3.5 h-3.5" />
                 Details
               </button>
               <button
                 onClick={() => setViewMode("graph")}
-                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
-                  viewMode === "graph"
-                    ? "bg-white text-[#3d326d] shadow-sm"
-                    : "text-gray-500 hover:text-[#313131]"
-                }`}
+                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${viewMode === "graph"
+                  ? "bg-white text-[#3d326d] shadow-sm"
+                  : "text-gray-500 hover:text-[#313131]"
+                  }`}
               >
                 <BarChart3 className="w-3.5 h-3.5" />
                 Analysis
@@ -282,11 +292,10 @@ export function RecipeDetailsDialog({
               <Button
                 size="icon"
                 variant="ghost"
-                className={`h-8 w-8 hover:bg-white hover:shadow-sm rounded-lg ${
-                  recipe.isLiked
-                    ? "text-green-600 bg-white shadow-sm"
-                    : "text-gray-500"
-                }`}
+                className={`h-8 w-8 hover:bg-white hover:shadow-sm rounded-lg ${recipe.isLiked
+                  ? "text-green-600 bg-white shadow-sm"
+                  : "text-gray-500"
+                  }`}
                 onClick={() => handleInteraction("like")}
               >
                 <ThumbsUp
@@ -297,17 +306,15 @@ export function RecipeDetailsDialog({
               <Button
                 size="icon"
                 variant="ghost"
-                className={`h-8 w-8 hover:bg-white hover:shadow-sm rounded-lg ${
-                  recipe.isDisliked
-                    ? "text-red-500 bg-white shadow-sm"
-                    : "text-gray-500"
-                }`}
+                className={`h-8 w-8 hover:bg-white hover:shadow-sm rounded-lg ${recipe.isDisliked
+                  ? "text-red-500 bg-white shadow-sm"
+                  : "text-gray-500"
+                  }`}
                 onClick={() => handleInteraction("dislike")}
               >
                 <ThumbsDown
-                  className={`w-4 h-4 ${
-                    recipe.isDisliked ? "fill-current" : ""
-                  }`}
+                  className={`w-4 h-4 ${recipe.isDisliked ? "fill-current" : ""
+                    }`}
                 />
               </Button>
             </div>
@@ -315,11 +322,10 @@ export function RecipeDetailsDialog({
             <Button
               size="icon"
               variant="ghost"
-              className={`h-10 w-10 rounded-full border transition-all ${
-                recipe.isFavorite
-                  ? "bg-red-50 text-red-500 border-red-200 hover:bg-red-100"
-                  : "bg-white text-gray-400 border-gray-200 hover:border-red-200 hover:text-red-400"
-              }`}
+              className={`h-10 w-10 rounded-full border transition-all ${recipe.isFavorite
+                ? "bg-red-50 text-red-500 border-red-200 hover:bg-red-100"
+                : "bg-white text-gray-400 border-gray-200 hover:border-red-200 hover:text-red-400"
+                }`}
               onClick={() => handleInteraction("favorite")}
             >
               <Heart
@@ -361,6 +367,9 @@ export function RecipeDetailsDialog({
                           </Badge>
                           <Badge className="bg-white/20 hover:bg-white/30 text-white border-none px-2.5 py-0.5 text-[10px] uppercase font-bold tracking-wider">
                             {recipe.mealType}
+                          </Badge>
+                          <Badge className="bg-amber-500/80 hover:bg-amber-500 text-white border-none px-2.5 py-0.5 text-[10px] uppercase font-bold tracking-wider">
+                            {recipe.difficultyLevel}
                           </Badge>
                         </div>
                         <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white">
@@ -417,6 +426,9 @@ export function RecipeDetailsDialog({
                             </Badge>
                             <Badge className="bg-white/20 hover:bg-white/30 text-white border-none px-2.5 py-0.5 text-[10px] uppercase font-bold tracking-wider">
                               {recipe.mealType}
+                            </Badge>
+                            <Badge className="bg-amber-500/80 hover:bg-amber-500 text-white border-none px-2.5 py-0.5 text-[10px] uppercase font-bold tracking-wider">
+                              {recipe.difficultyLevel}
                             </Badge>
                           </div>
                           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-2">
@@ -554,8 +566,8 @@ export function RecipeDetailsDialog({
                           {(Array.isArray(recipe.ingredients)
                             ? recipe.ingredients
                             : (JSON.parse(
-                                (recipe.ingredients as any) || "[]",
-                              ) as any[])
+                              (recipe.ingredients as any) || "[]",
+                            ) as any[])
                           ).map((ingredient, index) => (
                             <div
                               key={index}
@@ -566,8 +578,11 @@ export function RecipeDetailsDialog({
                                   {index + 1}
                                 </div>
                                 <div>
-                                  <p className="font-bold text-[#313131] group-hover:text-[#3d326d] transition-colors">
+                                  <p className="font-bold text-[#313131] group-hover:text-[#3d326d] transition-colors flex items-center gap-2">
                                     {ingredient.name}
+                                    {ingredient.isPantryItem && (
+                                      <span className="text-[10px] bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-full border border-indigo-200 uppercase font-bold tracking-wider">Pantry</span>
+                                    )}
                                   </p>
                                   <p className="text-xs text-gray-500 font-medium">
                                     {ingredient.quantity} {ingredient.unit}
@@ -632,6 +647,99 @@ export function RecipeDetailsDialog({
                           </CardContent>
                         </Card>
                       )}
+
+                    {/* Cost Analysis Card */}
+                    {recipe.costAnalysis && (
+                      <Card className="border-none shadow-md overflow-hidden bg-white">
+                        <div className="h-1.5 bg-gradient-to-r from-emerald-400 to-teal-400" />
+                        <CardContent className="p-6 md:p-8">
+                          <h3 className="text-xl font-extrabold text-[#313131] mb-6 flex items-center gap-2">
+                            <Scale className="w-5 h-5 text-emerald-500" />
+                            Cost Breakdown
+                          </h3>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
+                              <p className="text-xs text-emerald-600 font-bold uppercase mb-1">Total Cost</p>
+                              <p className="text-2xl font-extrabold text-[#313131]">${recipe.costAnalysis.totalCost.toFixed(2)}</p>
+                            </div>
+                            <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                              <p className="text-xs text-blue-600 font-bold uppercase mb-1">Per Serving</p>
+                              <p className="text-2xl font-extrabold text-[#313131]">${recipe.costAnalysis.costPerServing.toFixed(2)}</p>
+                            </div>
+                            {recipe.costAnalysis.budgetEfficiency && (
+                              <div className="bg-orange-50 p-4 rounded-xl border border-orange-100 col-span-2">
+                                <div className="flex justify-between items-center mb-2">
+                                  <p className="text-xs text-orange-600 font-bold uppercase">Budget Efficiency</p>
+                                  <span className="text-sm font-bold text-orange-700">{(recipe.costAnalysis.budgetEfficiency * 100).toFixed(0)}%</span>
+                                </div>
+                                <div className="h-2 w-full bg-orange-200 rounded-full overflow-hidden">
+                                  <div className="h-full bg-orange-500 rounded-full" style={{ width: `${recipe.costAnalysis.budgetEfficiency * 100}%` }} />
+                                </div>
+                              </div>
+                            )}
+                            {recipe.costAnalysis.pantryItemsSavings && (
+                              <div className="bg-purple-50 p-4 rounded-xl border border-purple-100 col-span-2 flex items-center gap-3">
+                                <div className="p-2 bg-purple-100 rounded-lg text-purple-600">
+                                  <TrendingUp className="w-5 h-5" />
+                                </div>
+                                <div>
+                                  <p className="text-xs text-purple-600 font-bold uppercase">Pantry Savings</p>
+                                  <p className="text-sm font-medium text-gray-700">You saved <span className="font-bold text-purple-700">${(recipe.costAnalysis.pantryItemsSavings * 100).toFixed(0)}%</span> by using pantry items!</p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Pantry Optimization */}
+                    {recipe.pantryOptimization && recipe.pantryOptimization.length > 0 && (
+                      <Card className="border-none shadow-md overflow-hidden bg-white">
+                        <div className="h-1.5 bg-gradient-to-r from-indigo-400 to-violet-400" />
+                        <CardContent className="p-6 md:p-8">
+                          <h3 className="text-xl font-extrabold text-[#313131] mb-6 flex items-center gap-2">
+                            <Package className="w-5 h-5 text-indigo-500" />
+                            Pantry Optimization
+                          </h3>
+                          <ul className="space-y-3">
+                            {recipe.pantryOptimization.map((item, idx) => (
+                              <li key={idx} className="flex items-start gap-3 text-gray-600 font-medium">
+                                <CheckCircle2 className="w-5 h-5 text-indigo-500 shrink-0 mt-0.5" />
+                                {item}
+                              </li>
+                            ))}
+                          </ul>
+                          {recipe.pantryItemsUsedCount && (
+                            <div className="mt-6 p-4 bg-indigo-50 rounded-xl border border-indigo-100 flex items-center gap-3">
+                              <span className="font-bold text-indigo-700 text-lg">{recipe.pantryItemsUsedCount}</span>
+                              <span className="text-indigo-600 text-sm font-medium">pantry staples used in this recipe.</span>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Variations */}
+                    {recipe.variations && recipe.variations.length > 0 && (
+                      <Card className="border-none shadow-md overflow-hidden bg-white">
+                        <div className="h-1.5 bg-gradient-to-r from-pink-400 to-rose-400" />
+                        <CardContent className="p-6 md:p-8">
+                          <h3 className="text-xl font-extrabold text-[#313131] mb-6 flex items-center gap-2">
+                            <Repeat className="w-5 h-5 text-pink-500" />
+                            Variations
+                          </h3>
+                          <ul className="space-y-3">
+                            {recipe.variations.map((item, idx) => (
+                              <li key={idx} className="flex items-start gap-3 text-gray-600 font-medium">
+                                <div className="w-1.5 h-1.5 rounded-full bg-pink-400 mt-2 shrink-0" />
+                                {item}
+                              </li>
+                            ))}
+                          </ul>
+                        </CardContent>
+                      </Card>
+                    )}
                   </div>
 
                   {/* Right Column: Instructions, Nutrition (5 cols) */}
@@ -670,6 +778,27 @@ export function RecipeDetailsDialog({
                         </div>
                       </CardContent>
                     </Card>
+
+                    {/* Cooking Tips */}
+                    {recipe.cookingTips && recipe.cookingTips.length > 0 && (
+                      <Card className="border-none shadow-md overflow-hidden bg-white">
+                        <div className="h-1.5 bg-gradient-to-r from-amber-400 to-orange-400" />
+                        <CardContent className="p-6 md:p-8">
+                          <h3 className="text-xl font-extrabold text-[#313131] mb-6 flex items-center gap-2">
+                            <Zap className="w-5 h-5 text-amber-500" />
+                            Pro Tips
+                          </h3>
+                          <ul className="space-y-4">
+                            {recipe.cookingTips.map((tip, idx) => (
+                              <li key={idx} className="bg-amber-50 p-4 rounded-xl border border-amber-100 text-amber-900 font-medium text-sm flex gap-3">
+                                <Lightbulb className="w-5 h-5 text-amber-500 shrink-0" />
+                                {tip}
+                              </li>
+                            ))}
+                          </ul>
+                        </CardContent>
+                      </Card>
+                    )}
 
                     {/* Quick Nutrition Card */}
                     <Card className="border-none shadow-md overflow-hidden bg-white">
@@ -745,6 +874,82 @@ export function RecipeDetailsDialog({
                         </div>
                       </CardContent>
                     </Card>
+
+                    {/* Health & Considerations */}
+                    {(recipe.healthConsiderations?.length || recipe.nutritionalHighlights?.length) && (
+                      <Card className="border-none shadow-md overflow-hidden bg-white">
+                        <div className="h-1.5 bg-gradient-to-r from-green-400 to-emerald-400" />
+                        <CardContent className="p-6 md:p-8">
+                          <h3 className="text-xl font-extrabold text-[#313131] mb-6 flex items-center gap-2">
+                            <Leaf className="w-5 h-5 text-green-500" />
+                            Health & Diet
+                          </h3>
+
+                          {recipe.healthConsiderations && recipe.healthConsiderations.length > 0 && (
+                            <div className="mb-6">
+                              <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">Considerations</h4>
+                              <div className="flex flex-wrap gap-2">
+                                {recipe.healthConsiderations.map((item, idx) => (
+                                  <Badge key={idx} className="bg-green-100 text-green-700 hover:bg-green-200 border-none px-3 py-1">
+                                    {item}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {recipe.nutritionalHighlights && recipe.nutritionalHighlights.length > 0 && (
+                            <div>
+                              <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">Highlights</h4>
+                              <ul className="space-y-2">
+                                {recipe.nutritionalHighlights.map((highlight, idx) => (
+                                  <li key={idx} className="flex items-start gap-2 text-gray-600 font-medium text-sm">
+                                    <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
+                                    {highlight}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* AI Reasoning & Sources */}
+                    {(recipe.aiReasoningNotes || recipe.webSourceInspirations?.length) && (
+                      <Card className="border-none shadow-md overflow-hidden bg-white">
+                        <div className="h-1.5 bg-gradient-to-r from-violet-400 to-purple-400" />
+                        <CardContent className="p-6 md:p-8">
+                          <div className="flex items-center gap-2 mb-4">
+                            <Sparkles className="w-5 h-5 text-violet-500" />
+                            <h3 className="text-lg font-bold text-[#313131]">AI Insights</h3>
+                          </div>
+
+                          {recipe.aiReasoningNotes && (
+                            <div className="bg-violet-50 p-4 rounded-xl border border-violet-100 text-violet-900 text-sm leading-relaxed mb-6">
+                              {recipe.aiReasoningNotes}
+                            </div>
+                          )}
+
+                          {recipe.webSourceInspirations && recipe.webSourceInspirations.length > 0 && (
+                            <div>
+                              <h4 className="flex items-center gap-2 text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">
+                                <Globe className="w-4 h-4" />
+                                Inspirations
+                              </h4>
+                              <ul className="space-y-2">
+                                {recipe.webSourceInspirations.map((source, idx) => (
+                                  <li key={idx} className="text-sm text-gray-500 italic pl-6 relative">
+                                    <span className="absolute left-0 top-0 text-violet-400">•</span>
+                                    {source}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    )}
                   </div>
                 </div>
               ) : (
@@ -762,11 +967,10 @@ export function RecipeDetailsDialog({
                           <button
                             key={type}
                             onClick={() => setChartType(type)}
-                            className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all ${
-                              chartType === type
-                                ? "bg-white text-[#3d326d] shadow-sm scale-105"
-                                : "text-gray-500 hover:text-[#313131]"
-                            }`}
+                            className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all ${chartType === type
+                              ? "bg-white text-[#3d326d] shadow-sm scale-105"
+                              : "text-gray-500 hover:text-[#313131]"
+                              }`}
                           >
                             {type} Chart
                           </button>
@@ -812,6 +1016,7 @@ export function RecipeDetailsDialog({
           </div>
         </div>
       </DialogContent>
-    </Dialog>
+    </Dialog >
+
   );
 }

@@ -11,6 +11,11 @@ import {
   Apple,
   BarChart3,
   LayoutList,
+  Sparkles,
+  ExternalLink,
+  ImageIcon,
+  Leaf,
+  Scale,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -259,22 +264,54 @@ export default function RecipeDetailsPage({
           {/* Top Accent Line */}
           <div className="bg-gradient-to-r from-orange-500 to-pink-500 h-2" />
 
+          {/* Image Preview */}
+          {recipe.imageUrl && (
+            <div className="w-full h-64 sm:h-80 overflow-hidden relative group cursor-pointer bg-gray-100">
+              <img
+                src={recipe.imageUrl}
+                alt={recipe.name}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
+              <div className="absolute bottom-4 right-4">
+                <Badge className="bg-black/60 hover:bg-black/70 text-white border-0 flex items-center gap-2 px-3 py-1.5 backdrop-blur-sm">
+                  <ImageIcon className="w-4 h-4" />
+                  View Full Image
+                </Badge>
+              </div>
+            </div>
+          )}
+
           <CardContent className="p-6 sm:p-8 space-y-6">
             {/* === HEADER (Title + Badge) === */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
               <div className="flex items-start gap-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-pink-500 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
-                  <ChefHat className="w-8 h-8 text-white" />
-                </div>
+                {!recipe.imageUrl && (
+                  <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-pink-500 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                    <ChefHat className="w-8 h-8 text-white" />
+                  </div>
+                )}
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                     {recipe.name}
                   </h1>
-                  <Badge
-                    className={`${getCuisineColor(recipe.cuisineType)} border`}
-                  >
-                    {recipe.cuisineType} Cuisine
-                  </Badge>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    <Badge
+                      className={`${getCuisineColor(recipe.cuisineType)} border`}
+                    >
+                      {recipe.cuisineType} Cuisine
+                    </Badge>
+                    {recipe.healthConsiderations?.map(
+                      (tag: string, index: number) => (
+                        <Badge
+                          key={`health-${index}`}
+                          className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 border-purple-200 dark:border-purple-800 border"
+                        >
+                          {tag}
+                        </Badge>
+                      ),
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -294,9 +331,23 @@ export default function RecipeDetailsPage({
                     ${recipe.costAnalysis?.totalCost || 0}
                   </p>
                   {recipe.costAnalysis && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      ${recipe.costAnalysis.costPerServing}/serving
-                    </p>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 space-y-0.5">
+                      <p>${recipe.costAnalysis.costPerServing}/serving</p>
+                      {recipe.costAnalysis.pantryItemsSavings > 0 && (
+                        <p className="text-green-600 font-medium">
+                          Saved ${recipe.costAnalysis.pantryItemsSavings} with
+                          pantry
+                        </p>
+                      )}
+                      {recipe.costAnalysis.budgetEfficiency && (
+                        <p className="text-blue-600">
+                          {Math.round(
+                            recipe.costAnalysis.budgetEfficiency * 100,
+                          )}
+                          % Budget Eff.
+                        </p>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
@@ -663,6 +714,104 @@ export default function RecipeDetailsPage({
                             ),
                           )}
                         </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                {/* === NEW SECTIONS: AI Notes, Variations, Pantry, Sources === */}
+
+                {/* AI Reasoning & Insights */}
+                {recipe.aiReasoningNotes && (
+                  <Card className="border-2 shadow-md border-indigo-200 dark:border-indigo-800">
+                    <CardContent className="p-6 bg-gradient-to-br from-indigo-50/50 to-blue-50/50 dark:from-indigo-950/20 dark:to-blue-950/20">
+                      <h3 className="text-lg font-bold mb-3 flex items-center gap-2 text-indigo-800 dark:text-indigo-200">
+                        <Sparkles className="w-5 h-5 text-indigo-600" />
+                        Why This Recipe? (AI Insights)
+                      </h3>
+                      <p className="text-gray-700 dark:text-gray-300 leading-relaxed italic border-l-4 border-indigo-300 pl-4 py-1">
+                        "{recipe.aiReasoningNotes}"
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Variations */}
+                {recipe.variations && recipe.variations.length > 0 && (
+                  <Card className="border-2 shadow-md border-teal-200 dark:border-teal-800">
+                    <CardContent className="p-6 bg-gradient-to-br from-teal-50/50 to-green-50/50 dark:from-teal-950/20 dark:to-green-950/20">
+                      <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-teal-800 dark:text-teal-200">
+                        <UtensilsCrossed className="w-5 h-5" />
+                        Recipe Variations
+                      </h3>
+                      <ul className="space-y-3">
+                        {recipe.variations.map(
+                          (variation: string, index: number) => (
+                            <li
+                              key={index}
+                              className="flex items-start gap-3 p-3 bg-white dark:bg-gray-900 rounded-lg border border-teal-100 dark:border-teal-800"
+                            >
+                              <div className="w-1.5 h-1.5 bg-teal-500 rounded-full mt-2" />
+                              <span className="text-sm text-gray-700 dark:text-gray-300">
+                                {variation}
+                              </span>
+                            </li>
+                          ),
+                        )}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Pantry Optimization */}
+                {recipe.pantryOptimization &&
+                  recipe.pantryOptimization.length > 0 && (
+                    <Card className="border-2 shadow-md border-orange-200 dark:border-orange-800">
+                      <CardContent className="p-6 bg-gradient-to-br from-orange-50/50 to-amber-50/50 dark:from-orange-950/20 dark:to-amber-950/20">
+                        <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-orange-800 dark:text-orange-200">
+                          <Leaf className="w-5 h-5" />
+                          Pantry & Storage Tips
+                        </h3>
+                        <ul className="space-y-3">
+                          {recipe.pantryOptimization.map(
+                            (tip: string, index: number) => (
+                              <li
+                                key={index}
+                                className="flex items-start gap-3 p-3 bg-white dark:bg-gray-900 rounded-lg border border-orange-100 dark:border-orange-800"
+                              >
+                                <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2" />
+                                <span className="text-sm text-gray-700 dark:text-gray-300">
+                                  {tip}
+                                </span>
+                              </li>
+                            ),
+                          )}
+                        </ul>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                {/* Web Inspirations */}
+                {recipe.webSourceInspirations &&
+                  recipe.webSourceInspirations.length > 0 && (
+                    <Card className="border-2 shadow-md border-gray-200 dark:border-gray-800">
+                      <CardContent className="p-6 bg-gray-50 dark:bg-gray-800/50">
+                        <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-gray-800 dark:text-gray-200">
+                          <ExternalLink className="w-5 h-5" />
+                          Inspirations & Sources
+                        </h3>
+                        <ul className="space-y-2">
+                          {recipe.webSourceInspirations.map(
+                            (source: string, index: number) => (
+                              <li
+                                key={index}
+                                className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400"
+                              >
+                                <span className="w-4 h-0.5 bg-gray-400 rounded-full" />
+                                {source}
+                              </li>
+                            ),
+                          )}
+                        </ul>
                       </CardContent>
                     </Card>
                   )}

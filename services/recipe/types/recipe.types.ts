@@ -17,6 +17,14 @@ export interface Nutrition {
   fiber?: number;
   sugar?: number;
   sodium?: number;
+  // Specific units often returned by AI
+  protein_g?: number;
+  carbs_g?: number;
+  fat_g?: number;
+  fiber_g?: number;
+  sugar_g?: number;
+  sodium_mg?: number;
+  cholesterol_mg?: number;
   [key: string]: any;
 }
 
@@ -24,6 +32,7 @@ export interface CostAnalysis {
   totalCost: number;
   costPerServing: number;
   budgetEfficiency?: number;
+  pantryItemsSavings?: number;
 }
 
 export interface ComplementaryItem {
@@ -65,6 +74,16 @@ export interface Recipe {
 
   aiReasoningNotes?: string;
   cookingStatus?: "cooked" | "not_cooked" | "not_interested";
+
+  // Additional AI Metadata
+  nutritionalHighlights?: string[];
+  pantryOptimization?: string[];
+  cookingTips?: string[];
+  variations?: string[];
+  webSourceInspirations?: string[];
+  healthConsiderations?: string[];
+  pantryItemsUsedCount?: number;
+  isAIGenerated?: boolean;
 
   // Interactions & Scoring
   score?: number;
