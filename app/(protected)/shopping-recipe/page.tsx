@@ -33,8 +33,13 @@ import {
   SlotProcessingState,
   Recipe,
 } from "@/lib/recipe-constants";
-import { Recipe as ApiRecipe } from "@/services/recipe";
+import { Recipe as ApiRecipe, RecipeService } from "@/services/recipe";
 import { Input } from "@/components/ui/input";
+import {
+  formatSmartQuantity,
+  getStepSize,
+  convertBackToBase,
+} from "@/lib/quantity-utils";
 import {
   Dialog,
   DialogContent,
@@ -85,6 +90,9 @@ export default function ShoppingRecipe() {
   } = useSelector((state: RootState) => state.mealPlan);
 
   const [isHydrated, setIsHydrated] = useState(false);
+  const [backendIngredients, setBackendIngredients] = useState<any[]>([]);
+  const [isLoadingBackend, setIsLoadingBackend] = useState(false);
+  const recipeService = useRef(new RecipeService());
 
   // Derived selections
   const currentSelections: Record<string, string[]> = {};
@@ -199,6 +207,37 @@ export default function ShoppingRecipe() {
     }
   }, [plans, isHydrated]);
 
+  // Fetch merged shopping list from backend
+  useEffect(() => {
+    const fetchBackendList = async () => {
+      const ids: string[] = [];
+      Object.values(plans).forEach((day) =>
+        Object.values(day).forEach((recipes) => {
+          if (Array.isArray(recipes)) recipes.forEach((r) => ids.push(r.id));
+        }),
+      );
+
+      if (ids.length === 0) {
+        setBackendIngredients([]);
+        return;
+      }
+
+      setIsLoadingBackend(true);
+      try {
+        const list = await recipeService.current.getMergedShoppingList(ids);
+        setBackendIngredients(list || []);
+      } catch (e) {
+        console.error("Failed to fetch backend shopping list", e);
+      } finally {
+        setIsLoadingBackend(false);
+      }
+    };
+
+    if (isHydrated) {
+      fetchBackendList();
+    }
+  }, [plans, isHydrated]);
+
   const [selectedRecipes, setSelectedRecipes] = useState<string[]>([]); // Keep strictly for local UI if needed, but rely on Redux for truth
   const [detailedRecipe, setDetailedRecipe] = useState<ApiRecipe | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
@@ -257,43 +296,53 @@ export default function ShoppingRecipe() {
   );
   const fetchedIngredients = useRef<Set<string>>(new Set());
 
-  // Derived Ingredients List
+  // Derived Ingredients List (from Backend + Extra)
   const allIngredients = useMemo(() => {
-    return [
-      ...Object.values(plans).flatMap((day) =>
-        Object.values(day).flatMap((recipes) => {
-          const list = Array.isArray(recipes) ? recipes : [recipes];
-          return list.flatMap((recipe) =>
-            (recipe?.ingredients || []).map((ing: any) => {
-              const ingredientName = ing.name || ing.item;
-              const staticData = getStaticData(ingredientName);
-              // Priority: Static -> Dynamic -> Recipe -> Fallback
-              const image =
-                staticData?.image ||
-                dynamicImages[ingredientName] ||
-                ing.image ||
-                FALLBACK_IMAGE;
+    // 1. Map backend items
+    const backendMapped = backendIngredients.map((item) => {
+      const ingredientName = item.ingredientName;
+      const staticData = getStaticData(ingredientName);
+      // Backend doesn't return image, so we start with static or dynamic or fallback
+      const image =
+        staticData?.image ||
+        dynamicImages[ingredientName] ||
+        FALLBACK_IMAGE;
 
-              return {
-                ...ing,
-                name: ingredientName, // Ensure name is normalized
-                source: "Recipe",
-                recipeName: recipe?.name,
-                image,
-                unit: staticData?.unit || ing.unit,
-                category: (staticData as any)?.category || "others", // Default to others if not found
-                price: (staticData as any)?.price || 0, // Default price 0 (hidden if 0)
-              };
-            }),
-          );
-        }),
-      ),
-      ...extraItems.map((item) => ({
+      const qty = item.quantity || 0;
+      const unit = item.unit || "";
+      const formatted = formatSmartQuantity(qty, unit);
+
+      return {
         ...item,
-        category: item.category || "others",
-      })), // Ensure category exists
+        name: ingredientName,
+        quantity: qty,
+        unit: unit,
+        displayQuantity: formatted.value,
+        displayUnit: formatted.unit,
+        source: "Recipe",
+        image,
+        category: (staticData as any)?.category || "others",
+        price: (staticData as any)?.price || 0,
+      };
+    });
+
+    return [
+      ...backendMapped,
+      ...extraItems.map((item) => {
+        const qty = item.quantity || 0;
+        const unit = item.unit || "";
+        const formatted = formatSmartQuantity(qty, unit);
+        return {
+          ...item,
+          quantity: qty,
+          unit: unit,
+          displayQuantity: formatted.value,
+          displayUnit: formatted.unit,
+          category: item.category || "others",
+        };
+      }),
     ];
-  }, [plans, extraItems, dynamicImages]);
+  }, [backendIngredients, extraItems, dynamicImages]);
 
   // Quantity Overrides State
   const [quantityOverrides, setQuantityOverrides] = useState<
@@ -311,12 +360,35 @@ export default function ShoppingRecipe() {
     setEditingCategories(newSet);
   };
 
-  const handleUpdateQuantity = (index: number, newQty: number) => {
-    if (newQty < 1) {
+  const handleUpdateQuantity = (index: number, changeAmount: number) => {
+    // Find the item
+    // Logic: groupedIngredients uses index from "allIngredients" via "originalIndex".
+    // But wait, "originalIndex" in groupedIngredients logic maps back to allIngredients array index.
+
+    // To support smart updates, we need to know the CURRENT display unit to apply the right step.
+    // But changeAmount here is usually +1 or -1 from the click handler.
+    // We need to change the signature or logic.
+
+    // ACTUALLY, I will modify the click handler to pass the *new* display value directly, 
+    // or handle the step logic inside this function if I have the item.
+
+    // Let's assume we update the logic in the UI loop to call this efficiently. 
+    // But wait, standard hook was: handleUpdateQuantity(index, newQty)
+    // I'll change it to handleUpdateQuantity(index, newDisplayQty)
+
+    const item = allIngredients[index];
+    if (!item) return;
+
+    // Calculate new base quantity
+    // item has .unit (base) and .displayUnit (smart)
+    const newBaseQty = convertBackToBase(changeAmount, item.displayUnit, item.unit);
+
+    if (newBaseQty <= 0) {
       handleRemoveItemByIndex(index);
       return;
     }
-    setQuantityOverrides((prev) => ({ ...prev, [index]: newQty }));
+
+    setQuantityOverrides((prev) => ({ ...prev, [index]: newBaseQty }));
   };
 
   const handleRemoveItemByIndex = (index: number) => {
@@ -377,10 +449,23 @@ export default function ShoppingRecipe() {
       const targetGroup = groups[cat] ? cat : "others";
       if (!groups[targetGroup]) groups[targetGroup] = []; // Just in case
 
+      const originalIdx = idx; // Keep track of index in allIngredients
+
+      // Check overrides (which are now in BASE unit)
+      const baseQty = quantityOverrides[originalIdx] !== undefined
+        ? quantityOverrides[originalIdx]
+        : (ing.quantity ?? 1);
+
+      // Re-format for smart display using the (potentially) overridden base quantity
+      const formatted = formatSmartQuantity(baseQty, ing.unit);
+
       groups[targetGroup].push({
         ...ing,
-        originalIndex: idx,
-        displayQuantity: quantityOverrides[idx] ?? ing.quantity ?? 1,
+        originalIndex: originalIdx,
+        quantity: baseQty, // Current base qty
+        displayQuantity: formatted.value, // Smart qty
+        displayUnit: formatted.unit, // Smart unit
+        price: ing.price // Keep price logic
       });
     });
 
@@ -487,6 +572,18 @@ export default function ShoppingRecipe() {
         <div className="flex flex-col items-center gap-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#7dab4f]"></div>
           <p className="text-gray-500 font-medium">Loading your list...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading if backend is fetching
+  if (isLoadingBackend && allIngredients.length === 0) {
+    return (
+      <div className="h-screen w-full flex items-center justify-center bg-[#F3F0FD]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#7dab4f]"></div>
+          <p className="text-gray-500 font-medium">Merging ingredients...</p>
         </div>
       </div>
     );
@@ -903,26 +1000,31 @@ export default function ShoppingRecipe() {
                                       <div className="flex items-center border border-gray-200 rounded-lg bg-white h-8">
                                         <button
                                           className="w-8 h-full flex items-center justify-center text-gray-400 hover:text-[var(--primary)] hover:bg-gray-50 rounded-l-lg transition-colors"
-                                          onClick={() =>
+                                          onClick={() => {
+                                            const step = getStepSize(item.displayUnit);
+                                            // Ensure we don't go below 0 with float precision issues
+                                            const newVal = Math.max(0, Number((item.displayQuantity - step).toFixed(3)));
                                             handleUpdateQuantity(
                                               item.originalIndex,
-                                              (item.displayQuantity || 1) - 1,
-                                            )
-                                          }
+                                              newVal
+                                            );
+                                          }}
                                         >
                                           <Minus className="size-3" />
                                         </button>
-                                        <span className="w-8 text-center text-sm font-medium text-gray-700">
-                                          {item.displayQuantity}
+                                        <span className="min-w-[3rem] px-2 text-center text-sm font-medium text-gray-700">
+                                          {item.displayQuantity} {item.displayUnit}
                                         </span>
                                         <button
                                           className="w-8 h-full flex items-center justify-center text-gray-400 hover:text-[var(--primary)] hover:bg-gray-50 rounded-r-lg transition-colors"
-                                          onClick={() =>
+                                          onClick={() => {
+                                            const step = getStepSize(item.displayUnit);
+                                            const newVal = Number((item.displayQuantity + step).toFixed(3));
                                             handleUpdateQuantity(
                                               item.originalIndex,
-                                              (item.displayQuantity || 1) + 1,
-                                            )
-                                          }
+                                              newVal
+                                            );
+                                          }}
                                         >
                                           <Plus className="size-3" />
                                         </button>

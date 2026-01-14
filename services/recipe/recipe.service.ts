@@ -108,4 +108,20 @@ export class RecipeService {
     });
     return response.data;
   }
+  // Get shopping list for a recipe
+  async getShoppingList(id: string): Promise<any> {
+    const response = await apiClient.get(
+      API_ENDPOINTS.RECIPE.GET_SHOPPING_LIST(id),
+    );
+    return response.data?.data;
+  }
+
+  // Get merged shopping list
+  async getMergedShoppingList(recipeIds: string[]): Promise<any> {
+    const response = await apiClient.post(
+      API_ENDPOINTS.RECIPE.GET_MERGED_SHOPPING_LIST,
+      { recipeIds },
+    );
+    return response.data?.data;
+  }
 }

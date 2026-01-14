@@ -339,21 +339,19 @@ export default function RecipesPage() {
           <div className="bg-gray-100 p-1 rounded-lg flex items-center gap-1">
             <button
               onClick={() => handleFilterChange({ viewScope: "personal" })}
-              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-                filters.viewScope === "personal"
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${filters.viewScope === "personal"
+                ? "bg-white text-gray-900 shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
+                }`}
             >
               My Recipes
             </button>
             <button
               onClick={() => handleFilterChange({ viewScope: "global" })}
-              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-                filters.viewScope === "global"
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${filters.viewScope === "global"
+                ? "bg-white text-gray-900 shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
+                }`}
             >
               Explore All
             </button>
@@ -479,11 +477,10 @@ export default function RecipesPage() {
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id as any)}
-                      className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all duration-300 whitespace-nowrap flex items-center gap-2 ${
-                        isActive
-                          ? "bg-[#3d326d] text-white shadow-none border"
-                          : "text-gray-600 bg-gray-50 border border-gray-200"
-                      }`}
+                      className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all duration-300 whitespace-nowrap flex items-center gap-2 ${isActive
+                        ? "bg-[#3d326d] text-white shadow-none border"
+                        : "text-gray-600 bg-gray-50 border border-gray-200"
+                        }`}
                     >
                       <Icon className="w-4 h-4" />
                       {tab.label}
@@ -558,11 +555,10 @@ export default function RecipesPage() {
                       viewScope: "global",
                     })
                   }
-                  className={`h-9 px-4 rounded-lg text-xs font-bold uppercase tracking-wide transition-all flex items-center gap-2 ${
-                    filters.sortBy === "score"
-                      ? "bg-[#3d326d] text-white shadow-none"
-                      : "text-gray-600 bg-gray-100"
-                  }`}
+                  className={`h-9 px-4 rounded-lg text-xs font-bold uppercase tracking-wide transition-all flex items-center gap-2 ${filters.sortBy === "score"
+                    ? "bg-[#3d326d] text-white shadow-none"
+                    : "text-gray-600 bg-gray-100"
+                    }`}
                 >
                   <TrendingUp size={14} />
                   All (High Score)
@@ -817,16 +813,16 @@ export default function RecipesPage() {
                                   )}
                                   {(!recipe.cookingStatus ||
                                     recipe.cookingStatus === "not_cooked") && (
-                                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                      Pending
-                                    </span>
-                                  )}
+                                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                        Pending
+                                      </span>
+                                    )}
                                   {recipe.cookingStatus ===
                                     "not_interested" && (
-                                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                      <Ban className="w-3 h-3" /> Not Interested
-                                    </span>
-                                  )}
+                                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        <Ban className="w-3 h-3" /> Not Interested
+                                      </span>
+                                    )}
                                 </TableCell>
                                 <TableCell className="text-right">
                                   <DropdownMenu>
