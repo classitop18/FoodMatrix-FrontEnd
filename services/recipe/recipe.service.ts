@@ -124,4 +124,39 @@ export class RecipeService {
     );
     return response.data?.data;
   }
+
+  // Check if recipes exist for a specific date and meal type
+  async checkRecipesByDate(
+    date: string,
+    mealType: string,
+  ): Promise<{ exists: boolean; recipe: any | null }> {
+    const params = new URLSearchParams();
+    params.append("date", date);
+    params.append("mealType", mealType);
+
+    const response = await apiClient.get(
+      `${API_ENDPOINTS.RECIPE.CHECK_RECIPES_BY_DATE}?${params.toString()}`,
+    );
+    return response.data?.data;
+  }
+
+  // Download Shopping List PDF
+  async downloadShoppingListPdf(payload: any): Promise<void> {
+    const response = await apiClient.post(
+      "/pdf/shopping-list",
+      payload,
+      {
+        responseType: "blob",
+      }
+    );
+
+    // Create download link
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `shopping-list-${Date.now()}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.parentNode?.removeChild(link);
+  }
 }

@@ -90,6 +90,7 @@ export const API_ENDPOINTS = {
     SEARCH_CUSTOM: "/recipes/search-custom",
     UPDATE_STATUS: (id: string) => `/recipes/${id}/status`,
     INTERACT: (id: string) => `/recipes/${id}/interact`,
+    CHECK_RECIPES_BY_DATE: "/recipes/check-by-date",
     GET_SHOPPING_LIST: (id: string) => `/recipes/${id}/shopping-list`,
     GET_MERGED_SHOPPING_LIST: `/recipes/shopping-list/merge`,
   },

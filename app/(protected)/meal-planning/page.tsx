@@ -30,6 +30,7 @@ import { RootState } from "@/redux/store.redux";
 import { hydrateMealPlans } from "@/redux/features/meal-plan/meal-plan.slice";
 import { Recipe } from "@/lib/recipe-constants";
 import { useMembers } from "@/services/member/member.query";
+import { RecipeService } from "@/services/recipe/recipe.service";
 import {
   format,
   addDays,
@@ -258,13 +259,13 @@ export default function MealPlanning() {
 
       const isInit = !!localStorage.getItem(LS_KEYS.INITIALIZED);
       setInitialized(isInit);
-    } catch {}
+    } catch { }
   }, []);
 
   useEffect(() => {
     try {
       localStorage.setItem(LS_KEYS.VIEW_MODE, viewMode);
-    } catch {}
+    } catch { }
   }, [viewMode]);
 
   useEffect(() => {
@@ -406,12 +407,32 @@ export default function MealPlanning() {
     }
   }, [selectedDates]);
 
-  const [conflictDate, setConflictDate] = useState<Date | null>(null);
+  // Loading state for adding a date
+  const [isAddingDate, setIsAddingDate] = useState(false);
 
-  const checkIfDateHasRecipes = (date: Date) => {
+  const getRemoteRecipesForDate = async (
+    date: Date,
+  ): Promise<{ meal: string; exists: boolean; recipe: any | null }[]> => {
     const iso = isoUTCDate(date);
-    // Check if any key in recipeSelections starts with this date's ISO string
-    return Object.keys(recipeSelections).some((k) => k.startsWith(iso));
+    const recipeService = new RecipeService();
+    const mealTypes = ["breakfast", "lunch", "dinner"];
+
+    try {
+      const checks = await Promise.all(
+        mealTypes.map(async (mealType) => {
+          const result = await recipeService.checkRecipesByDate(iso, mealType);
+          return {
+            meal: mealType,
+            exists: result.exists,
+            recipe: result.recipe,
+          };
+        }),
+      );
+      return checks;
+    } catch (error) {
+      console.error("Error checking recipes by date:", error);
+      return [];
+    }
   };
 
   const clearRecipesForDate = (date: Date) => {
@@ -470,7 +491,7 @@ export default function MealPlanning() {
           );
         }
       }
-    } catch (e) {}
+    } catch (e) { }
 
     // 4. Update Generated Recipes Storage (Candidates)
     try {
@@ -510,7 +531,7 @@ export default function MealPlanning() {
     }
   };
 
-  const addDateToSelection = (date: Date, force = false) => {
+  const addDateToSelection = async (date: Date) => {
     const today = startOfDay(new Date());
     const selectedDay = startOfDay(date);
 
@@ -518,50 +539,80 @@ export default function MealPlanning() {
       return;
     }
 
-    // Check for existing recipes logic
-    if (!force && checkIfDateHasRecipes(date)) {
-      setConflictDate(date);
-      return;
-    }
-
     const iso = isoUTCDate(date);
     if (selectedDates.find((d) => d.key === iso)) return;
 
-    const label = format(date, "EEEE, MMM d");
-    setSelectedDates((prev) => [
-      ...prev,
-      { key: iso, label, actualDate: date },
-    ]);
-
-    setWeekPlan((prev) => {
-      // If plan already exists for this date, preserve it.
-      // This happens if the user just hides the date but data was kept in state (though usually removing date removes from state).
-      if (prev[iso]) return { ...prev, [iso]: prev[iso] };
-
-      // Otherwise create new, but check if we should auto-fill based on existing recipes (Use Same case)
-      const newSlot = createEmptySlot();
-
-      // If we are forcing (Use Same) or if recipes just exist, we try to restore the 'cook-home' status
-      if (force || checkIfDateHasRecipes(date)) {
-        (["breakfast", "lunch", "dinner"] as const).forEach((meal) => {
-          // Match keys like YYYY-MM-DD-breakfast or YYYY-MM-DD-BREAKFAST
-          const target = `${iso}-${meal}`.toLowerCase();
-          const hasRec = Object.keys(recipeSelections).some(
-            (k) => k.toLowerCase() === target,
-          );
-          if (hasRec) {
-            newSlot[meal].type = "cook-home";
-          }
-        });
-      }
-
-      return { ...prev, [iso]: newSlot };
-    });
+    setIsAddingDate(true);
 
     try {
-      localStorage.setItem(LS_KEYS.INITIALIZED, "1");
-      setInitialized(true);
-    } catch {}
+      // Check for existing recipes logic - AUTOMATICALLY LOAD IF EXISTS
+      const remoteRecipes = await getRemoteRecipesForDate(date);
+      const hasRemote = remoteRecipes.some((r) => r.exists);
+
+      const label = format(date, "EEEE, MMM d");
+      setSelectedDates((prev) => [
+        ...prev,
+        { key: iso, label, actualDate: date },
+      ]);
+
+      setWeekPlan((prev) => {
+        // If plan already exists for this date, preserve it.
+        if (prev[iso]) return { ...prev, [iso]: prev[iso] };
+
+        const newSlot = createEmptySlot();
+
+        // If we found remote recipes, populate them automatically
+        if (hasRemote) {
+          const newSelections = { ...recipeSelections };
+          const newSelectedRecipes = [...selectedRecipes];
+
+          remoteRecipes.forEach((item) => {
+            if (item.exists && item.recipe) {
+              // 1. Update Week Plan Type
+              // @ts-ignore
+              newSlot[item.meal].type = "cook-home";
+
+              // 2. Add to Selected Recipes List (if not already there)
+              if (!newSelectedRecipes.find((r) => r.id === item.recipe.id)) {
+                newSelectedRecipes.push(item.recipe);
+              }
+
+              // 3. Map Selection Key
+              const selectionKey = `${iso}-${item.meal}`.toUpperCase(); // Ensure uppercase for consistency
+              newSelections[selectionKey] = item.recipe.id;
+            }
+          });
+
+          // Batch update state
+          setSelectedRecipes(newSelectedRecipes);
+          setRecipeSelections(newSelections);
+
+          // Update LocalStorage explicitly here
+          localStorage.setItem(
+            LS_KEYS.SELECTED_RECIPES,
+            JSON.stringify({
+              selections: newSelections,
+              additionalRecipes: newSelectedRecipes.reduce((acc, r) => {
+                acc[r.id] = r;
+                return acc;
+              }, {}),
+            }),
+          );
+        }
+
+        return { ...prev, [iso]: newSlot };
+      });
+
+      try {
+        localStorage.setItem(LS_KEYS.INITIALIZED, "1");
+        setInitialized(true);
+      } catch { }
+
+    } catch (e) {
+      console.error("Error adding date:", e);
+    } finally {
+      setIsAddingDate(false);
+    }
   };
 
   const addNextDay = () => {
@@ -595,7 +646,7 @@ export default function MealPlanning() {
           );
         }
       }
-    } catch (e) {}
+    } catch (e) { }
 
     setWeekPlan((prev) => {
       const base = prev[dateKey] ?? createEmptySlot();
@@ -1031,16 +1082,20 @@ export default function MealPlanning() {
                               Cancel
                             </Button>
                             <Button
-                              onClick={() => {
+                              onClick={async () => {
                                 if (!selectedDate) return;
-                                addDateToSelection(selectedDate);
+                                await addDateToSelection(selectedDate);
                                 setSelectedDate(undefined);
                                 setIsDateDialogOpen(false);
                               }}
-                              disabled={!selectedDate}
-                              className="bg-[#1a1a1a] text-white hover:bg-black rounded-lg h-10 font-bold shadow-lg shadow-black/10 disabled:opacity-50 disabled:shadow-none transition-all hover:-translate-y-0.5"
+                              disabled={!selectedDate || isAddingDate}
+                              className="bg-[#1a1a1a] text-white hover:bg-black rounded-lg h-10 font-bold shadow-lg shadow-black/10 disabled:opacity-50 disabled:shadow-none transition-all hover:-translate-y-0.5 min-w-[100px]"
                             >
-                              Confirm
+                              {isAddingDate ? (
+                                <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                              ) : (
+                                "Confirm"
+                              )}
                             </Button>
                           </div>
                         </div>
@@ -1048,94 +1103,7 @@ export default function MealPlanning() {
                     </DialogContent>
                   </Dialog>
 
-                  {/* Conflict Resolution Dialog */}
-                  <Dialog
-                    open={!!conflictDate}
-                    onOpenChange={(open) => !open && setConflictDate(null)}
-                  >
-                    <DialogContent className="sm:max-w-[425px] p-0 overflow-hidden border-0 shadow-2xl rounded-lg bg-transparent">
-                      <div className="relative">
-                        {/* Premium Header Background */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-[#7dab4f] to-[#5a8c3e] z-0" />
 
-                        <DialogHeader className="relative z-10 p-6 text-white flex flex-row items-center gap-4">
-                          <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center shadow-inner border border-white/10 shrink-0">
-                            <UtensilsCrossed className="w-6 h-6 text-white" />
-                          </div>
-
-                          <div className="flex flex-col text-left">
-                            <DialogTitle className="text-lg font-black tracking-tight text-white">
-                              Recipe Already Exists
-                            </DialogTitle>
-                            <p className="text-white/80 text-sm font-medium leading-tight">
-                              You have existing plans for{" "}
-                              {conflictDate
-                                ? format(conflictDate, "MMM d")
-                                : "this date"}
-                              .
-                            </p>
-                          </div>
-                        </DialogHeader>
-
-                        <div className="relative z-10 bg-white rounded-t-xl mt-[-10px] p-6 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)]">
-                          <div className="text-sm text-gray-600 mb-6 bg-gray-50/50 p-4 rounded-lg border border-gray-100/50">
-                            <p className="mb-3 font-medium text-gray-900">
-                              How would you like to proceed?
-                            </p>
-                            <ul className="space-y-3">
-                              <li className="flex gap-3 text-xs leading-relaxed items-start">
-                                <div className="w-1.5 h-1.5 rounded-full bg-[#1a1a1a] mt-1.5 shrink-0" />
-                                <span>
-                                  <strong className="text-gray-900 block mb-0.5">
-                                    Use Same Recipes
-                                  </strong>
-                                  Keeps your previously generated recipes and
-                                  effectively restores the day's plan.
-                                </span>
-                              </li>
-                              <li className="flex gap-3 text-xs leading-relaxed items-start">
-                                <div className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0" />
-                                <span>
-                                  <strong className="text-gray-900 block mb-0.5">
-                                    Generate New
-                                  </strong>
-                                  Clears all data for this date. You will need
-                                  to select cuisines and generate new recipes.
-                                </span>
-                              </li>
-                            </ul>
-                          </div>
-
-                          <div className="flex justify-end gap-3">
-                            <Button
-                              variant="ghost"
-                              onClick={() => {
-                                if (conflictDate) {
-                                  clearRecipesForDate(conflictDate);
-                                  addDateToSelection(conflictDate, true);
-                                  setConflictDate(null);
-                                }
-                              }}
-                              className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 font-semibold"
-                            >
-                              Generate New
-                            </Button>
-                            <Button
-                              className="bg-[#1a1a1a] text-white hover:bg-black font-bold shadow-lg shadow-black/10 transition-all hover:-translate-y-0.5"
-                              onClick={() => {
-                                if (conflictDate) {
-                                  addDateToSelection(conflictDate, true); // Keep existing
-                                  setConflictDate(null);
-                                }
-                              }}
-                            >
-                              Use Same
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
 
                   <Button
                     onClick={() => {
@@ -1388,12 +1356,12 @@ export default function MealPlanning() {
                                                 isSkipped
                                                   ? "bg-gray-200/50 text-gray-400"
                                                   : cn(
-                                                      "bg-opacity-10",
-                                                      selectedOption?.color?.replace(
-                                                        "text-",
-                                                        "bg-",
-                                                      ),
+                                                    "bg-opacity-10",
+                                                    selectedOption?.color?.replace(
+                                                      "text-",
+                                                      "bg-",
                                                     ),
+                                                  ),
                                               )}
                                             >
                                               <Icon

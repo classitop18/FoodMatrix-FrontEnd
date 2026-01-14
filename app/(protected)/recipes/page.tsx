@@ -321,6 +321,31 @@ export default function RecipesPage() {
     });
   };
 
+
+
+  const LoaderElement = (
+    <div ref={ref} className="flex justify-center py-8 w-full">
+      {isFetchingNextPage ? (
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="w-6 h-6 animate-spin text-[#3d326d]" />
+          <span className="text-sm font-bold text-gray-500">
+            Cooking up more recipes...
+          </span>
+        </div>
+      ) : hasNextPage ? (
+        <span className="text-sm text-gray-400">
+          Scroll for more
+        </span>
+      ) : (
+        allRecipes.length > 0 && (
+          <span className="text-sm font-bold text-gray-300">
+            You've reached the end of your cookbook! 🍳
+          </span>
+        )
+      )}
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gray-100 font-sans relative overflow-hidden">
       {/* Background Decoration similar to Account Page */}
@@ -674,53 +699,60 @@ export default function RecipesPage() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.3 }}
+                    className="h-full"
                   >
                     {activeTab === "timeline" && (
-                      <ScrollArea className="space-y-12 overflow-auto max-h-screen">
-                        {Object.entries(groupedRecipes).map(
-                          ([weekRange, recipes], idx) => (
-                            <div
-                              key={weekRange}
-                              className="relative pl-8 ml-3 border-l-2 border-gray-200"
-                            >
-                              {/* Timeline Dot */}
-                              <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-[#3d326d] ring-4 ring-white" />
+                      <ScrollArea className="h-[calc(100vh-200px)] pr-4">
+                        <div className="space-y-12 pb-20">
+                          {Object.entries(groupedRecipes).map(
+                            ([weekRange, recipes], idx) => (
+                              <div
+                                key={weekRange}
+                                className="relative pl-8 ml-3 border-l-2 border-gray-200"
+                              >
+                                {/* Timeline Dot */}
+                                <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-[#3d326d] ring-4 ring-white" />
 
-                              <div className="mb-6">
-                                <h2 className="text-xl font-extrabold text-[#313131] flex items-center gap-3">
-                                  {weekRange}
-                                </h2>
-                                <p className="text-sm font-medium text-gray-500">
-                                  {recipes.length}{" "}
-                                  {recipes.length === 1 ? "recipe" : "recipes"}
-                                </p>
-                              </div>
+                                <div className="mb-6">
+                                  <h2 className="text-xl font-extrabold text-[#313131] flex items-center gap-3">
+                                    {weekRange}
+                                  </h2>
+                                  <p className="text-sm font-medium text-gray-500">
+                                    {recipes.length}{" "}
+                                    {recipes.length === 1 ? "recipe" : "recipes"}
+                                  </p>
+                                </div>
 
-                              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                                {recipes.map((recipe) => (
-                                  <RecipeCard
-                                    key={recipe.id}
-                                    recipe={recipe}
-                                    onViewDetails={openRecipeDetails}
-                                  />
-                                ))}
+                                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                                  {recipes.map((recipe) => (
+                                    <RecipeCard
+                                      key={recipe.id}
+                                      recipe={recipe}
+                                      onViewDetails={openRecipeDetails}
+                                    />
+                                  ))}
+                                </div>
                               </div>
-                            </div>
-                          ),
-                        )}
+                            ),
+                          )}
+                          {LoaderElement}
+                        </div>
                       </ScrollArea>
                     )}
 
                     {activeTab === "grid" && (
-                      <ScrollArea className="overflow-auto max-h-screen pr-4">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 pb-20">
-                          {allRecipes.map((recipe) => (
-                            <RecipeCard
-                              key={recipe.id}
-                              recipe={recipe}
-                              onViewDetails={openRecipeDetails}
-                            />
-                          ))}
+                      <ScrollArea className="h-[calc(100vh-200px)] pr-4">
+                        <div className="pb-20">
+                          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+                            {allRecipes.map((recipe) => (
+                              <RecipeCard
+                                key={recipe.id}
+                                recipe={recipe}
+                                onViewDetails={openRecipeDetails}
+                              />
+                            ))}
+                          </div>
+                          {LoaderElement}
                         </div>
                       </ScrollArea>
                     )}
@@ -820,7 +852,8 @@ export default function RecipesPage() {
                                   {recipe.cookingStatus ===
                                     "not_interested" && (
                                       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                        <Ban className="w-3 h-3" /> Not Interested
+                                        <Ban className="w-3 h-3" /> Not
+                                        Interested
                                       </span>
                                     )}
                                 </TableCell>
@@ -926,30 +959,11 @@ export default function RecipesPage() {
                             ))}
                           </TableBody>
                         </Table>
+                        {LoaderElement}
                       </div>
                     )}
                   </motion.div>
-                </AnimatePresence>
-              )}
-              {/* Infinite Scroll Loader */}
-              <div ref={ref} className="flex justify-center py-8">
-                {isFetchingNextPage ? (
-                  <div className="flex flex-col items-center gap-2">
-                    <Loader2 className="w-6 h-6 animate-spin text-[#3d326d]" />
-                    <span className="text-sm font-bold text-gray-500">
-                      Cooking up more recipes...
-                    </span>
-                  </div>
-                ) : hasNextPage ? (
-                  <span className="text-sm text-gray-400">Scroll for more</span>
-                ) : (
-                  allRecipes.length > 0 && (
-                    <span className="text-sm font-bold text-gray-300">
-                      You've reached the end of your cookbook! 🍳
-                    </span>
-                  )
-                )}
-              </div>{" "}
+                </AnimatePresence>)}
             </div>
           </div>
 

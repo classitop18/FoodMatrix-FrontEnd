@@ -319,7 +319,7 @@ export default function AddToPantry({ setIsAddModalOpen, itemToEdit }: any) {
     if (itemToEdit) {
       const normalizedCategory = itemToEdit.category
         ? itemToEdit.category.charAt(0).toUpperCase() +
-          itemToEdit.category.slice(1).toLowerCase()
+        itemToEdit.category.slice(1).toLowerCase()
         : "";
 
       setCategory(normalizedCategory);
@@ -555,9 +555,8 @@ export default function AddToPantry({ setIsAddModalOpen, itemToEdit }: any) {
                   setFormData({ ...formData, quantity: e.target.value });
                   setErrors({ ...errors, quantity: "" });
                 }}
-                className={`h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none ${
-                  errors.quantity ? "border-red-500 focus:ring-red-500/20" : ""
-                }`}
+                className={`h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none ${errors.quantity ? "border-red-500 focus:ring-red-500/20" : ""
+                  }`}
               />
               {errors.quantity && (
                 <p className="text-red-500 text-xs mt-1.5 font-medium">

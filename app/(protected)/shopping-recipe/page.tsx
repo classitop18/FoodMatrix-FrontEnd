@@ -360,28 +360,20 @@ export default function ShoppingRecipe() {
     setEditingCategories(newSet);
   };
 
-  const handleUpdateQuantity = (index: number, changeAmount: number) => {
-    // Find the item
-    // Logic: groupedIngredients uses index from "allIngredients" via "originalIndex".
-    // But wait, "originalIndex" in groupedIngredients logic maps back to allIngredients array index.
-
-    // To support smart updates, we need to know the CURRENT display unit to apply the right step.
-    // But changeAmount here is usually +1 or -1 from the click handler.
-    // We need to change the signature or logic.
-
-    // ACTUALLY, I will modify the click handler to pass the *new* display value directly, 
-    // or handle the step logic inside this function if I have the item.
-
-    // Let's assume we update the logic in the UI loop to call this efficiently. 
-    // But wait, standard hook was: handleUpdateQuantity(index, newQty)
-    // I'll change it to handleUpdateQuantity(index, newDisplayQty)
-
+  const handleUpdateQuantity = (
+    index: number,
+    changeAmount: number,
+    currentDisplayUnit: string,
+  ) => {
     const item = allIngredients[index];
     if (!item) return;
 
     // Calculate new base quantity
-    // item has .unit (base) and .displayUnit (smart)
-    const newBaseQty = convertBackToBase(changeAmount, item.displayUnit, item.unit);
+    const newBaseQty = convertBackToBase(
+      changeAmount,
+      currentDisplayUnit,
+      item.unit,
+    );
 
     if (newBaseQty <= 0) {
       handleRemoveItemByIndex(index);
@@ -392,6 +384,16 @@ export default function ShoppingRecipe() {
   };
 
   const handleRemoveItemByIndex = (index: number) => {
+    const itemToCheck = allIngredients[index];
+    if (itemToCheck && itemToCheck.source === "Recipe") {
+      toast({
+        title: "Cannot Remove Item",
+        description: "Recipe ingredients cannot be removed, only edited.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setRemovedIndices((prev) => {
       const newSet = new Set(prev);
       newSet.add(index);
@@ -414,8 +416,19 @@ export default function ShoppingRecipe() {
     // Add all items of this category to removedIndices
     const indicesToRemove: number[] = [];
     allIngredients.forEach((ing, idx) => {
-      if (ing.category === category) indicesToRemove.push(idx);
+      // Only remove manual items
+      if (ing.category === category && ing.source !== "Recipe") {
+        indicesToRemove.push(idx);
+      }
     });
+
+    if (indicesToRemove.length === 0) {
+      toast({
+        title: "Nothing to Clear",
+        description: "Only manual items can be removed.",
+      });
+      return;
+    }
 
     setRemovedIndices((prev) => {
       const newSet = new Set(prev);
@@ -518,7 +531,12 @@ export default function ShoppingRecipe() {
       name: selectedItemToAdd.name,
       quantity: addItemQuantity,
       unit: addItemUnit || selectedItemToAdd.unit,
-      category: activeCategory,
+      category:
+        activeCategory === "desserts"
+          ? "snacks"
+          : activeCategory === "beverages"
+            ? "drinks"
+            : activeCategory,
       image: selectedItemToAdd.image,
       source: "Manual",
       price: 0, // Default 0 for manual items
@@ -987,9 +1005,16 @@ export default function ShoppingRecipe() {
                                         </DialogContent>
                                       </Dialog>
                                       <div className="flex flex-col">
-                                        <span className="font-medium text-gray-900 line-clamp-1 text-sm md:text-base">
-                                          {item.name}
-                                        </span>
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-medium text-gray-900 line-clamp-1 text-sm md:text-base">
+                                            {item.name}
+                                          </span>
+                                          {(item.source === "Manual" || item.source === "Manual Add") && (
+                                            <span className="text-[10px] font-bold text-[var(--primary)] bg-[#F3F0FD] px-1.5 py-0.5 rounded border border-[var(--primary)]/20">
+                                              Manual
+                                            </span>
+                                          )}
+                                        </div>
                                         <span className="text-xs text-gray-500">
                                           {item.quantity ?? 1} {item.unit}
                                         </span>
@@ -1003,16 +1028,19 @@ export default function ShoppingRecipe() {
                                           onClick={() => {
                                             const step = getStepSize(item.displayUnit);
                                             // Ensure we don't go below 0 with float precision issues
+
                                             const newVal = Math.max(0, Number((item.displayQuantity - step).toFixed(3)));
+
                                             handleUpdateQuantity(
                                               item.originalIndex,
-                                              newVal
+                                              newVal,
+                                              item.displayUnit
                                             );
                                           }}
                                         >
                                           <Minus className="size-3" />
                                         </button>
-                                        <span className="min-w-[3rem] px-2 text-center text-sm font-medium text-gray-700">
+                                        <span className="min-w-[3rem] px-2 h-full flex items-center justify-center text-center text-sm font-medium text-gray-700">
                                           {item.displayQuantity} {item.displayUnit}
                                         </span>
                                         <button
@@ -1022,7 +1050,8 @@ export default function ShoppingRecipe() {
                                             const newVal = Number((item.displayQuantity + step).toFixed(3));
                                             handleUpdateQuantity(
                                               item.originalIndex,
-                                              newVal
+                                              newVal,
+                                              item.displayUnit
                                             );
                                           }}
                                         >
@@ -1040,10 +1069,8 @@ export default function ShoppingRecipe() {
                                         )}
                                       </div>
 
-                                      {/* Delete button only if editing category is active OR always show on hover? 
-                                                    Image doesn't show it but functionality wise it's good. 
-                                                    Let's show it if category is in editing mode */}
-                                      {editingCategories.has(category) && (
+                                      {/* Delete button only if editing category is active AND item is NOT from backend */}
+                                      {editingCategories.has(category) && item.source !== "Recipe" && (
                                         <Button
                                           variant="ghost"
                                           size="icon"
@@ -1221,11 +1248,45 @@ export default function ShoppingRecipe() {
               </span>
             </div>
 
+
             <Button
               variant={"outline"}
               type="button"
               className="border border-[var(--primary)] bg-white text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white transition-all shadow-sm"
-              onClick={handleGenerateFinalList}
+              onClick={async () => {
+                try {
+                  toast({
+                    title: "Generating...",
+                    description: "Preparing your shopping list...",
+                  });
+
+                  const ingredients = allIngredients;
+                  const payload = { ingredients };
+
+                  // 1. Download PDF
+                  const service = new RecipeService();
+                  await service.downloadShoppingListPdf(payload);
+
+                  toast({
+                    title: "Download Started",
+                    description: "Your shopping list PDF is downloading...",
+                  });
+
+                  // 2. Navigate to Shopping List Page
+                  // handleGenerateFinalList();
+
+                } catch (error) {
+                  console.error("Download failed", error);
+                  toast({
+                    title: "Download Failed",
+                    description: "Could not generate PDF. Proceeding to list...",
+                    variant: "destructive",
+                  });
+
+                  // Proceed anyway so user isn't stuck
+                  handleGenerateFinalList();
+                }
+              }}
             >
               <Download className="mr-2 h-4 w-4" /> Generate Shopping List
             </Button>

@@ -571,11 +571,14 @@ export default function RecipeSelection() {
           });
         }
       }
-    } catch {
+    } catch (error: any) {
       if (!isBackground) {
+        // Extract error message
+        const errorMessage = error?.response?.data?.message || error?.message || "Could not find custom recipe.";
+
         toast({
-          title: "Error",
-          description: "Could not find custom recipe.",
+          title: "Recipe Not Found",
+          description: errorMessage.replace("Failed to search recipe: ", ""), // Clean up backend wrapper
           variant: "destructive",
         });
       }

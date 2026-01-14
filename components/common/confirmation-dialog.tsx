@@ -25,32 +25,40 @@ export default function ConfirmDialog({
 }: ConfirmDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-sm rounded-xl">
-        <DialogHeader>
-          <DialogTitle className="text-lg font-semibold">{title}</DialogTitle>
-        </DialogHeader>
+      <DialogContent className="max-w-sm rounded-2xl p-0 overflow-hidden bg-white">
+        <div className="bg-gradient-to-r from-[#7661d3] to-[#3d326d] p-6">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold text-white">
+              {title}
+            </DialogTitle>
+          </DialogHeader>
+        </div>
 
-        <p className="text-gray-600 mt-2 mb-4">{message}</p>
+        <div className="p-6 pt-2">
+          <p className="text-gray-600 mb-6 font-medium leading-relaxed">
+            {message}
+          </p>
 
-        <DialogFooter className="flex justify-end gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setOpen(false)}
-            className="min-w-[80px]"
-          >
-            No
-          </Button>
+          <DialogFooter className="flex justify-end gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setOpen(false)}
+              className="min-w-[80px] rounded-lg border-gray-200"
+            >
+              No
+            </Button>
 
-          <Button
-            className="bg-red-600 hover:bg-red-700 min-w-[80px]"
-            onClick={() => {
-              onConfirm();
-              setOpen(false);
-            }}
-          >
-            Yes
-          </Button>
-        </DialogFooter>
+            <Button
+              className="bg-red-500 hover:bg-red-600 min-w-[80px] rounded-lg border-none shadow-red-100"
+              onClick={() => {
+                onConfirm();
+                setOpen(false);
+              }}
+            >
+              Yes
+            </Button>
+          </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );
