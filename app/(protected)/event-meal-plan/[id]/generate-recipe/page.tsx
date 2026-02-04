@@ -441,7 +441,7 @@ export default function EventRecipeSelectionPage() {
                         </Button>
 
                         <div className="flex items-center gap-2 text-sm font-medium text-gray-600 bg-white/80 px-4 py-2 rounded-full backdrop-blur-sm border border-gray-200/50 shadow-sm">
-                            <Calendar className="w-4 h-4 text-indigo-500" />
+                            <Calendar className="w-4 h-4 text-[var(--primary)]" />
                             <span className="opacity-40">|</span>
                             {event.name}
                         </div>

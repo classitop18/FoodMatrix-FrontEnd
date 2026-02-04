@@ -699,13 +699,13 @@ export function RecipeDetailsDialog({
                         <div className="h-1.5 bg-gradient-to-r from-indigo-400 to-violet-400" />
                         <CardContent className="p-6 md:p-8">
                           <h3 className="text-xl font-extrabold text-[#313131] mb-6 flex items-center gap-2">
-                            <Package className="w-5 h-5 text-indigo-500" />
+                            <Package className="w-5 h-5 text-[var(--primary)]" />
                             Pantry Optimization
                           </h3>
                           <ul className="space-y-3">
                             {recipe.pantryOptimization.map((item, idx) => (
                               <li key={idx} className="flex items-start gap-3 text-gray-600 font-medium">
-                                <CheckCircle2 className="w-5 h-5 text-indigo-500 shrink-0 mt-0.5" />
+                                <CheckCircle2 className="w-5 h-5 text-[var(--primary)] shrink-0 mt-0.5" />
                                 {item}
                               </li>
                             ))}

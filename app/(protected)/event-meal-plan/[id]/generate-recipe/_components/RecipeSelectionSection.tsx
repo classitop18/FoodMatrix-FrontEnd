@@ -97,7 +97,7 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
                                     handleGenerateRecipesForMeal(mealType)
                                 )
                             )}
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white h-11 px-6 rounded-lg font-bold shadow-md shadow-indigo-100 w-full md:w-auto"
+                            className="bg-[var(--primary)] hover:bg-indigo-700 text-white h-11 px-6 rounded-lg font-bold shadow-md shadow-indigo-100 w-full md:w-auto"
                         >
                             <Sparkles className="w-4 h-4 mr-2" />
                             Generate All Recipes
@@ -123,7 +123,7 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
                                     className={cn(
                                         "flex items-center gap-2 py-3 px-4 rounded-xl border transition-all min-w-[120px]",
                                         isActive
-                                            ? "border-indigo-600 bg-indigo-600 text-white shadow-md shadow-indigo-200"
+                                            ? "border-[var(--primary)] bg-[var(--primary)] text-white shadow-md shadow-indigo-200"
                                             : hasSelected
                                                 ? "border-green-200 bg-green-50 text-green-700 hover:bg-green-100"
                                                 : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
@@ -187,7 +187,7 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
                                         <Button
                                             onClick={() => handleGenerateRecipesForMeal(mealType)}
                                             disabled={mealRecipes.find(mr => mr.mealType === mealType)?.isGenerating}
-                                            className="bg-indigo-600 hover:bg-indigo-700 text-white h-11 px-6 font-semibold"
+                                            className="bg-[var(--primary)] hover:bg-indigo-700 text-white h-11 px-6 font-semibold"
                                         >
                                             {mealRecipes.find(mr => mr.mealType === mealType)?.isGenerating ? (
                                                 <>
@@ -215,14 +215,14 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
                                                         className={cn(
                                                             "rounded-xl border-2 cursor-pointer transition-all hover:shadow-md duration-300 relative overflow-hidden group",
                                                             isSelected
-                                                                ? "border-indigo-600 bg-indigo-50/30"
+                                                                ? "border-[var(--primary)] bg-indigo-50/30"
                                                                 : "border-gray-200 hover:border-indigo-200"
                                                         )}
                                                         onClick={() => handleSelectRecipeForMeal(mealType, recipe.id)}
                                                     >
                                                         {isSelected && (
                                                             <div className="absolute top-3 right-3 z-10">
-                                                                <div className="bg-indigo-600 text-white p-1 rounded-full shadow-lg">
+                                                                <div className="bg-[var(--primary)] text-white p-1 rounded-full shadow-lg">
                                                                     <CheckCircle className="w-4 h-4" />
                                                                 </div>
                                                             </div>
@@ -291,7 +291,7 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
                 <Button
                     onClick={handleSaveAllRecipes}
                     disabled={isSavingAll || getSelectedCount() === 0}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 h-12 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all hover:scale-[1.02]"
+                    className="bg-[var(--primary)] hover:bg-indigo-700 text-white px-8 h-12 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all hover:scale-[1.02]"
                 >
                     {isSavingAll ? (
                         <>

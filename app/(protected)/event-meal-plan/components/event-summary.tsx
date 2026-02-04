@@ -46,19 +46,21 @@ export function EventSummary({
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
             {/* Header */}
-            <div className="text-center space-y-2">
+            <div className="flex items-center gap-4 space-y-2">
                 <motion.div
                     initial={{ scale: 0.5, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                    className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 mb-2 shadow-xl shadow-indigo-200"
+                    className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 shadow-xl shadow-indigo-200"
                 >
                     <Sparkles className="w-10 h-10 text-white" />
                 </motion.div>
-                <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Review & Confirm</h2>
-                <p className="text-gray-500 font-medium max-w-sm mx-auto">
+                <div className="flex-1">
+                    <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">Review & Confirm</h2>
+                <p className="text-gray-500 font-medium mx-auto">
                     Take a moment to review the event details before finalizing your plan.
                 </p>
+                </div>
             </div>
 
             {/* Event Summary Card */}
@@ -66,11 +68,11 @@ export function EventSummary({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-xl shadow-indigo-100/50"
+                className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-indigo-100/50"
             >
                 {/* Event Header */}
-                <div className="relative overflow-hidden bg-gray-900 p-8 text-white">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-20 pointer-events-none" />
+                <div className="relative overflow-hidden bg-gray-900 p-4 text-white">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--primary)] rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-20 pointer-events-none" />
                     <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-600 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 opacity-20 pointer-events-none" />
 
                     <div className="relative z-10 flex items-start justify-between gap-4">
@@ -82,8 +84,8 @@ export function EventSummary({
                                 <div className="flex items-center gap-2 mb-1">
                                     <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-indigo-500 text-white">Event</span>
                                 </div>
-                                <h3 className="text-2xl font-bold text-white tracking-tight">{formData.name || "Unnamed Event"}</h3>
-                                <p className="text-white/70 font-medium capitalize flex items-center gap-2">
+                                <h3 className="text-xl font-bold text-white tracking-tight">{formData.name || "Unnamed Event"}</h3>
+                                <p className="text-white/70 font-medium text-sm capitalize flex items-center gap-2">
                                     {occasionOption?.label || "Special Occasion"}
                                 </p>
                             </div>
@@ -190,7 +192,7 @@ export function EventSummary({
                             )}
                             {formData.guestNotes && (
                                 <div className="flex gap-2 text-sm text-gray-600 bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
-                                    <Info className="w-4 h-4 text-indigo-500 flex-shrink-0 mt-0.5" />
+                                    <Info className="w-4 h-4 text-[var(--primary)] flex-shrink-0 mt-0.5" />
                                     <p>{formData.guestNotes}</p>
                                 </div>
                             )}
@@ -200,13 +202,13 @@ export function EventSummary({
             </motion.div>
 
             {/* Action Buttons */}
-            <div className="space-y-4">
+            <div className="space-y-4 text-center">
                 <Button
                     size="lg"
                     onClick={onSubmit}
                     disabled={isSubmitting}
                     className={cn(
-                        "w-full h-14 text-lg font-bold rounded-xl",
+                        "w-auto h-12 text-base font-bold rounded-lg",
                         "bg-[#1a1a1a] hover:bg-black",
                         "text-white shadow-lg shadow-black/10",
                         "transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]",

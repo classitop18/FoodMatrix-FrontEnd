@@ -194,15 +194,15 @@ export default function EventMealPlan() {
     const isFirstStep = currentStep === 1;
 
     return (
-        <div className="min-h-[calc(100vh-57px)] bg-gray-50/50 flex flex-col">
+        <div className="h-[calc(100vh-57px)] bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] relative overflow-auto">
             {/* Top Navigation Bar */}
-            <div className="bg-white border-b border-gray-200 sticky top-0 z-30 px-4 md:px-8 h-16 flex items-center justify-between shadow-sm">
-                <div className="flex items-center gap-3">
+            <div className="bg-white border-b border-gray-200 sticky top-0 z-30">
+                <div className="flex items-center gap-3 px-4 md:px-6 h-16">
                     <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => router.push("/event-meal-plan/list")}
-                        className="text-gray-500 hover:text-gray-900 rounded-full hover:bg-gray-100"
+                        className="text-gray-500 hover:text-gray-900 rounded-full hover:bg-gray-100 border-gray-100 border"
                     >
                         <X className="w-5 h-5" />
                     </Button>
@@ -217,7 +217,7 @@ export default function EventMealPlan() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                     {/* Sidebar Steps */}
                     <div className="hidden lg:block lg:col-span-3 sticky top-24">
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                        <div className="bg-white rounded-xl border border-gray-200 p-6">
                             <StepIndicator
                                 currentStep={currentStep}
                                 steps={FORM_STEPS}
@@ -227,9 +227,9 @@ export default function EventMealPlan() {
 
                     {/* Main Content */}
                     <div className="lg:col-span-9 w-full mx-auto lg:mx-0">
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col min-h-[600px]">
+                        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden flex flex-col min-h-[300px]">
                             {/* Content */}
-                            <div className="p-6 md:p-10 flex-1">
+                            <div className="p-4 md:p-5 flex-1">
                                 <AnimatePresence mode="wait">
                                     <motion.div
                                         key={currentStep}
@@ -254,7 +254,7 @@ export default function EventMealPlan() {
 
                             {/* Validation Errors Overlay */}
                             {!canProceed && getStepErrors(currentStep).length > 0 && (
-                                <div className="bg-red-50 border-t border-red-100 p-4 animate-in slide-in-from-bottom-2 mx-6 mb-6 rounded-xl">
+                                <div className="bg-red-50 border border-red-200 p-4 animate-in slide-in-from-bottom-2 mx-4 mb-6 rounded-xl">
                                     <div className="flex items-center gap-2 mb-2 text-red-700 font-bold text-sm uppercase tracking-wider">
                                         <div className="w-2 h-2 rounded-full bg-red-500" />
                                         Please fix the following issues:
@@ -277,7 +277,7 @@ export default function EventMealPlan() {
                                     onClick={handleBack}
                                     disabled={isFirstStep}
                                     className={cn(
-                                        "text-gray-600 font-bold hover:bg-white hover:shadow-sm px-6 h-12 rounded-xl transition-all",
+                                        "text-gray-600 font-bold hover:bg-white hover:shadow-sm px-6 h-11 rounded-lg transition-all",
                                         isFirstStep && "opacity-0 pointer-events-none"
                                     )}
                                 >
@@ -290,7 +290,7 @@ export default function EventMealPlan() {
                                         onClick={handleNext}
                                         disabled={!canProceed}
                                         className={cn(
-                                            "bg-[#1a1a1a] hover:bg-black text-white px-8 h-12 rounded-xl font-bold shadow-lg shadow-black/5 transition-all text-base flex items-center",
+                                            "bg-[#1a1a1a] hover:bg-black text-white px-8 h-11 rounded-lg transition-all text-base flex items-center",
                                             !canProceed && "opacity-50 cursor-not-allowed"
                                         )}
                                     >

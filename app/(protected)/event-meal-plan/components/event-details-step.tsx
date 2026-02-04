@@ -57,7 +57,7 @@ const EventDetailsStepComponent: React.FC<EventDetailsStepProps> = ({ formData, 
                     placeholder="e.g., Rahul's Birthday Party"
                     value={formData.name}
                     onChange={handleNameChange}
-                    className="h-14 text-lg px-4 rounded-xl border-2 border-gray-200 focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-gray-300"
+                    className="h-11 text-lg px-4 rounded-lg border border-gray-200 transition-all placeholder:text-gray-300"
                 />
             </div>
 
@@ -66,23 +66,23 @@ const EventDetailsStepComponent: React.FC<EventDetailsStepProps> = ({ formData, 
                 <Label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
                     Occasion Type <span className="text-red-500">*</span>
                 </Label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
                     {OCCASION_OPTIONS.map((occasion) => (
                         <button
                             key={occasion.value}
                             type="button"
                             onClick={() => onUpdate("occasionType", occasion.value)}
                             className={cn(
-                                "flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all duration-200 hover:shadow-lg hover:-translate-y-1 relative overflow-hidden group",
+                                "flex flex-col items-center justify-center p-4 rounded-xl border transition-all duration-200 hover:shadow-lg hover:-translate-y-1 relative overflow-hidden group",
                                 formData.occasionType === occasion.value
-                                    ? "border-indigo-600 bg-indigo-50 shadow-md"
-                                    : "border-gray-100 bg-white hover:border-indigo-200"
+                                    ? "border-[var(--primary)] bg-indigo-50"
+                                    : "border-gray-200 bg-white hover:border-indigo-200"
                             )}
                         >
                             <div className={cn(
                                 "w-12 h-12 rounded-xl flex items-center justify-center mb-3 transition-all duration-300",
                                 formData.occasionType === occasion.value
-                                    ? "bg-indigo-600 text-white scale-110 shadow-lg shadow-indigo-200"
+                                    ? "bg-[var(--primary)] text-white scale-110 shadow-lg shadow-indigo-200"
                                     : "bg-gray-50 text-gray-400 group-hover:bg-indigo-50 group-hover:text-indigo-600"
                             )}>
                                 <occasion.icon className="w-6 h-6" />
@@ -97,7 +97,7 @@ const EventDetailsStepComponent: React.FC<EventDetailsStepProps> = ({ formData, 
                             </span>
 
                             {formData.occasionType === occasion.value && (
-                                <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-indigo-600 animate-pulse" />
+                                <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[var(--primary)] animate-pulse" />
                             )}
                         </button>
                     ))}
@@ -116,7 +116,7 @@ const EventDetailsStepComponent: React.FC<EventDetailsStepProps> = ({ formData, 
                             <Button
                                 variant="outline"
                                 className={cn(
-                                    "w-full h-14 justify-start text-left font-medium rounded-xl border-2 border-gray-200 hover:border-indigo-500/30 hover:bg-gray-50",
+                                    "w-full h-11 justify-start text-left font-medium rounded-lg border border-gray-200 hover:border-indigo-500/30 hover:bg-gray-50",
                                     !formData.eventDate && "text-gray-400"
                                 )}
                             >
@@ -129,7 +129,7 @@ const EventDetailsStepComponent: React.FC<EventDetailsStepProps> = ({ formData, 
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0 rounded-2xl border border-gray-100 shadow-2xl" align="start">
-                            <div className="bg-white rounded-xl shadow-xl  z-50">
+                            <div className="bg-white rounded-xl shadow-xl z-50">
                                 <Calendar
                                     mode="single"
                                     selected={formData.eventDate}
@@ -153,9 +153,9 @@ const EventDetailsStepComponent: React.FC<EventDetailsStepProps> = ({ formData, 
                             type="time"
                             value={formData.eventTime}
                             onChange={handleTimeChange}
-                            className="h-14 pl-12 rounded-xl border-2 border-gray-200 focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 text-gray-900 font-semibold cursor-pointer"
+                            className="h-11 pl-12 rounded-lg border border-gray-200 text-gray-900 font-semibold cursor-pointer"
                         />
-                        <Clock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-hover:text-indigo-500 transition-colors" />
+                        <Clock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-hover:text-[var(--primary)] transition-colors" />
                     </div>
                 </div>
             </div>
@@ -171,7 +171,7 @@ const EventDetailsStepComponent: React.FC<EventDetailsStepProps> = ({ formData, 
                     placeholder="Add any specific notes about the event, theme, or preferences..."
                     value={formData.description}
                     onChange={handleDescriptionChange}
-                    className="min-h-[120px] resize-none rounded-xl border-2 border-gray-200 focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 p-4 text-base placeholder:text-gray-300"
+                    className="min-h-[120px] resize-none rounded-lg border border-gray-200 p-4 text-base placeholder:text-gray-300"
                 />
             </div>
         </div>

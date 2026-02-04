@@ -81,7 +81,7 @@ export const HealthProfileSection: React.FC<HealthProfileSectionProps> = ({
                                 checked={considerHealthProfile}
                                 onCheckedChange={setConsiderHealthProfile}
                                 id="consider-health"
-                                className="data-[state=checked]:bg-indigo-600"
+                                className="data-[state=checked]:bg-[var(--primary)]"
                             />
                             <div>
                                 <Label
@@ -251,7 +251,7 @@ export const HealthProfileSection: React.FC<HealthProfileSectionProps> = ({
                                                     id={p.id}
                                                     checked={selectedHealthMembers.includes(p.id)}
                                                     onCheckedChange={() => { }}
-                                                    className="data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
+                                                    className="data-[state=checked]:bg-[var(--primary)] data-[state=checked]:border-[var(--primary)]"
                                                 />
                                                 <div className="flex-1">
                                                     <Label

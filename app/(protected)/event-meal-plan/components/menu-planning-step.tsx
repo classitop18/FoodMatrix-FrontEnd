@@ -25,14 +25,16 @@ export function MenuPlanningStep({
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-500">
             {/* Header */}
-            <div className="text-center mb-8">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-50 mb-4 shadow-sm border border-indigo-100">
+            <div className="flex gap-4 mb-8 items-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-indigo-50 border border-indigo-100">
                     <ChefHat className="w-8 h-8 text-indigo-600" />
                 </div>
-                <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">Plan Your Menu</h2>
+                <div className="flex-1">
+                    <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">Plan Your Menu</h2>
                 <p className="text-gray-500 font-medium mt-1">
                     Which meals do you plan to serve at this event?
                 </p>
+                </div>
             </div>
 
             {/* Stats Bar */}
@@ -75,10 +77,10 @@ export function MenuPlanningStep({
                             transition={{ delay: index * 0.05 }}
                             onClick={() => toggleMealType(option.value)}
                             className={cn(
-                                "group relative p-5 rounded-2xl border-2 text-left transition-all duration-300 flex items-start gap-4 overflow-hidden",
+                                "group relative p-5 rounded-xl border text-left transition-all duration-300 flex items-start gap-4 overflow-hidden",
                                 isSelected
-                                    ? "border-indigo-600 bg-indigo-50 shadow-md ring-1 ring-indigo-500/10"
-                                    : "border-gray-100 bg-white hover:border-indigo-200 hover:bg-gray-50 hover:shadow-sm"
+                                    ? "border-[var(--primary)] bg-indigo-50 shadow-md ring-1 ring-indigo-500/10"
+                                    : "border-gray-200 bg-white hover:border-indigo-200 hover:bg-gray-50 hover:shadow-sm"
                             )}
                         >
                             {/* Icon Box */}
@@ -86,7 +88,7 @@ export function MenuPlanningStep({
                                 className={cn(
                                     "h-14 w-14 rounded-xl flex items-center justify-center transition-all duration-300 shadow-sm flex-shrink-0",
                                     isSelected
-                                        ? "bg-indigo-600 text-white shadow-indigo-200 transform scale-105"
+                                        ? "bg-[var(--primary)] text-white shadow-indigo-200 transform scale-105"
                                         : "bg-white border border-gray-100 group-hover:bg-white"
                                 )}
                             >
@@ -112,7 +114,7 @@ export function MenuPlanningStep({
                             <div className={cn(
                                 "absolute top-4 right-4 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
                                 isSelected
-                                    ? "border-indigo-600 bg-indigo-600 scale-100"
+                                    ? "border-[var(--primary)] bg-[var(--primary)] scale-100"
                                     : "border-gray-200 bg-transparent scale-90 opacity-0 group-hover:opacity-100"
                             )}>
                                 <Check className="w-3.5 h-3.5 text-white stroke-[3]" />

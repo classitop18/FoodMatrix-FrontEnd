@@ -64,7 +64,7 @@ export const HealthProfileSection: React.FC<HealthProfileSectionProps> = ({
                                 checked={considerHealthProfile}
                                 onCheckedChange={setConsiderHealthProfile}
                                 id="consider-health"
-                                className="data-[state=checked]:bg-indigo-600"
+                                className="data-[state=checked]:bg-[var(--primary)]"
                             />
                             <div>
                                 <Label htmlFor="consider-health" className="text-sm font-semibold text-gray-900 cursor-pointer block">
@@ -150,7 +150,7 @@ export const HealthProfileSection: React.FC<HealthProfileSectionProps> = ({
                                                 id={p.id}
                                                 checked={selectedHealthMembers.includes(p.id)}
                                                 onCheckedChange={() => { }}
-                                                className="data-[state=checked]:bg-indigo-600 border-gray-300"
+                                                className="data-[state=checked]:bg-[var(--primary)] border-gray-300"
                                             />
                                             <Label htmlFor={p.id} className="text-sm font-medium text-gray-700 cursor-pointer flex-1 user-select-none">
                                                 {p.name}
@@ -168,7 +168,7 @@ export const HealthProfileSection: React.FC<HealthProfileSectionProps> = ({
             <div className="flex justify-end pt-4">
                 <Button
                     onClick={onContinue}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 h-12 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all hover:scale-[1.02]"
+                    className="bg-[var(--primary)] hover:bg-indigo-700 text-white px-8 h-12 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all hover:scale-[1.02]"
                 >
                     Continue to Budget
                     <MoveRight className="w-4 h-4 ml-2" />

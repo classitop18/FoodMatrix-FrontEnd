@@ -24,7 +24,7 @@ export const StepIndicator = ({ step, active, isCompleted, label }: StepIndicato
             className={cn(
                 "w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all duration-300 relative z-10",
                 active
-                    ? "bg-indigo-600 text-white border-indigo-600 shadow-xl shadow-indigo-300"
+                    ? "bg-[var(--primary)] text-white border-[var(--primary)] shadow-xl shadow-indigo-300"
                     : isCompleted
                         ? "bg-gradient-to-br from-emerald-400 to-emerald-600 text-white border-transparent shadow-lg shadow-emerald-200"
                         : "bg-white text-gray-400 border-gray-200"
@@ -58,7 +58,7 @@ export const StepIndicator = ({ step, active, isCompleted, label }: StepIndicato
                 <motion.span
                     initial={{ opacity: 0, y: -5 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="text-[10px] font-semibold text-indigo-500 uppercase tracking-widest hidden sm:block"
+                    className="text-[10px] font-semibold text-[var(--primary)] uppercase tracking-widest hidden sm:block"
                 >
                     In Progress
                 </motion.span>

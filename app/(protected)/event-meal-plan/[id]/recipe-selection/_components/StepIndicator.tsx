@@ -23,7 +23,7 @@ export const StepIndicator: React.FC<StepIndicatorProps> = ({
                 className={cn(
                     "w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300",
                     active
-                        ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200"
+                        ? "bg-[var(--primary)] text-white shadow-lg shadow-indigo-200"
                         : isCompleted
                             ? "bg-green-500 text-white"
                             : "bg-gray-200 text-gray-500"

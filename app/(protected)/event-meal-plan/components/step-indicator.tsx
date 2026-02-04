@@ -7,7 +7,7 @@ import type { StepIndicatorProps } from "../types/event.types";
 
 const StepIndicatorComponent: React.FC<StepIndicatorProps> = ({ currentStep, steps }) => {
     return (
-        <div className="flex flex-col gap-0.5">
+        <div className="flex flex-col">
             {steps.map((step, index) => {
                 const isCompleted = currentStep > step.id;
                 const isCurrent = currentStep === step.id;
@@ -15,17 +15,17 @@ const StepIndicatorComponent: React.FC<StepIndicatorProps> = ({ currentStep, ste
                 return (
                     <React.Fragment key={step.id}>
                         <div className={cn(
-                            "flex items-center gap-4 rounded-xl p-3 px-4 transition-all duration-300",
+                            "flex items-center gap-4 rounded-lg p-3 px-4 transition-all duration-300 border border-gray-100",
                             isCurrent ? "bg-indigo-50/50" : "hover:bg-gray-50"
                         )}>
                             {/* Step Circle */}
                             <div
                                 className={cn(
-                                    "w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 flex-shrink-0 shadow-sm border",
+                                    "w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 flex-shrink-0 shadow-sm border",
                                     isCompleted
                                         ? "bg-emerald-500 border-emerald-500 text-white"
                                         : isCurrent
-                                            ? "bg-indigo-600 border-indigo-600 text-white scale-110 shadow-indigo-200"
+                                            ? "bg-[var(--primary)] border-[var(--primary)] text-white scale-110 shadow-indigo-200"
                                             : "bg-white border-gray-200 text-gray-400"
                                 )}
                             >
@@ -40,7 +40,7 @@ const StepIndicatorComponent: React.FC<StepIndicatorProps> = ({ currentStep, ste
                             <div className="flex-1 min-w-0">
                                 <span
                                     className={cn(
-                                        "text-sm font-bold block transition-colors",
+                                        "text-md font-bold block transition-colors",
                                         isCurrent
                                             ? "text-indigo-900"
                                             : isCompleted
@@ -52,8 +52,8 @@ const StepIndicatorComponent: React.FC<StepIndicatorProps> = ({ currentStep, ste
                                 </span>
                                 {step.description && (
                                     <span className={cn(
-                                        "text-[10px] font-medium uppercase tracking-wider block mt-0.5",
-                                        isCurrent ? "text-indigo-500" : "text-gray-400"
+                                        "text-xs font-medium uppercase tracking-wider block mt-0.5",
+                                        isCurrent ? "text-[var(--primary)]" : "text-gray-400"
                                     )}>
                                         {step.description}
                                     </span>

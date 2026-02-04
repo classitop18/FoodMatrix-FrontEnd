@@ -85,14 +85,14 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                             >
                                 <div
                                     className={cn(
-                                        "flex items-center gap-4 p-5 rounded-xl border-2 cursor-pointer transition-all hover:shadow-md",
+                                        "flex items-center gap-4 p-5 rounded-xl border cursor-pointer transition-all hover:shadow-md",
                                         budgetStrategy === "ai"
-                                            ? "border-indigo-600 bg-indigo-50/50"
+                                            ? "border-[var(--primary)] bg-indigo-50/50"
                                             : "border-gray-100 bg-white hover:border-gray-200"
                                     )}
                                     onClick={() => setBudgetStrategy("ai")}
                                 >
-                                    <RadioGroupItem value="ai" id="ai-strategy" className="text-indigo-600 border-indigo-600" />
+                                    <RadioGroupItem value="ai" id="ai-strategy" className="text-indigo-600 border-[var(--primary)]" />
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2">
                                             <Brain className={cn("w-5 h-5", budgetStrategy === "ai" ? "text-indigo-600" : "text-gray-400")} />
@@ -114,12 +114,12 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                                     className={cn(
                                         "flex items-center gap-4 p-5 rounded-xl border-2 cursor-pointer transition-all hover:shadow-md",
                                         budgetStrategy === "manual"
-                                            ? "border-indigo-600 bg-indigo-50/50"
+                                            ? "border-[var(--primary)] bg-indigo-50/50"
                                             : "border-gray-100 bg-white hover:border-gray-200"
                                     )}
                                     onClick={() => setBudgetStrategy("manual")}
                                 >
-                                    <RadioGroupItem value="manual" id="manual-strategy" className="text-indigo-600 border-indigo-600" />
+                                    <RadioGroupItem value="manual" id="manual-strategy" className="text-indigo-600 border-[var(--primary)]" />
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2">
                                             <Edit3 className={cn("w-5 h-5", budgetStrategy === "manual" ? "text-indigo-600" : "text-gray-400")} />

@@ -154,7 +154,7 @@ export function PantryUpdateDialog({
         <div className="py-4 space-y-4">
           {isLoading ? (
             <div className="flex justify-center py-4">
-              <Loader2 className="animate-spin text-indigo-500" />
+              <Loader2 className="animate-spin text-[var(--primary)]" />
             </div>
           ) : matches.length === 0 ? (
             <div className="text-center py-4 text-gray-500 bg-gray-50 rounded-lg">
