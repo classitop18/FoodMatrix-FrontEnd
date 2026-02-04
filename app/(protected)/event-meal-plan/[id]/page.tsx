@@ -24,7 +24,8 @@ import {
     Utensils,
     ChevronRight,
     Search,
-    Filter
+    Filter,
+    X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -37,6 +38,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
 
 // Hooks
 import { useEvent, useEventMeals } from "@/services/event/event.query";
@@ -45,6 +55,8 @@ import {
     useDeleteEvent,
     useCompleteEvent,
     useGenerateShoppingList,
+    useDeleteEventMeal,
+    useRemoveRecipeFromMeal
 } from "@/services/event/event.mutation";
 
 // Constants
@@ -58,7 +70,7 @@ import {
 import { cn } from "@/lib/utils";
 
 // Types
-import { EventResponse, EventMealResponse, MealType } from "@/services/event/event.types";
+import { EventResponse, EventMealResponse, MealType, EventRecipeResponse } from "@/services/event/event.types";
 
 export default function EventDetailPage() {
     const params = useParams();
@@ -73,6 +85,8 @@ export default function EventDetailPage() {
     const deleteEventMutation = useDeleteEvent();
     const completeEventMutation = useCompleteEvent();
     const generateShoppingListMutation = useGenerateShoppingList();
+    const deleteEventMealMutation = useDeleteEventMeal();
+    const removeRecipeFromMealMutation = useRemoveRecipeFromMeal();
 
     const [isDeleting, setIsDeleting] = useState(false);
 
@@ -120,10 +134,8 @@ export default function EventDetailPage() {
         setIsDeleting(true);
         try {
             await deleteEventMutation.mutateAsync(eventId);
-            toast.success("Event deleted successfully");
             router.push("/event-meal-plan/list");
         } catch (error) {
-            toast.error("Failed to delete event");
             setIsDeleting(false);
         }
     };
@@ -143,6 +155,26 @@ export default function EventDetailPage() {
             toast.success("Shopping list generated successfully");
         } catch (error) {
             toast.error("Failed to generate shopping list");
+        }
+    };
+
+    const handleDeleteMeal = async (mealId: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!confirm("Remove this meal time from the event?")) return;
+        try {
+            await deleteEventMealMutation.mutateAsync({ eventId, mealId });
+        } catch (error) {
+            // Error handled by mutation
+        }
+    };
+
+    const handleRemoveRecipe = async (mealId: string, recipeId: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!confirm("Remove this recipe from the meal?")) return;
+        try {
+            await removeRecipeFromMealMutation.mutateAsync({ eventId, mealId, recipeId });
+        } catch (error) {
+            // Error handled by mutation
         }
     };
 
@@ -295,7 +327,7 @@ export default function EventDetailPage() {
                         </div>
 
                         {meals && meals.length > 0 ? (
-                            <div className="space-y-4">
+                            <div className="space-y-6">
                                 {meals.map((meal: EventMealResponse) => {
                                     const mealOption = getMealTypeOption(meal.mealType as MealType);
                                     const MealIcon = mealOption?.icon || ChefHat;
@@ -303,48 +335,116 @@ export default function EventDetailPage() {
                                     return (
                                         <div
                                             key={meal.id}
-                                            className="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-indigo-300 transition-colors shadow-sm cursor-pointer"
-                                            onClick={() => router.push(`/event-meal-plan/${eventId}/meals/${meal.id}`)}
+                                            className="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-indigo-300 transition-colors shadow-sm"
                                         >
-                                            <div className="p-5 flex flex-col sm:flex-row gap-4">
-                                                <div className="flex-shrink-0">
-                                                    <div className={cn("w-12 h-12 rounded-lg flex items-center justify-center", mealOption?.color ? `bg-${mealOption.color.split('-')[1]}-50 text-${mealOption.color.split('-')[1]}-600` : "bg-gray-100 text-gray-600")}>
-                                                        <MealIcon className="w-6 h-6" />
+                                            <div className="p-4 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center", mealOption?.color ? `bg-${mealOption.color.split('-')[1]}-50 text-${mealOption.color.split('-')[1]}-600` : "bg-gray-100 text-gray-600")}>
+                                                        <MealIcon className="w-5 h-5" />
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="text-base font-bold text-gray-900 capitalize leading-none mb-1">{mealOption?.label || meal.mealType}</h3>
+                                                        {meal.scheduledTime && (
+                                                            <p className="text-xs text-gray-500 font-medium flex items-center gap-1">
+                                                                <Clock className="w-3 h-3" />
+                                                                {formatEventTime(meal.scheduledTime)}
+                                                            </p>
+                                                        )}
                                                     </div>
                                                 </div>
-                                                <div className="flex-1">
-                                                    <div className="flex items-start justify-between mb-2">
-                                                        <div>
-                                                            <h3 className="text-base font-bold text-gray-900 capitalize">{mealOption?.label || meal.mealType}</h3>
-                                                            {meal.scheduledTime && (
-                                                                <p className="text-sm text-gray-500 font-medium flex items-center gap-1.5 mt-0.5">
-                                                                    <Clock className="w-3.5 h-3.5" />
-                                                                    {formatEventTime(meal.scheduledTime)}
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                        <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-indigo-500 transition-colors" />
-                                                    </div>
+                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-white hover:shadow-sm text-gray-400 hover:text-indigo-600" onClick={() => router.push(`/event-meal-plan/${eventId}/meals/${meal.id}`)}>
+                                                        <Edit className="w-4 h-4" />
+                                                    </Button>
+                                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-white hover:shadow-sm text-gray-400 hover:text-red-600" onClick={(e) => handleDeleteMeal(meal.id, e)}>
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </Button>
+                                                </div>
+                                            </div>
 
-                                                    {meal.recipes && meal.recipes.length > 0 ? (
-                                                        <div className="flex flex-wrap gap-2 mt-3">
-                                                            {meal.recipes.map((recipe: any) => (
-                                                                <span key={recipe.id} className="inline-flex items-center px-2.5 py-1 rounded-md bg-gray-50 text-gray-700 text-xs font-medium border border-gray-100">
-                                                                    {recipe.name}
-                                                                </span>
-                                                            ))}
-                                                        </div>
-                                                    ) : (
-                                                        <p className="text-sm text-yellow-600 mt-2 flex items-center gap-1.5">
-                                                            <AlertCircle className="w-3.5 h-3.5" />
-                                                            No recipes added yet
-                                                        </p>
-                                                    )}
-                                                </div>
+                                            <div className="p-4">
+                                                {meal.recipes && meal.recipes.length > 0 ? (
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                        {meal.recipes.map((recipeItem: any) => {
+                                                            const recipeContent = recipeItem.recipe || recipeItem; // Handle potential different structures
+                                                            return (
+                                                                <div
+                                                                    key={recipeItem.id}
+                                                                    className="relative flex items-center gap-3 p-3 rounded-lg border border-gray-100 bg-gray-50/50 hover:bg-white hover:shadow-sm hover:border-gray-200 transition-all cursor-pointer group/recipe"
+                                                                    onClick={() => router.push(`/recipe/${recipeContent.id}`)}
+                                                                >
+                                                                    <div className="w-16 h-16 rounded-md bg-gray-200 flex-shrink-0 overflow-hidden">
+                                                                        {recipeContent.imageUrl ? (
+                                                                            <img src={recipeContent.imageUrl} alt={recipeContent.name} className="w-full h-full object-cover" />
+                                                                        ) : (
+                                                                            <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                                                                                <ChefHat className="w-6 h-6 text-gray-400" />
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <h4 className="text-sm font-semibold text-gray-900 truncate mb-1">{recipeContent.name}</h4>
+                                                                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                                                                            <span className="flex items-center gap-1">
+                                                                                <Users className="w-3 h-3" /> {recipeItem.servings || event.totalServings}
+                                                                            </span>
+                                                                            {recipeContent.calories && (
+                                                                                <span className="flex items-center gap-1">
+                                                                                    <Sparkles className="w-3 h-3" /> {recipeContent.calories} cal
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="absolute top-2 right-2 h-6 w-6 rounded-full bg-white/80 hover:bg-red-50 text-gray-400 hover:text-red-500 opacity-0 group-hover/recipe:opacity-100 transition-opacity shadow-sm"
+                                                                        onClick={(e) => handleRemoveRecipe(meal.id, recipeItem.id, e)}
+                                                                    >
+                                                                        <X className="w-3 h-3" />
+                                                                    </Button>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                        <Button
+                                                            variant="outline"
+                                                            className="h-auto min-h-[5rem] flex flex-col items-center justify-center gap-2 border-dashed text-gray-500 hover:text-indigo-600 hover:border-indigo-300 hover:bg-indigo-50/30"
+                                                            onClick={() => router.push(`/event-meal-plan/${eventId}/generate-recipe`)}
+                                                        >
+                                                            <Plus className="w-5 h-5" />
+                                                            <span className="text-xs font-semibold">Add Recipe</span>
+                                                        </Button>
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-center py-6">
+                                                        <p className="text-sm text-gray-500 mb-4">No recipes added yet for this meal.</p>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="default"
+                                                            className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                                                            onClick={() => router.push(`/event-meal-plan/${eventId}/generate-recipe`)}
+                                                        >
+                                                            <Sparkles className="w-4 h-4 mr-2" />
+                                                            Generate Recipes with AI
+                                                        </Button>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     );
                                 })}
+
+                                {/* Add New Meal Time Button - Bottom */}
+                                <div className="mt-6 flex justify-center">
+                                    <Button
+                                        variant="outline"
+                                        className="w-full py-6 border-dashed border-2 border-gray-300 text-gray-500 hover:border-indigo-500 hover:text-indigo-600 hover:bg-indigo-50/10 transition-all rounded-xl gap-2 text-base font-medium"
+                                        onClick={() => router.push(`/event-meal-plan/${eventId}/menu`)}
+                                    >
+                                        <Plus className="w-5 h-5" />
+                                        Add Another Meal Time
+                                    </Button>
+                                </div>
                             </div>
                         ) : (
                             <div className="bg-white rounded-xl border border-dashed border-gray-300 p-10 text-center flex flex-col items-center justify-center">
@@ -356,6 +456,9 @@ export default function EventDetailPage() {
                                 <Button onClick={() => router.push(`/event-meal-plan/${eventId}/generate-recipe`)} className="bg-indigo-600 hover:bg-indigo-700 text-white">
                                     <Sparkles className="w-4 h-4 mr-2" />
                                     Launch Recipe Wizard
+                                </Button>
+                                <Button variant="link" onClick={() => router.push(`/event-meal-plan/${eventId}/menu`)} className="mt-2 text-indigo-600">
+                                    Or manually add meal types
                                 </Button>
                             </div>
                         )}

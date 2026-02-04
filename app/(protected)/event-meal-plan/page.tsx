@@ -7,9 +7,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
     ChevronLeft,
     ChevronRight,
-    PartyPopper,
-    ListChecks,
-    Settings,
     X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";

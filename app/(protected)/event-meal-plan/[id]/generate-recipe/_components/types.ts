@@ -18,7 +18,7 @@ export interface MealBudgetAllocation {
 export interface GeneratedRecipeForMeal {
     mealType: MealType;
     recipes: any[];
-    selectedRecipeId?: string;
+    selectedRecipeIds?: string[];  // Changed: Multiple recipes can be selected
     isGenerating: boolean;
     customSearch?: string;
     isAIGenerated?: boolean;

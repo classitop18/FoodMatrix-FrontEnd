@@ -148,22 +148,54 @@ export default function EventRecipeSelectionPage() {
         }
     }, [selectedMealTypes, totalBudget, budgetStrategy]);
 
-    // Initialize meal recipes state
+    // Initialize meal recipes state with existing event data
     useEffect(() => {
         if (selectedMealTypes.length > 0) {
             setMealRecipes(prev => {
                 const updated: GeneratedRecipeForMeal[] = selectedMealTypes.map(mt => {
                     const existing = prev.find(p => p.mealType === mt);
+                    // If we have local state with recipes, preserve it (user might have generated something)
+                    if (existing && existing.recipes.length > 0) return existing;
+
+                    // Otherwise, try to populate from event data (Edit/Resume mode)
+                    const eventMeal = (event as any)?.meals?.find((m: any) => m.mealType === mt);
+
+                    if (eventMeal && eventMeal.recipes && eventMeal.recipes.length > 0) {
+                        const existingRecipes = eventMeal.recipes.map((er: any) => {
+                            const r = er.recipe || {};
+                            return {
+                                ...r,
+                                id: r.id, // Ensure ID is top level
+                                isAIGenerated: false,
+                                isSaved: true,
+                                cookingTime: r.cookTimeMinutes ? `${r.cookTimeMinutes} min` : (r.totalTimeMinutes ? `${r.totalTimeMinutes} min` : 'N/A'),
+                                price: (er.estimatedCost && !isNaN(Number(er.estimatedCost))) ? `$${Number(er.estimatedCost).toFixed(2)}` : ((r.estimatedCostPerServing && !isNaN(Number(r.estimatedCostPerServing))) ? `$${Number(r.estimatedCostPerServing).toFixed(2)}` : 'N/A'),
+                                calories: r.calories,
+                                servings: er.servings
+                            };
+                        });
+                        const selectedIds = existingRecipes.map((r: any) => r.id);
+
+                        return {
+                            mealType: mt,
+                            recipes: existingRecipes,
+                            selectedRecipeIds: selectedIds,
+                            isGenerating: false,
+                            customSearch: existing?.customSearch
+                        };
+                    }
+
+                    // Fallback to existing state or empty
                     return existing || { mealType: mt, recipes: [], isGenerating: false };
                 });
                 return updated;
             });
-            // Set first meal as active tab
+            // Set first meal as active tab if not set
             if (!selectedMealTypes.includes(activeMealTab)) {
                 setActiveMealTab(selectedMealTypes[0]);
             }
         }
-    }, [selectedMealTypes, activeMealTab]);
+    }, [selectedMealTypes, activeMealTab, event]);
 
     // Handler for manual budget amount change
     const handleManualBudgetChange = useCallback((mealType: MealType, value: string) => {
@@ -325,11 +357,20 @@ export default function EventRecipeSelectionPage() {
                 price: r.price || (r.costAnalysis?.costPerServing ? `$${r.costAnalysis.costPerServing.toFixed(2)}` : 'N/A'),
             }));
 
-            setMealRecipes(prev => prev.map(mr =>
-                mr.mealType === mealType
-                    ? { ...mr, recipes: newRecipes, isGenerating: false }
-                    : mr
-            ));
+            setMealRecipes(prev => prev.map(mr => {
+                if (mr.mealType !== mealType) return mr;
+
+                // Merge: Keep currently selected recipes + add new ones (filtering duplicates)
+                const currentSelectedIds = mr.selectedRecipeIds || [];
+                const keptRecipes = mr.recipes.filter(r => currentSelectedIds.includes(r.id));
+                const uniqueNewRecipes = newRecipes.filter((n: any) => !keptRecipes.some(k => k.id === n.id));
+
+                return {
+                    ...mr,
+                    recipes: [...keptRecipes, ...uniqueNewRecipes],
+                    isGenerating: false
+                };
+            }));
 
             toast.success(`Generated ${newRecipes.length} ${MEAL_TYPE_CONFIG[mealType].label} recipes!`);
         } catch (error: any) {
@@ -344,17 +385,27 @@ export default function EventRecipeSelectionPage() {
     };
 
     const handleSelectRecipeForMeal = (mealType: MealType, recipeId: string) => {
-        setMealRecipes(prev => prev.map(mr =>
-            mr.mealType === mealType
-                ? { ...mr, selectedRecipeId: mr.selectedRecipeId === recipeId ? undefined : recipeId }
-                : mr
-        ));
+        setMealRecipes(prev => prev.map(mr => {
+            if (mr.mealType !== mealType) return mr;
+
+            const currentIds = mr.selectedRecipeIds || [];
+            const isAlreadySelected = currentIds.includes(recipeId);
+
+            return {
+                ...mr,
+                selectedRecipeIds: isAlreadySelected
+                    ? currentIds.filter(id => id !== recipeId)  // Remove if already selected
+                    : [...currentIds, recipeId]  // Add if not selected
+            };
+        }));
     };
 
     const handleSaveAllRecipes = async () => {
-        const selectedRecipes = mealRecipes.filter(mr => mr.selectedRecipeId);
+        // Gather all selected recipes across all meal types
+        const mealsWithSelections = mealRecipes.filter(mr => mr.selectedRecipeIds && mr.selectedRecipeIds.length > 0);
+        const totalSelectedCount = mealsWithSelections.reduce((sum, mr) => sum + (mr.selectedRecipeIds?.length || 0), 0);
 
-        if (selectedRecipes.length === 0) {
+        if (totalSelectedCount === 0) {
             toast.error("Please select at least one recipe");
             return;
         }
@@ -362,10 +413,10 @@ export default function EventRecipeSelectionPage() {
         setIsSavingAll(true);
 
         try {
-            for (const mr of selectedRecipes) {
-                const recipe = mr.recipes.find(r => r.id === mr.selectedRecipeId);
-                if (!recipe) continue;
+            let savedCount = 0;
 
+            for (const mr of mealsWithSelections) {
+                // Get or create meal for this meal type
                 let mealId = (event as any)?.meals?.find((m: any) => m.mealType === mr.mealType)?.id;
 
                 if (!mealId) {
@@ -380,18 +431,25 @@ export default function EventRecipeSelectionPage() {
                     mealId = newMeal.id;
                 }
 
-                await addRecipe({
-                    eventId,
-                    mealId,
-                    data: {
-                        recipeId: recipe.id,
-                        servings: event?.totalServings || 4,
-                        notes: `AI Selected - Budget Optimized`
-                    }
-                });
+                // Add all selected recipes for this meal type
+                for (const recipeId of (mr.selectedRecipeIds || [])) {
+                    const recipe = mr.recipes.find(r => r.id === recipeId);
+                    if (!recipe) continue;
+
+                    await addRecipe({
+                        eventId,
+                        mealId,
+                        data: {
+                            recipeId: recipe.id,
+                            servings: event?.totalServings || 4,
+                            notes: `AI Selected - Budget Optimized`
+                        }
+                    });
+                    savedCount++;
+                }
             }
 
-            toast.success(`Successfully added ${selectedRecipes.length} recipes to event!`);
+            toast.success(`Successfully added ${savedCount} recipes to event!`);
             router.push(`/event-meal-plan/${eventId}`);
         } catch (error) {
             console.error(error);
@@ -401,7 +459,7 @@ export default function EventRecipeSelectionPage() {
         }
     };
 
-    const getSelectedCount = () => mealRecipes.filter(mr => mr.selectedRecipeId).length;
+    const getSelectedCount = () => mealRecipes.reduce((sum, mr) => sum + (mr.selectedRecipeIds?.length || 0), 0);
 
     if (isEventLoading || isMembersLoading) {
         return (
@@ -423,6 +481,10 @@ export default function EventRecipeSelectionPage() {
     ] as const;
 
 
+    console.log({
+        budgetStrategy,
+        mealBudgets
+    })
 
     return (
         <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-50/80 via-gray-50 to-gray-50 font-sans pb-20">

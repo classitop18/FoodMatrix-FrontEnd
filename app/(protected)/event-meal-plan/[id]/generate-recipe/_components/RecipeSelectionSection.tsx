@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Sparkles, ArrowLeft, Loader2, CheckCircle, Search, Clock, DollarSign, ChefHat, Wallet } from "lucide-react";
+import { Sparkles, ArrowLeft, Loader2, CheckCircle, Search, Clock, DollarSign, ChefHat, Wallet, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,6 +13,8 @@ import { GeneratedRecipeForMeal, MealBudgetAllocation } from "./types";
 import { MEAL_TYPE_CONFIG } from "./constants";
 import { MealType } from "@/services/event/event.types";
 import { cuisineOptions } from "@/lib/recipe-constants";
+import { getRecipeImageUrl } from "@/lib/recipe-utils";
+import { RecipeDetailsDialog } from "../../../../recipes/components/recipe-details-dialog";
 
 interface RecipeSelectionSectionProps {
     globalCuisine: string;
@@ -48,6 +50,15 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
     // Local state for search inputs per tab is not strictly needed if we pass "customSearch" directly to generation
     // But for UI feedback (controlled input), we might want it. 
     // The original code passed `e.currentTarget.value` directly on Enter key. I will stick to that patterning.
+
+    const [viewRecipe, setViewRecipe] = useState<any | null>(null);
+    const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+
+    const handleViewDetails = (e: React.MouseEvent, recipe: any) => {
+        e.stopPropagation();
+        setViewRecipe(recipe);
+        setIsViewDialogOpen(true);
+    };
 
     return (
         <motion.div
@@ -113,7 +124,8 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
                         {selectedMealTypes.map((mealType) => {
                             const config = MEAL_TYPE_CONFIG[mealType];
                             const mealRecipesData = mealRecipes.find(mr => mr.mealType === mealType);
-                            const hasSelected = mealRecipesData?.selectedRecipeId;
+                            const selectedCount = mealRecipesData?.selectedRecipeIds?.length || 0;
+                            const hasSelected = selectedCount > 0;
                             const isActive = activeMealTab === mealType;
 
                             return (
@@ -132,7 +144,9 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
                                     <config.icon className={cn("w-4 h-4", isActive ? "text-white" : hasSelected ? "text-green-600" : "text-gray-500")} />
                                     <span className="text-sm font-bold">{config.label}</span>
                                     {hasSelected && !isActive && (
-                                        <CheckCircle className="w-4 h-4 text-green-600 ml-auto" />
+                                        <Badge variant="secondary" className="ml-auto bg-green-100 text-green-700 text-xs font-bold px-1.5 py-0">
+                                            {selectedCount}
+                                        </Badge>
                                     )}
                                 </TabsTrigger>
                             );
@@ -207,7 +221,7 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                         {mealRecipes.find(mr => mr.mealType === mealType)?.recipes && mealRecipes.find(mr => mr.mealType === mealType)!.recipes.length > 0 ? (
                                             mealRecipes.find(mr => mr.mealType === mealType)!.recipes.map((recipe) => {
-                                                const isSelected = mealRecipes.find(mr => mr.mealType === mealType)?.selectedRecipeId === recipe.id;
+                                                const isSelected = (mealRecipes.find(mr => mr.mealType === mealType)?.selectedRecipeIds || []).includes(recipe.id);
 
                                                 return (
                                                     <Card
@@ -220,13 +234,46 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
                                                         )}
                                                         onClick={() => handleSelectRecipeForMeal(mealType, recipe.id)}
                                                     >
-                                                        {isSelected && (
-                                                            <div className="absolute top-3 right-3 z-10">
-                                                                <div className="bg-indigo-600 text-white p-1 rounded-full shadow-lg">
-                                                                    <CheckCircle className="w-4 h-4" />
+                                                        {/* Image Section */}
+                                                        <div className="relative aspect-video w-full overflow-hidden bg-gray-100">
+                                                            {getRecipeImageUrl(recipe.imageUrl) ? (
+                                                                <img
+                                                                    src={getRecipeImageUrl(recipe.imageUrl)}
+                                                                    alt={recipe.name}
+                                                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                                />
+                                                            ) : (
+                                                                <div className="w-full h-full flex items-center justify-center bg-gray-50 text-gray-300">
+                                                                    <div className="flex flex-col items-center gap-2">
+                                                                        <ChefHat className="w-8 h-8 opacity-50" />
+                                                                        <span className="text-xs font-semibold">No Image</span>
+                                                                    </div>
                                                                 </div>
+                                                            )}
+
+                                                            {/* Selection Checkmark Overlay */}
+                                                            {isSelected && (
+                                                                <div className="absolute top-3 right-3 z-10">
+                                                                    <div className="bg-indigo-600 text-white p-1 rounded-full shadow-lg">
+                                                                        <CheckCircle className="w-4 h-4" />
+                                                                    </div>
+                                                                </div>
+                                                            )}
+
+                                                            {/* View Details Button Overlay */}
+                                                            <div className="absolute top-3 left-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="secondary"
+                                                                    className="h-8 w-8 p-0 rounded-full bg-white/90 shadow-sm hover:bg-white"
+                                                                    onClick={(e) => handleViewDetails(e, recipe)}
+                                                                    title="View Details"
+                                                                >
+                                                                    <Eye className="w-4 h-4 text-gray-700" />
+                                                                </Button>
                                                             </div>
-                                                        )}
+                                                        </div>
+
                                                         <CardHeader className="pb-3 pt-4 px-4">
                                                             <CardTitle className={cn("text-base font-bold line-clamp-1 transition-colors", isSelected ? "text-indigo-700" : "text-gray-900 group-hover:text-indigo-600")}>
                                                                 {recipe.name}
@@ -306,6 +353,12 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
                     )}
                 </Button>
             </div>
+
+            <RecipeDetailsDialog
+                recipe={viewRecipe}
+                open={isViewDialogOpen}
+                onOpenChange={setIsViewDialogOpen}
+            />
         </motion.div>
     );
 };
