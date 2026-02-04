@@ -95,7 +95,7 @@ export interface Recipe {
 export interface GenerateAIRecipePayload {
   mealType: string;
   memberCount: number;
-  maxBudgetPerServing: number;
+  maxBudgetPerServing?: number;
   usePantryFirst?: boolean;
   preferredCuisines: string[];
   targetMembers?: string[];

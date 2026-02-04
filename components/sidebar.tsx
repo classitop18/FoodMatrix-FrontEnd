@@ -70,6 +70,7 @@ const navigationItems = [
       },
       { path: "/rewards", icon: Award, label: "Rewards" },
       { path: "/voice-assistant", icon: Mic, label: "Voice Assistant" },
+      { path: "/event-meal-plan/list", icon: BookOpen, label: "Event Meal Plans" }
     ],
   },
   {

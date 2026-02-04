@@ -94,4 +94,39 @@ export const API_ENDPOINTS = {
     GET_SHOPPING_LIST: (id: string) => `/recipes/${id}/shopping-list`,
     GET_MERGED_SHOPPING_LIST: `/recipes/shopping-list/merge`,
   },
+
+  // Events
+  EVENT: {
+    GET_ALL: "/events",
+    GET_BY_ID: (id: string) => `/events/${id}`,
+    CREATE: "/events",
+    UPDATE: (id: string) => `/events/${id}`,
+    DELETE: (id: string) => `/events/${id}`,
+    GET_STATS: "/events/stats",
+    // AI-Powered Features
+    SUGGEST_BUDGET: (eventId: string) => `/events/${eventId}/suggest-budget`,
+    GENERATE_RECIPES: (eventId: string) => `/events/${eventId}/generate-recipes`,
+    // Meals
+    GET_MEALS: (eventId: string) => `/events/${eventId}/meals`,
+    ADD_MEAL: (eventId: string) => `/events/${eventId}/meals`,
+    UPDATE_MEAL: (eventId: string, mealId: string) => `/events/${eventId}/meals/${mealId}`,
+    DELETE_MEAL: (eventId: string, mealId: string) => `/events/${eventId}/meals/${mealId}`,
+    // Recipes
+    ADD_RECIPE: (eventId: string, mealId: string) => `/events/${eventId}/meals/${mealId}/recipes`,
+    REMOVE_RECIPE: (eventId: string, mealId: string, recipeId: string) =>
+      `/events/${eventId}/meals/${mealId}/recipes/${recipeId}`,
+    // Menu Generation
+    GENERATE_MENU: (eventId: string) => `/events/${eventId}/generate-menu`,
+    // Shopping List
+    GET_SHOPPING_LIST: (eventId: string) => `/events/${eventId}/shopping-list`,
+    GENERATE_SHOPPING_LIST: (eventId: string) => `/events/${eventId}/shopping-list`,
+    APPROVE_SHOPPING_LIST: (eventId: string) => `/events/${eventId}/shopping-list/approve`,
+    UPLOAD_RECEIPT: (eventId: string) => `/events/${eventId}/shopping-list/receipt`,
+    // Completion
+    COMPLETE: (eventId: string) => `/events/${eventId}/complete`,
+    LOG_CONSUMPTION: (eventId: string) => `/events/${eventId}/member-logs`,
+    // Analytics
+    GET_ANALYTICS: (eventId: string) => `/events/${eventId}/analytics`,
+  },
 };
+
