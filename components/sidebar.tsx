@@ -126,10 +126,10 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
       return pathname === "/" || pathname === "/dashboard";
     }
 
-    if(path.startsWith("/event-meal-plan")) {
+    if (path.startsWith("/event-meal-plan")) {
       return pathname.startsWith("/event-meal-plan");
     }
-   
+
     if (path === "/shopping") {
       return pathname.startsWith("/shopping") || pathname.startsWith("/store");
     }

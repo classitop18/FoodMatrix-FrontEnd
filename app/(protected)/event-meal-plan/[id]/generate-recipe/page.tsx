@@ -436,6 +436,9 @@ export default function EventRecipeSelectionPage() {
                     const recipe = mr.recipes.find(r => r.id === recipeId);
                     if (!recipe) continue;
 
+                    // Skip if already saved
+                    if (recipe.isSaved) continue;
+
                     await addRecipe({
                         eventId,
                         mealId,
