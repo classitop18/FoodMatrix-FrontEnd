@@ -272,106 +272,113 @@ export default function EventsListPage() {
                             variants={containerVariants}
                             initial="hidden"
                             animate="visible"
-                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                            className="flex flex-col gap-4"
                         >
                             {events.map((event: EventResponse) => {
                                 const occasionOption = getOccasionOption(event.occasionType);
                                 const OccasionIcon = occasionOption?.icon || PartyPopper;
                                 const upcoming = isUpcoming(event.eventDate);
 
+                                // Helper to get safe static classes
+                                const getColorConfig = (colorString: string | undefined) => {
+                                    if (!colorString) return {
+                                        bg: "bg-indigo-50",
+                                        bgHover: "group-hover:bg-indigo-100",
+                                        text: "text-indigo-600",
+                                        dot: "bg-indigo-400",
+                                        border: "border-indigo-100"
+                                    };
+
+                                    if (colorString.includes("purple")) return { bg: "bg-purple-50", bgHover: "group-hover:bg-purple-100", text: "text-purple-600", dot: "bg-purple-400", border: "border-purple-100" };
+                                    if (colorString.includes("blue")) return { bg: "bg-blue-50", bgHover: "group-hover:bg-blue-100", text: "text-blue-600", dot: "bg-blue-400", border: "border-blue-100" };
+                                    if (colorString.includes("emerald") || colorString.includes("green")) return { bg: "bg-emerald-50", bgHover: "group-hover:bg-emerald-100", text: "text-emerald-600", dot: "bg-emerald-400", border: "border-emerald-100" };
+                                    if (colorString.includes("amber") || colorString.includes("yellow")) return { bg: "bg-amber-50", bgHover: "group-hover:bg-amber-100", text: "text-amber-600", dot: "bg-amber-400", border: "border-amber-100" };
+                                    if (colorString.includes("red") || colorString.includes("rose")) return { bg: "bg-red-50", bgHover: "group-hover:bg-red-100", text: "text-red-600", dot: "bg-red-400", border: "border-red-100" };
+                                    if (colorString.includes("orange")) return { bg: "bg-orange-50", bgHover: "group-hover:bg-orange-100", text: "text-orange-600", dot: "bg-orange-400", border: "border-orange-100" };
+                                    if (colorString.includes("pink")) return { bg: "bg-pink-50", bgHover: "group-hover:bg-pink-100", text: "text-pink-600", dot: "bg-pink-400", border: "border-pink-100" };
+
+                                    return { bg: "bg-indigo-50", bgHover: "group-hover:bg-indigo-100", text: "text-indigo-600", dot: "bg-indigo-400", border: "border-indigo-100" };
+                                };
+
+                                const colors = getColorConfig(occasionOption?.color);
+
                                 return (
                                     <motion.div
                                         key={event.id}
                                         variants={itemVariants}
                                         onClick={() => router.push(`/event-meal-plan/${event.id}`)}
-                                        className="group bg-white rounded-xl border border-gray-200 overflow-hidden cursor-pointer hover:shadow-xl hover:shadow-indigo-500/10 hover:border-indigo-500/20 transition-all duration-300 relative isolate"
+                                        className="group relative bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 hover:border-indigo-100 transition-all duration-300 cursor-pointer overflow-hidden p-1"
                                     >
-                                        {/* Occasion Decoration */}
-                                        <div className={cn(
-                                            "absolute top-0 right-0 w-32 h-32 rounded-bl-full opacity-100 transition-transform group-hover:scale-110 duration-500",
-                                            occasionOption?.bgGradient || "bg-linear-to-br from-gray-200 to-gray-400"
-                                        )} />
+                                        <div className="flex flex-col md:flex-row items-center p-4 gap-6 bg-white rounded-xl relative z-10 h-full">
 
-                                        <div className="p-6">
-                                            {/* Header */}
-                                            <div className="flex flex-wrap items-start justify-between mb-4 gap-4">
-                                                <div className={cn(
-                                                    "h-14 w-14 rounded-2xl flex items-center justify-center shadow-inner",
-                                                    occasionOption?.color ? `bg-${occasionOption.color.split('-')[1]}-50` : "bg-gray-50"
-                                                )}>
-                                                    <OccasionIcon className={cn("w-7 h-7", occasionOption?.color || "text-gray-500")} />
-                                                </div>
+                                            {/* Left: Icon & visual anchor */}
+                                            <div className={cn(
+                                                "relative h-16 w-16 md:h-14 md:w-14 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-300",
+                                                colors.bg,
+                                                colors.bgHover,
+                                                "group-hover:scale-105"
+                                            )}>
+                                                <OccasionIcon className={cn("w-6 h-6 md:w-7 md:h-7 transition-colors", colors.text)} />
+                                                {upcoming && (
+                                                    <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500 border-2 border-white"></span>
+                                                    </span>
+                                                )}
+                                            </div>
 
-                                                {/* Title */}
-                                                <div className="flex-1">
-                                                    <h3 className="text-xl font-bold text-gray-900 mb-1 group-hover:text-indigo-600 transition-colors line-clamp-1 gap-4 items-center flex justify-between">
-                                                        {event.name} {getStatusBadge(event.status)}
+                                            {/* Middle: Info */}
+                                            <div className="flex-1 text-center md:text-left min-w-0 flex flex-col justify-center">
+                                                <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
+                                                    <h3 className="text-lg font-bold text-gray-900 truncate group-hover:text-indigo-600 transition-colors">
+                                                        {event.name}
                                                     </h3>
-                                                    <p className="text-sm font-medium text-gray-500 capitalize">
-                                                        {occasionOption?.label || event.occasionType}
-                                                    </p>
                                                 </div>
-
-                                            </div>
-
-
-
-                                            {/* Details Grid */}
-                                            <div className="grid grid-cols-2 gap-3 mb-6">
-                                                <div className="bg-gray-50 rounded-lg p-2.5">
-                                                    <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
-                                                        <Calendar className="w-3 h-3" />
-                                                        Date
-                                                    </div>
-                                                    <div className="text-sm font-bold text-gray-700 pe-4">
+                                                <div className="flex items-center justify-center md:justify-start gap-3 text-sm text-gray-500 font-medium">
+                                                    <span className="flex items-center gap-1.5">
+                                                        <span className={cn("w-2 h-2 rounded-full", colors.dot)}></span>
+                                                        <span className="capitalize">{occasionOption?.label || event.occasionType}</span>
+                                                    </span>
+                                                    <span className="text-gray-300">•</span>
+                                                    <span className="flex items-center gap-1.5">
+                                                        <Calendar className="w-3.5 h-3.5" />
                                                         {formatEventDate(new Date(event.eventDate))}
-                                                    </div>
+                                                    </span>
                                                 </div>
-                                                <div className="bg-gray-50 rounded-lg p-2.5">
-                                                    <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
-                                                        <Users className="w-3 h-3" />
-                                                        Guests
-                                                    </div>
-                                                    <div className="text-sm font-bold text-gray-700">
-                                                        {event.totalServings}
-                                                    </div>
-                                                </div>
-                                                <div className="bg-gray-50 rounded-lg p-2.5">
-                                                    <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
-                                                        <ChefHat className="w-3 h-3" />
-                                                        Meals
-                                                    </div>
-                                                    <div className="text-sm font-bold text-gray-700">
-                                                        {event.meals?.length || 0}
-                                                    </div>
-                                                </div>
-                                                {event.budgetAmount && (
-                                                    <div className="bg-gray-50 rounded-lg p-2.5">
-                                                        <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
-                                                            <Wallet className="w-3 h-3" />
-                                                            Budget
-                                                        </div>
-                                                        <div className="text-sm font-bold text-gray-700">
-                                                            {formatCurrency(event.budgetAmount)}
-                                                        </div>
-                                                    </div>
-                                                )}
                                             </div>
 
-                                            {/* Footer / CTA */}
-                                            <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                                                {upcoming ? (
-                                                    <div className="flex items-center gap-1.5 text-blue-600 bg-blue-50 px-2 py-1 rounded-md">
-                                                        <Clock className="w-3.5 h-3.5" />
-                                                        <span className="text-xs font-bold">Upcoming</span>
-                                                    </div>
-                                                ) : (
-                                                    <div />
-                                                )}
+                                            {/* Right: Stats & Status */}
+                                            <div className="flex items-center gap-2 md:gap-6 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 border-gray-100 pt-4 md:pt-0 mt-2 md:mt-0">
 
-                                                <div className="flex items-center gap-1 text-sm font-bold text-gray-600 group-hover:text-indigo-600 transition-all group-hover:translate-x-1">
-                                                    View Details
-                                                    <ArrowRight className="w-4 h-4" />
+                                                {/* Stats Group */}
+                                                <div className="flex items-center gap-6">
+                                                    <div className="text-center md:text-right">
+                                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Guests</p>
+                                                        <div className="flex items-center md:justify-end gap-1.5 font-bold text-gray-700">
+                                                            <Users className="w-3.5 h-3.5 text-gray-400" />
+                                                            {event.totalServings}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="w-px h-8 bg-gray-100 hidden md:block" />
+
+                                                    <div className="text-center md:text-right min-w-[80px]">
+                                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Budget</p>
+                                                        <div className="flex items-center md:justify-end gap-1.5 font-bold text-gray-700">
+                                                            <Wallet className="w-3.5 h-3.5 text-gray-400" />
+                                                            {event.budgetAmount ? formatCurrency(event.budgetAmount) : "--"}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="w-px h-8 bg-gray-100 hidden md:block" />
+
+                                                {/* Status & Arrow */}
+                                                <div className="flex items-center gap-3">
+                                                    {getStatusBadge(event.status)}
+                                                    <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-indigo-600 group-hover:text-white transition-all transform group-hover:rotate-[-45deg]">
+                                                        <ArrowRight className="w-4 h-4" />
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
