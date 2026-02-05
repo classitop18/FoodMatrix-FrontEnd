@@ -193,7 +193,10 @@ export function RecipeCard({ recipe, onViewDetails }: RecipeCardProps) {
 
         {/* Action */}
         <Button
-          onClick={() => onViewDetails(recipe)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onViewDetails(recipe);
+          }}
           className="w-full h-10 bg-[#F3F0FD] hover:bg-[#3d326d] text-[#3d326d] hover:text-white border border-[#3d326d]/10 hover:border-[#3d326d] rounded-lg font-medium transition-all duration-300 group/btn"
         >
           View Details

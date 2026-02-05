@@ -52,7 +52,7 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
             className="space-y-6 m-1"
         >
             {/* Budget Strategy Selection */}
-            <Card className="rounded-2xl border border-gray-200 shadow-sm bg-white overflow-hidden">
+            <Card className="rounded-2xl border border-gray-200 shadow-sm bg-white overflow-hidden ">
                 <CardHeader className="pb-4 border-b border-gray-50 bg-gradient-to-r from-indigo-50 to-purple-50">
                     <div className="flex items-center gap-2">
                         <div className="p-2 bg-white rounded-xl shadow-sm">
@@ -84,9 +84,9 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                                 {/* AI Strategy */}
                                 <div
                                     className={cn(
-                                        "flex items-start gap-4 p-5 rounded-xl border-2 cursor-pointer transition-all hover:shadow-md relative overflow-hidden",
+                                        "flex items-start gap-4 p-5 rounded-xl border cursor-pointer transition-all hover:shadow-md relative overflow-hidden",
                                         budgetStrategy === "ai"
-                                            ? "border-indigo-600 bg-gradient-to-br from-indigo-50/50 to-purple-50/50"
+                                            ? "border-[var(--primary)] bg-gradient-to-br from-indigo-50/50 to-purple-50/50"
                                             : "border-gray-100 bg-white hover:border-gray-200"
                                     )}
                                     onClick={() => setBudgetStrategy("ai")}
@@ -97,7 +97,7 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                                     <RadioGroupItem
                                         value="ai"
                                         id="ai-strategy"
-                                        className="text-indigo-600 border-indigo-600 mt-1"
+                                        className="text-indigo-600 border-[var(--primary)] mt-1"
                                     />
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2">
@@ -138,7 +138,7 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                                     className={cn(
                                         "flex items-start gap-4 p-5 rounded-xl border-2 cursor-pointer transition-all hover:shadow-md",
                                         budgetStrategy === "manual"
-                                            ? "border-indigo-600 bg-indigo-50/50"
+                                            ? "border-[var(--primary)] bg-indigo-50/50"
                                             : "border-gray-100 bg-white hover:border-gray-200"
                                     )}
                                     onClick={() => setBudgetStrategy("manual")}
@@ -146,7 +146,7 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                                     <RadioGroupItem
                                         value="manual"
                                         id="manual-strategy"
-                                        className="text-indigo-600 border-indigo-600 mt-1"
+                                        className="text-indigo-600 border-[var(--primary)] mt-1"
                                     />
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2">
@@ -353,6 +353,7 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                             </div>
                         )}
 
+
                         {/* Budget Progress Visualization */}
                         {mealBudgets.length > 0 && (
                             <div className="p-6 bg-gray-900 rounded-2xl text-white shadow-xl">
@@ -362,19 +363,22 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                                             Total Allocated
                                         </span>
                                         <span className="text-2xl font-bold">
-                                            ₹{totalAllocated.toLocaleString()}
+                                            ${totalAllocated.toLocaleString()}
                                         </span>
                                     </div>
                                     <div className="text-right">
                                         <span className="text-sm font-medium text-gray-300 block">
                                             Remaining
                                         </span>
-                                        <span className={cn(
-                                            "text-lg font-bold",
-                                            remainingBudget < 0 ? "text-red-400" : "text-green-400"
-                                        )}>
-                                            ₹{remainingBudget.toLocaleString()}
+                                        <span
+                                            className={cn(
+                                                "text-lg font-bold",
+                                                remainingBudget < 0 ? "text-red-400" : "text-[#7dab4f]"
+                                            )}
+                                        >
+                                            ${remainingBudget.toLocaleString()}
                                         </span>
+
                                     </div>
                                 </div>
                                 <div className="w-full bg-gray-700/50 rounded-full h-4 overflow-hidden">
@@ -421,7 +425,7 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                 <Button
                     onClick={onContinue}
                     disabled={mealBudgets.length === 0}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 h-12 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all hover:scale-[1.02]"
+                    className="bg-[var(--primary)] hover:bg-indigo-700 text-white px-8 h-12 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all hover:scale-[1.02]"
                 >
                     Continue to Recipes
                     <MoveRight className="w-4 h-4 ml-2" />

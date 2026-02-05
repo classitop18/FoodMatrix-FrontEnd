@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Loader2, Check, Calendar, ChevronRight, Sparkles, ChefHat } from "lucide-react";
+import { ArrowLeft, Loader2, Calendar, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
@@ -34,7 +34,7 @@ export default function EventRecipeSelectionPage() {
     const [step, setStep] = useState<"health" | "budget" | "recipes">("health");
     const [budgetStrategy, setBudgetStrategy] = useState<"manual" | "ai">("ai");
     const [totalBudget, setTotalBudget] = useState<number>(100);
-    const [selectedMealTypes, setSelectedMealTypes] = useState<MealType[]>([]);
+    // selectedMealTypes is now derived from event data
     const [mealBudgets, setMealBudgets] = useState<MealBudgetAllocation[]>([]);
     const [mealRecipes, setMealRecipes] = useState<GeneratedRecipeForMeal[]>([]);
     const [activeMealTab, setActiveMealTab] = useState<MealType>("dinner");
@@ -54,7 +54,6 @@ export default function EventRecipeSelectionPage() {
     );
 
     // Mutations
-    // Mutations
     const generateEventRecipes = useGenerateEventRecipes();
     const { mutateAsync: addMeal } = useAddMealToEvent();
     const { mutateAsync: addRecipe } = useAddRecipeToMeal();
@@ -70,6 +69,22 @@ export default function EventRecipeSelectionPage() {
         }
         return allMembers;
     }, [event, membersData]);
+
+    const selectedMealTypes = useMemo<MealType[]>(() => {
+        if (!event) return [];
+
+        // First priority: Use selectedMealTypes from event creation
+        if ((event as any)?.selectedMealTypes && Array.isArray((event as any).selectedMealTypes) && (event as any).selectedMealTypes.length > 0) {
+            return (event as any).selectedMealTypes as MealType[];
+        }
+        // Fallback: Use existing meals if they exist
+        else if ((event as any)?.meals && (event as any).meals.length > 0) {
+            const existingMealTypes = (event as any).meals.map((m: any) => m.mealType as MealType);
+            // Deduplicate if necessary, though usually meal types are unique per meal
+            return Array.from(new Set(existingMealTypes));
+        }
+        return [];
+    }, [event]);
 
     // Initialize selected members
     useEffect(() => {
@@ -109,43 +124,56 @@ export default function EventRecipeSelectionPage() {
     }, [activeHealthParticipants]);
 
     // Initialize meal types from event
+    // Initialize total budget if set in event
     useEffect(() => {
-        if (event) {
-            // First priority: Use selectedMealTypes from event creation
-            if ((event as any)?.selectedMealTypes && Array.isArray((event as any).selectedMealTypes) && (event as any).selectedMealTypes.length > 0) {
-                setSelectedMealTypes((event as any).selectedMealTypes as MealType[]);
-            }
-            // Fallback: Use existing meals if they exist
-            else if ((event as any)?.meals && (event as any).meals.length > 0) {
-                const existingMealTypes = (event as any).meals.map((m: any) => m.mealType as MealType);
-                setSelectedMealTypes(existingMealTypes);
-            }
+        if (event && (event as any)?.budget) {
+            const budgetData = (event as any).budget;
+            const amount = typeof budgetData === 'object' && budgetData.totalBudget
+                ? budgetData.totalBudget
+                : budgetData;
 
-            // Initialize total budget if set in event
-            if ((event as any)?.budget) {
-                const budgetData = (event as any).budget;
-                const amount = typeof budgetData === 'object' && budgetData.totalBudget
-                    ? budgetData.totalBudget
-                    : budgetData;
-
-                if (amount && !isNaN(parseFloat(amount))) {
-                    setTotalBudget(parseFloat(amount));
-                }
+            if (amount && !isNaN(parseFloat(amount))) {
+                setTotalBudget(parseFloat(amount));
             }
         }
     }, [event]);
 
+    // Initialize active meal tab
+    useEffect(() => {
+        if (selectedMealTypes.length > 0 && !selectedMealTypes.includes(activeMealTab)) {
+            setActiveMealTab(selectedMealTypes[0]);
+        }
+    }, [selectedMealTypes, activeMealTab]);
+
     // Calculate budget distribution when meal types or total budget changes
     useEffect(() => {
-        if (selectedMealTypes.length > 0 && budgetStrategy === "manual") {
-            const totalWeight = selectedMealTypes.reduce((sum, mt) => sum + DEFAULT_BUDGET_WEIGHTS[mt], 0);
-            const allocations = selectedMealTypes.map(mealType => ({
+        if (selectedMealTypes.length === 0) return;
+
+        setMealBudgets(prev => {
+            // Check if current state matches selected meal types structure
+            const currentTypes = prev.map(mb => mb.mealType);
+            const isStructureMatching = currentTypes.length === selectedMealTypes.length &&
+                selectedMealTypes.every(mt => currentTypes.includes(mt));
+
+            // If manual strategy, calculate default weighted distribution
+            if (budgetStrategy === "manual") {
+                const totalWeight = selectedMealTypes.reduce((sum, mt) => sum + DEFAULT_BUDGET_WEIGHTS[mt], 0);
+                return selectedMealTypes.map(mealType => ({
+                    mealType,
+                    percentage: Math.round((DEFAULT_BUDGET_WEIGHTS[mealType] / totalWeight) * 100),
+                    budget: Math.round((DEFAULT_BUDGET_WEIGHTS[mealType] / totalWeight) * totalBudget),
+                    minPercentage: MIN_BUDGET_PERCENTAGES[mealType]
+                }));
+            }
+
+            // For AI initialization (or if structure didn't match), set empty structure to satisfy validation
+            return selectedMealTypes.map(mealType => ({
                 mealType,
-                percentage: Math.round((DEFAULT_BUDGET_WEIGHTS[mealType] / totalWeight) * 100),
-                budget: Math.round((DEFAULT_BUDGET_WEIGHTS[mealType] / totalWeight) * totalBudget)
+                percentage: 0,
+                budget: 0,
+                minPercentage: MIN_BUDGET_PERCENTAGES[mealType]
             }));
-            setMealBudgets(allocations);
-        }
+        });
     }, [selectedMealTypes, totalBudget, budgetStrategy]);
 
     // Initialize meal recipes state with existing event data
@@ -506,14 +534,14 @@ export default function EventRecipeSelectionPage() {
                         </Button>
 
                         <div className="flex items-center gap-2 text-sm font-medium text-gray-600 bg-white/80 px-4 py-2 rounded-full backdrop-blur-sm border border-gray-200/50 shadow-sm">
-                            <Calendar className="w-4 h-4 text-indigo-500" />
+                            <Calendar className="w-4 h-4 text-[var(--primary)]" />
                             <span className="opacity-40">|</span>
                             {event.name}
                         </div>
                     </div>
 
                     {/* Title Area */}
-                    <div className="text-center space-y-4 mb-12 relative">
+                    <div className="text-center space-y-4 mb-5 relative">
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-100/50 text-indigo-700 text-xs font-bold uppercase tracking-wider mb-2">
                             <Sparkles className="w-3 h-3" />
                             AI-Powered Planner
@@ -527,7 +555,7 @@ export default function EventRecipeSelectionPage() {
                     </div>
 
                     {/* Premium Stepper */}
-                    <div className="max-w-3xl mx-auto bg-white/80 backdrop-blur-md rounded-2xl shadow-xl shadow-indigo-100/40 border border-white/20 p-6 md:p-8 mb-8 relative">
+                    <div className="max-w-3xl mx-auto bg-white/80 backdrop-blur-md rounded-2xl shadow-xl shadow-indigo-100/40 border border-white/20 p-6 md:p-8 mb-2 relative">
                         <div className="relative flex justify-between items-center">
                             {/* Connecting Line */}
                             <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-100 rounded-full -z-10 transform -translate-y-1/2 overflow-hidden">

@@ -416,7 +416,7 @@ const PantryPage: React.FC = () => {
             {/* Active Alerts Section */}
             {activeAlerts.length > 0 && (
               <div className="mb-6 animate-fade-in-up">
-                <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-100 rounded-2xl p-4 shadow-sm">
+                <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-100 rounded-xl p-4">
                   <div
                     className="flex items-center justify-between cursor-pointer"
                     onClick={() => setShowAlerts(!showAlerts)}

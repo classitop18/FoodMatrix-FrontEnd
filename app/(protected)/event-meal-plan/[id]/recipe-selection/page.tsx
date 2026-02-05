@@ -502,7 +502,7 @@ export default function EventRecipeSelectionPage() {
                                 <h1 className="text-lg font-bold text-gray-900 leading-tight">
                                     Event Recipe Wizard
                                 </h1>
-                                <Sparkles className="w-4 h-4 text-indigo-500" />
+                                <Sparkles className="w-4 h-4 text-[var(--primary)]" />
                             </div>
                             <p className="text-xs text-gray-500 font-medium">
                                 AI-powered meal planning for {event.name}

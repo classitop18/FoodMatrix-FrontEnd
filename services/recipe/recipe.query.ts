@@ -1,4 +1,4 @@
-import { useInfiniteQuery, keepPreviousData } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery, keepPreviousData } from "@tanstack/react-query";
 import { RecipeService } from "./recipe.service";
 import { RecipeFilters } from "./types/recipe.types";
 
@@ -25,5 +25,16 @@ export const useRecipesInfiniteQuery = (filters: RecipeFilters) => {
     },
     initialPageParam: 1,
     placeholderData: keepPreviousData,
+  });
+};
+
+export const useRecipe = (id: string | null) => {
+  return useQuery({
+    queryKey: ["recipe", id],
+    queryFn: () => {
+      if (!id) throw new Error("Recipe ID is required");
+      return recipeService.getRecipeById(id);
+    },
+    enabled: !!id,
   });
 };

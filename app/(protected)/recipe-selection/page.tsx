@@ -459,6 +459,7 @@ export default function RecipeSelection() {
         mealType: slot.meal.toLowerCase(),
         memberCount: targetMemberIds.length || members.length || 4,
         maxBudgetPerServing: 8,
+        cuisine: payload.cuisine,
         preferredCuisines: [payload.cuisine],
         recipeCount: Number(payload.recipeCount) || 1,
         usePantryItems:

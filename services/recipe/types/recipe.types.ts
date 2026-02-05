@@ -99,6 +99,7 @@ export interface GenerateAIRecipePayload {
   usePantryFirst?: boolean;
   preferredCuisines: string[];
   targetMembers?: string[];
+  cuisine?: string;
   isForAllMembers?: boolean;
   dietaryRestrictions?: string[];
   allergies?: string[];

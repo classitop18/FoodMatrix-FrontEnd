@@ -64,7 +64,7 @@ const RecipeCard: React.FC<{
             className={cn(
                 "rounded-xl border-2 cursor-pointer transition-all hover:shadow-lg duration-300 relative overflow-hidden group",
                 isSelected
-                    ? "border-indigo-600 bg-gradient-to-br from-indigo-50/50 to-purple-50/30 shadow-md"
+                    ? "border-[var(--primary)] bg-gradient-to-br from-indigo-50/50 to-purple-50/30 shadow-md"
                     : "border-gray-200 hover:border-indigo-300"
             )}
             onClick={onSelect}
@@ -72,7 +72,7 @@ const RecipeCard: React.FC<{
             {/* Selection Indicator */}
             {isSelected && (
                 <div className="absolute top-3 right-3 z-10">
-                    <div className="bg-indigo-600 text-white p-1.5 rounded-full shadow-lg animate-in zoom-in duration-200">
+                    <div className="bg-[var(--primary)] text-white p-1.5 rounded-full shadow-lg animate-in zoom-in duration-200">
                         <CheckCircle className="w-4 h-4" />
                     </div>
                 </div>
@@ -256,7 +256,7 @@ const RecipeCard: React.FC<{
 
             {/* Selection Overlay Effect */}
             {isSelected && (
-                <div className="absolute inset-0 bg-indigo-600/5 pointer-events-none" />
+                <div className="absolute inset-0 bg-[var(--primary)]/5 pointer-events-none" />
             )}
         </Card>
     );
@@ -282,7 +282,7 @@ const EmptyRecipeState: React.FC<{
                 <Button
                     onClick={onGenerate}
                     disabled={isGenerating}
-                    className="bg-indigo-600 hover:bg-indigo-700"
+                    className="bg-[var(--primary)] hover:bg-indigo-700"
                 >
                     <RefreshCw className={cn("w-4 h-4 mr-2", isGenerating && "animate-spin")} />
                     Try Again
@@ -446,7 +446,7 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
                                     className={cn(
                                         "flex items-center gap-2 py-3 px-4 rounded-xl border transition-all min-w-[130px] relative",
                                         isActive
-                                            ? "border-indigo-600 bg-indigo-600 text-white shadow-md shadow-indigo-200"
+                                            ? "border-[var(--primary)] bg-[var(--primary)] text-white shadow-md shadow-indigo-200"
                                             : hasSelected
                                                 ? "border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
                                                 : hasRecipes

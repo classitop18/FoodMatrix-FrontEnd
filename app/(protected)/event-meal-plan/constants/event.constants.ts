@@ -114,7 +114,7 @@ export const MEAL_TYPE_OPTIONS: MealTypeOption[] = [
         value: "dinner",
         label: "Dinner",
         icon: Moon,
-        color: "text-indigo-500",
+        color: "text-[var(--primary)]",
         description: "Evening main course",
     },
     {

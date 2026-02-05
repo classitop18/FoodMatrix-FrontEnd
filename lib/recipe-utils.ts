@@ -25,7 +25,7 @@ export const groupRecipesByWeek = (recipes: Recipe[]): GroupedRecipes => {
 };
 
 export function getRecipeImageUrl(imageUrl?: string): string | undefined {
-  if (!imageUrl) return undefined;
+  if (!imageUrl || typeof imageUrl !== "string") return undefined;
   if (imageUrl.startsWith("http")) return imageUrl;
 
   // It's a relative path (e.g., /uploads/...)

@@ -17,10 +17,10 @@ const GuestCounterComponent: React.FC<GuestCounterProps> = ({
     iconBgColor,
 }) => {
     return (
-        <div className="flex items-center justify-between bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all group">
+        <div className="flex items-center justify-between bg-white rounded-xl p-5 border border-gray-200 hover:shadow-sm transition-all group">
             <div className="flex items-center gap-4">
                 {Icon && (
-                    <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center transition-colors", iconBgColor || 'bg-gray-50')}>
+                    <div className={cn("w-12 h-12 rounded-lg flex items-center justify-center transition-colors", iconBgColor || 'bg-gray-50')}>
                         <Icon className={cn("w-6 h-6 transition-colors", iconColor || 'text-gray-500')} />
                     </div>
                 )}
@@ -34,7 +34,7 @@ const GuestCounterComponent: React.FC<GuestCounterProps> = ({
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-10 w-10 rounded-xl bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900 disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="h-10 w-10 rounded-lg bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900 disabled:opacity-30 disabled:cursor-not-allowed"
                     onClick={onDecrement}
                     disabled={value === 0}
                 >
@@ -45,7 +45,7 @@ const GuestCounterComponent: React.FC<GuestCounterProps> = ({
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-10 w-10 rounded-xl bg-gray-900 text-white hover:bg-black hover:scale-105 transition-all shadow-md active:scale-95"
+                    className="h-10 w-10 rounded-lg bg-gray-900 text-white hover:bg-black hover:scale-105 transition-all shadow-md active:scale-95"
                     onClick={onIncrement}
                 >
                     <Plus className="w-5 h-5" />

@@ -38,36 +38,36 @@ export const HealthProfileSection: React.FC<HealthProfileSectionProps> = ({
             className="space-y-6 m-1"
         >
             {/* Health Profile Card */}
-            <Card className="rounded-2xl border border-gray-200 shadow-sm bg-white overflow-hidden p-5">
-                <CardHeader className="pb-4 border-b border-gray-50 bg-gray-50/50">
+            <Card className="rounded-2xl border border-gray-200 shadow-sm bg-white overflow-hidden">
+                <CardHeader className="pb-4 border-b border-gray-100 bg-[var(--primary-bg)] px-6 pt-6">
                     <div className="flex items-center justify-between">
-                        <div className="space-y-1">
+                        <div className="space-y-2">
                             <div className="flex items-center gap-2">
-                                <Badge variant="secondary" className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 font-bold rounded-md px-2.5 py-0.5">
+                                <Badge variant="secondary" className="bg-[var(--primary)] text-white hover:bg-[#2d2454] font-bold rounded-md px-2.5 py-0.5">
                                     <Activity className="w-3.5 h-3.5 mr-1.5" /> Health Analysis
                                 </Badge>
-                                <Badge variant="outline" className="text-gray-500 border-gray-200 bg-white">
+                                <Badge variant="outline" className="text-gray-600 border-gray-200 bg-white font-medium">
                                     <Users className="w-3.5 h-3.5 mr-1.5" /> {healthStats.totalMembers} participants
                                 </Badge>
                             </div>
-                            <CardTitle className="text-xl font-bold text-gray-900 mt-2">Health Profile Insights</CardTitle>
-                            <CardDescription>
-                                AI will generate recipes compatible with your guests’ dietary needs
+                            <CardTitle className="text-xl font-bold text-[#313131] mt-2">Health Profile Insights</CardTitle>
+                            <CardDescription className="text-gray-500">
+                                AI will generate recipes compatible with your guests' dietary needs
                             </CardDescription>
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent className="pt-6">
-                    <div className="flex items-center justify-between mb-8 bg-indigo-50/50 p-4 rounded-xl border border-indigo-100">
+                <CardContent className="pt-6 px-6 pb-6">
+                    <div className="flex items-center justify-between mb-8 bg-[var(--primary-bg)] p-4 rounded-xl border border-[var(--primary-light)]/20">
                         <div className="flex items-center gap-3">
                             <Switch
                                 checked={considerHealthProfile}
                                 onCheckedChange={setConsiderHealthProfile}
                                 id="consider-health"
-                                className="data-[state=checked]:bg-indigo-600"
+                                className="data-[state=checked]:bg-[var(--primary)]"
                             />
                             <div>
-                                <Label htmlFor="consider-health" className="text-sm font-semibold text-gray-900 cursor-pointer block">
+                                <Label htmlFor="consider-health" className="text-sm font-bold text-[#313131] cursor-pointer block">
                                     Smart Health Optimization
                                 </Label>
                                 <p className="text-xs text-gray-500 mt-0.5">
@@ -78,11 +78,11 @@ export const HealthProfileSection: React.FC<HealthProfileSectionProps> = ({
                         <TooltipProvider>
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="text-gray-400 hover:text-indigo-600">
+                                    <Button variant="ghost" size="icon" className="text-gray-400 hover:text-[var(--primary)]">
                                         <HelpCircle className="w-4 h-4" />
                                     </Button>
                                 </TooltipTrigger>
-                                <TooltipContent>
+                                <TooltipContent className="bg-[#313131] text-white border-none">
                                     <p>When enabled, AI filters recipes to match dietary restrictions.</p>
                                 </TooltipContent>
                             </Tooltip>
@@ -95,17 +95,17 @@ export const HealthProfileSection: React.FC<HealthProfileSectionProps> = ({
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 {Object.entries(healthStats.dietaryRestrictions).length > 0 ? (
                                     Object.entries(healthStats.dietaryRestrictions).slice(0, 3).map(([restriction, count]) => (
-                                        <div key={restriction} className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                                        <div key={restriction} className="p-4 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow hover:border-[var(--primary-light)]/50">
                                             <div className="flex items-center justify-between">
-                                                <span className="text-sm font-medium text-gray-700 capitalize">{restriction}</span>
-                                                <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 font-semibold">
+                                                <span className="text-sm font-semibold text-[#313131] capitalize">{restriction}</span>
+                                                <Badge variant="secondary" className="bg-[var(--primary-bg)] text-[var(--primary)] font-bold">
                                                     {count} guests
                                                 </Badge>
                                             </div>
                                         </div>
                                     ))
                                 ) : (
-                                    <div className="col-span-full text-center py-4 text-sm text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                                    <div className="col-span-full text-center py-6 text-sm text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-200">
                                         No specific dietary restrictions found among selected participants.
                                     </div>
                                 )}
@@ -114,11 +114,11 @@ export const HealthProfileSection: React.FC<HealthProfileSectionProps> = ({
                             {/* Participants Selection */}
                             <div className="mt-6">
                                 <div className="flex items-center justify-between mb-4">
-                                    <h4 className="text-sm font-bold text-gray-900">Included Participants</h4>
+                                    <h4 className="text-sm font-bold text-[#313131] uppercase tracking-wider">Included Participants</h4>
                                     <Button
                                         variant="link"
                                         size="sm"
-                                        className="text-indigo-600 h-auto p-0 text-xs"
+                                        className="text-[var(--primary)] hover:text-[#2d2454] h-auto p-0 text-xs font-semibold"
                                         onClick={() => {
                                             if (selectedHealthMembers.length === participants.length) {
                                                 setSelectedHealthMembers([]);
@@ -134,9 +134,9 @@ export const HealthProfileSection: React.FC<HealthProfileSectionProps> = ({
                                     {participants.map((p: any) => (
                                         <div
                                             key={p.id}
-                                            className={`flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer ${selectedHealthMembers.includes(p.id)
-                                                ? "bg-indigo-50 border-indigo-200"
-                                                : "bg-white border-gray-100 hover:border-gray-200"
+                                            className={`flex items-center gap-3 p-3.5 rounded-xl border-2 transition-all cursor-pointer ${selectedHealthMembers.includes(p.id)
+                                                ? "bg-[var(--primary-bg)] border-[var(--primary)]"
+                                                : "bg-white border-gray-200 hover:border-gray-300"
                                                 }`}
                                             onClick={() => {
                                                 setSelectedHealthMembers(prev =>
@@ -150,9 +150,9 @@ export const HealthProfileSection: React.FC<HealthProfileSectionProps> = ({
                                                 id={p.id}
                                                 checked={selectedHealthMembers.includes(p.id)}
                                                 onCheckedChange={() => { }}
-                                                className="data-[state=checked]:bg-indigo-600 border-gray-300"
+                                                className="data-[state=checked]:bg-[var(--primary)] data-[state=checked]:border-[var(--primary)] border-gray-300"
                                             />
-                                            <Label htmlFor={p.id} className="text-sm font-medium text-gray-700 cursor-pointer flex-1 user-select-none">
+                                            <Label htmlFor={p.id} className="text-sm font-semibold text-[#313131] cursor-pointer flex-1 user-select-none">
                                                 {p.name}
                                             </Label>
                                         </div>
@@ -168,7 +168,7 @@ export const HealthProfileSection: React.FC<HealthProfileSectionProps> = ({
             <div className="flex justify-end pt-4">
                 <Button
                     onClick={onContinue}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 h-12 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all hover:scale-[1.02]"
+                    className="bg-[var(--primary)] hover:bg-[#2d2454] text-white px-8 h-12 rounded-xl font-bold shadow-lg transition-all hover:scale-[1.02]"
                 >
                     Continue to Budget
                     <MoveRight className="w-4 h-4 ml-2" />

@@ -62,7 +62,7 @@ export const DailyTracking = () => {
                     unit=""
                     trend="+15m"
                     trendUp={true}
-                    colorClass="text-indigo-500"
+                    colorClass="text-[var(--primary)]"
                     bgClass="bg-indigo-50/50"
                 />
                 <MetricCard

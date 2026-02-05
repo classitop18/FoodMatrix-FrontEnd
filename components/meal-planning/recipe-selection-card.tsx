@@ -263,13 +263,12 @@ export default function RecipeSelectionCard(props: RecipeSelectionCardProps) {
         <div
           key={recipe.id}
           onClick={handleCardClick} // Card click handler
-          className={`relative p-4 rounded-lg transition-all duration-200 cursor-pointer border ${
-            cannotGenerate
+          className={`relative p-4 rounded-lg transition-all duration-200 cursor-pointer border ${cannotGenerate
               ? "bg-red-50 border-red-200 opacity-60 cursor-not-allowed"
               : isSelected
                 ? "border-indigo-400 bg-indigo-50/50 shadow-md ring-2 ring-indigo-100"
                 : "bg-white border-gray-200 hover:border-gray-300 hover:shadow-md"
-          }`}
+            }`}
         >
           {/* Interaction Buttons */}
           {!cannotGenerate && (
@@ -292,22 +291,20 @@ export default function RecipeSelectionCard(props: RecipeSelectionCardProps) {
 
               <button
                 onClick={(e) => handlePreferenceToggle(recipe?.id, "like", e)}
-                className={`w-7 h-7 flex items-center justify-center rounded-md transition-all ${
-                  preference === "like"
+                className={`w-7 h-7 flex items-center justify-center rounded-md transition-all ${preference === "like"
                     ? "bg-green-500 text-white shadow-sm"
                     : "bg-gray-100 text-gray-500 hover:bg-green-50 hover:text-green-600"
-                }`}
+                  }`}
               >
                 <ThumbsUp className="w-3 h-3" />
               </button>
 
               <button
                 onClick={(e) => handlePreferenceToggle(recipe.id, "dislike", e)}
-                className={`w-7 h-7 flex items-center justify-center rounded-md transition-all ${
-                  preference === "dislike"
+                className={`w-7 h-7 flex items-center justify-center rounded-md transition-all ${preference === "dislike"
                     ? "bg-red-500 text-white shadow-sm"
                     : "bg-gray-100 text-gray-500 hover:bg-red-50 hover:text-red-600"
-                }`}
+                  }`}
               >
                 <ThumbsDown className="w-3 h-3" />
               </button>
@@ -316,11 +313,10 @@ export default function RecipeSelectionCard(props: RecipeSelectionCardProps) {
                 onClick={(e) =>
                   handlePreferenceToggle(recipe.id, "favorite", e)
                 }
-                className={`w-7 h-7 flex items-center justify-center rounded-md transition-all ${
-                  preference === "favorite"
+                className={`w-7 h-7 flex items-center justify-center rounded-md transition-all ${preference === "favorite"
                     ? "bg-rose-500 text-white shadow-sm"
                     : "bg-gray-100 text-gray-500 hover:bg-rose-50 hover:text-rose-600"
-                }`}
+                  }`}
               >
                 <Heart
                   className={`w-3 h-3 ${preference === "favorite" ? "fill-current" : ""}`}
@@ -353,9 +349,8 @@ export default function RecipeSelectionCard(props: RecipeSelectionCardProps) {
             {/* Left: Title & Badges */}
             <div className="flex-1 min-w-0 py-1">
               <h4
-                className={`font-semibold text-base mb-1.5 truncate ${
-                  cannotGenerate ? "text-red-700" : "text-gray-900"
-                }`}
+                className={`font-semibold text-base mb-1.5 truncate ${cannotGenerate ? "text-red-700" : "text-gray-900"
+                  }`}
               >
                 {recipe.name}
               </h4>

@@ -82,17 +82,17 @@ const GuestStepComponent: React.FC<GuestStepProps> = ({
                                 type="button"
                                 onClick={() => onToggleMember(member.id)}
                                 className={cn(
-                                    "flex items-center gap-3 p-3 rounded-2xl border-2 transition-all duration-200 group text-left",
+                                    "flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 group text-left",
                                     formData.selectedMemberIds.includes(member.id)
-                                        ? "border-indigo-600 bg-indigo-50/50 shadow-md ring-1 ring-indigo-500/20"
-                                        : "border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50"
+                                        ? "border-[var(--primary)] bg-indigo-50/50 shadow-md ring-1 ring-indigo-500/20"
+                                        : "border-gray-200 bg-white hover:border-gray-200 hover:bg-gray-50"
                                 )}
                             >
                                 <div
                                     className={cn(
                                         "w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm transition-all duration-300",
                                         formData.selectedMemberIds.includes(member.id)
-                                            ? "bg-indigo-600 text-white shadow-md shadow-indigo-200 transform scale-105"
+                                            ? "bg-[var(--primary)] text-white shadow-md shadow-indigo-200 transform scale-105"
                                             : "bg-gray-100 text-gray-500 group-hover:bg-white border border-gray-100"
                                     )}
                                 >
@@ -112,7 +112,7 @@ const GuestStepComponent: React.FC<GuestStepProps> = ({
                                 <div className={cn(
                                     "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all",
                                     formData.selectedMemberIds.includes(member.id)
-                                        ? "border-indigo-600 bg-indigo-600 scale-100"
+                                        ? "border-[var(--primary)] bg-[var(--primary)] scale-100"
                                         : "border-gray-200 bg-transparent scale-90 opacity-0 group-hover:opacity-100"
                                 )}>
                                     <Check className="w-3 h-3 text-white stroke-[3]" />
@@ -132,11 +132,11 @@ const GuestStepComponent: React.FC<GuestStepProps> = ({
             </div>
 
             {/* External Guests */}
-            <div className="bg-gradient-to-br from-indigo-50 via-purple-50 to-white rounded-3xl p-8 space-y-6 border border-indigo-100 shadow-sm relative overflow-hidden">
+            <div className="bg-gradient-to-br from-indigo-50 via-purple-50 to-white rounded-xl p-4 space-y-6 border border-indigo-100 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-bl-full -mr-10 -mt-10 pointer-events-none" />
 
                 <h3 className="font-extrabold text-gray-900 flex items-center gap-3 text-lg relative z-10">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-200">
+                    <div className="w-10 h-10 rounded-lg bg-[var(--primary)] flex items-center justify-center shadow-lg shadow-indigo-200">
                         <Users className="w-5 h-5 text-white" />
                     </div>
                     Invite Guests

@@ -29,18 +29,18 @@ const BudgetStepComponent: React.FC<BudgetStepProps> = ({ formData, onUpdate }) 
                     type="button"
                     onClick={() => onUpdate("budgetType", "separate")}
                     className={cn(
-                        "relative p-6 rounded-2xl border-2 text-left transition-all duration-200 group overflow-hidden",
+                        "relative p-6 rounded-xl border text-left transition-all duration-200 group overflow-hidden",
                         formData.budgetType === "separate"
-                            ? "border-indigo-600 bg-indigo-50 shadow-xl shadow-indigo-100"
-                            : "border-gray-100 bg-white hover:border-indigo-200 hover:shadow-lg hover:-translate-y-1"
+                            ? "border-[var(--primary)] bg-indigo-50 shadow-xl shadow-indigo-100"
+                            : "border-gray-200 bg-white hover:border-indigo-200 hover:shadow-lg hover:-translate-y-1"
                     )}
                 >
                     <div className="relative z-10 flex items-start gap-4">
                         <div
                             className={cn(
-                                "w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 shadow-inner",
+                                "w-14 h-14 rounded-xl flex items-center justify-center transition-all duration-300 shadow-inner",
                                 formData.budgetType === "separate"
-                                    ? "bg-indigo-600 text-white"
+                                    ? "bg-[var(--primary)] text-white"
                                     : "bg-gray-50 text-indigo-600 group-hover:bg-indigo-50"
                             )}
                         >
@@ -56,7 +56,7 @@ const BudgetStepComponent: React.FC<BudgetStepProps> = ({ formData, onUpdate }) 
                             </p>
                         </div>
                         {formData.budgetType === "separate" && (
-                            <div className="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center shadow-lg transform scale-110">
+                            <div className="w-6 h-6 rounded-full bg-[var(--primary)] flex items-center justify-center shadow-lg transform scale-110">
                                 <Check className="w-3.5 h-3.5 text-white stroke-[3]" />
                             </div>
                         )}
@@ -68,10 +68,10 @@ const BudgetStepComponent: React.FC<BudgetStepProps> = ({ formData, onUpdate }) 
                     type="button"
                     onClick={() => onUpdate("budgetType", "weekly")}
                     className={cn(
-                        "relative p-6 rounded-2xl border-2 text-left transition-all duration-200 group overflow-hidden",
+                        "relative p-6 rounded-xl border text-left transition-all duration-200 group overflow-hidden",
                         formData.budgetType === "weekly"
-                            ? "border-indigo-600 bg-indigo-50 shadow-xl shadow-indigo-100"
-                            : "border-gray-100 bg-white hover:border-indigo-200 hover:shadow-lg hover:-translate-y-1"
+                            ? "border-[var(--primary)] bg-indigo-50 shadow-xl shadow-indigo-100"
+                            : "border-gray-200 bg-white hover:border-indigo-200 hover:shadow-lg hover:-translate-y-1"
                     )}
                 >
                     <div className="relative z-10 flex items-start gap-4">
@@ -79,7 +79,7 @@ const BudgetStepComponent: React.FC<BudgetStepProps> = ({ formData, onUpdate }) 
                             className={cn(
                                 "w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 shadow-inner",
                                 formData.budgetType === "weekly"
-                                    ? "bg-indigo-600 text-white"
+                                    ? "bg-[var(--primary)] text-white"
                                     : "bg-gray-50 text-indigo-600 group-hover:bg-indigo-50"
                             )}
                         >
@@ -95,7 +95,7 @@ const BudgetStepComponent: React.FC<BudgetStepProps> = ({ formData, onUpdate }) 
                             </p>
                         </div>
                         {formData.budgetType === "weekly" && (
-                            <div className="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center shadow-lg transform scale-110">
+                            <div className="w-6 h-6 rounded-full bg-[var(--primary)] flex items-center justify-center shadow-lg transform scale-110">
                                 <Check className="w-3.5 h-3.5 text-white stroke-[3]" />
                             </div>
                         )}
@@ -111,25 +111,25 @@ const BudgetStepComponent: React.FC<BudgetStepProps> = ({ formData, onUpdate }) 
                         Event Budget Amount <span className="text-red-500">*</span>
                     </Label>
                     <div className="relative group">
-                        <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-hover:text-indigo-500 transition-colors" />
+                        <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-hover:text-[var(--primary)] transition-colors" />
                         <Input
                             id="budgetAmount"
                             type="number"
                             placeholder="e.g. 5000"
                             value={formData.budgetAmount}
                             onChange={handleBudgetAmountChange}
-                            className="h-16 pl-12 text-xl font-bold rounded-xl border-2 border-gray-200 focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 placeholder:text-gray-300"
+                            className="h-11 pl-12 text-base font-bold rounded-lg border border-gray-200 placeholder:text-gray-300"
                         />
                     </div>
                     <p className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg border border-gray-100 flex items-start gap-2">
-                        <TrendingUp className="w-4 h-4 text-indigo-500 mt-0.5 flex-shrink-0" />
+                        <TrendingUp className="w-4 h-4 text-[var(--primary)] mt-0.5 flex-shrink-0" />
                         <span>This helps us recommend recipes that fit your spending limit.</span>
                     </p>
                 </div>
             )}
 
             {formData.budgetType === "weekly" && (
-                <div className="bg-amber-50 border border-amber-100 rounded-2xl p-6 mt-6 animate-in fade-in slide-in-from-top-2">
+                <div className="bg-amber-50 border border-amber-100 rounded-xl p-6 mt-6 animate-in fade-in slide-in-from-top-2">
                     <div className="flex gap-4">
                         <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
                             <DollarSign className="w-5 h-5 text-amber-600" />

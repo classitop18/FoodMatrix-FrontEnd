@@ -13,20 +13,20 @@ interface StepIndicatorProps {
 export const StepIndicator = ({ step, active, isCompleted, label }: StepIndicatorProps) => (
     <div className={cn(
         "flex items-center gap-3 transition-all duration-300 relative",
-        active ? "text-indigo-900" : isCompleted ? "text-emerald-700" : "text-gray-400"
+        active ? "text-[#313131]" : isCompleted ? "text-[var(--primary)]" : "text-gray-400"
     )}>
         <motion.div
             initial={false}
             animate={{
                 scale: active ? 1.1 : 1,
-                boxShadow: active ? "0 0 0 4px rgba(99, 102, 241, 0.2)" : "none"
+                boxShadow: active ? "0 0 0 4px rgba(61, 50, 109, 0.15)" : "none"
             }}
             className={cn(
                 "w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all duration-300 relative z-10",
                 active
-                    ? "bg-indigo-600 text-white border-indigo-600 shadow-xl shadow-indigo-300"
+                    ? "bg-[var(--primary)] text-white border-[var(--primary)] shadow-lg"
                     : isCompleted
-                        ? "bg-gradient-to-br from-emerald-400 to-emerald-600 text-white border-transparent shadow-lg shadow-emerald-200"
+                        ? "bg-[var(--primary-light)] text-white border-[var(--primary-light)] shadow-md"
                         : "bg-white text-gray-400 border-gray-200"
             )}
         >
@@ -50,7 +50,7 @@ export const StepIndicator = ({ step, active, isCompleted, label }: StepIndicato
         <div className="flex flex-col">
             <span className={cn(
                 "text-sm font-bold tracking-tight hidden sm:block",
-                active ? "text-indigo-900" : isCompleted ? "text-emerald-700" : "text-gray-500"
+                active ? "text-[#313131]" : isCompleted ? "text-[var(--primary)]" : "text-gray-500"
             )}>
                 {label}
             </span>
@@ -58,13 +58,13 @@ export const StepIndicator = ({ step, active, isCompleted, label }: StepIndicato
                 <motion.span
                     initial={{ opacity: 0, y: -5 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="text-[10px] font-semibold text-indigo-500 uppercase tracking-widest hidden sm:block"
+                    className="text-[10px] font-semibold text-[var(--primary-light)] uppercase tracking-widest hidden sm:block"
                 >
                     In Progress
                 </motion.span>
             )}
             {isCompleted && (
-                <span className="text-[10px] font-semibold text-emerald-500 uppercase tracking-widest hidden sm:block">
+                <span className="text-[10px] font-semibold text-[var(--primary-light)] uppercase tracking-widest hidden sm:block">
                     Completed
                 </span>
             )}
