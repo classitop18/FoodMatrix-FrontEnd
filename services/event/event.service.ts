@@ -18,6 +18,9 @@ import {
     BudgetSuggestionResponse,
     EventRecipeGenerationDto,
     AIGeneratedEventRecipe,
+    EventItemResponse,
+    CreateEventItemDto,
+    UpdateEventItemDto,
 } from "./event.types";
 
 export const EventService = {
@@ -289,5 +292,36 @@ export const EventService = {
             API_ENDPOINTS.EVENT.GET_ANALYTICS(eventId)
         );
         return response.data.data;
+    },
+
+    // ===== Event Items (Add-ons) =====
+
+    addEventItem: async (eventId: string, data: CreateEventItemDto): Promise<EventItemResponse> => {
+        const response = await apiClient.post(
+            API_ENDPOINTS.EVENT.ADD_ITEM(eventId),
+            data
+        );
+        return response.data.data;
+    },
+
+    getEventItems: async (eventId: string): Promise<EventItemResponse[]> => {
+        const response = await apiClient.get(
+            API_ENDPOINTS.EVENT.GET_ITEMS(eventId)
+        );
+        return response.data.data;
+    },
+
+    updateEventItem: async (eventId: string, itemId: string, data: UpdateEventItemDto): Promise<EventItemResponse> => {
+        const response = await apiClient.put(
+            API_ENDPOINTS.EVENT.UPDATE_ITEM(eventId, itemId),
+            data
+        );
+        return response.data.data;
+    },
+
+    deleteEventItem: async (eventId: string, itemId: string): Promise<void> => {
+        await apiClient.delete(
+            API_ENDPOINTS.EVENT.DELETE_ITEM(eventId, itemId)
+        );
     },
 };

@@ -26,6 +26,7 @@ import {
     Search,
     Filter,
     X,
+    Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -57,8 +58,11 @@ import {
     useCompleteEvent,
     useGenerateShoppingList,
     useDeleteEventMeal,
-    useRemoveRecipeFromMeal
+    useRemoveRecipeFromMeal,
+    useAddRecipeToMeal,
+    useDeleteEventItem,
 } from "@/services/event/event.mutation";
+import { QuickItemSelector } from "./_components/QuickItemSelector";
 
 // Constants
 import {
@@ -71,7 +75,7 @@ import {
 import { cn } from "@/lib/utils";
 
 // Types
-import { EventResponse, EventMealResponse, MealType, EventRecipeResponse } from "@/services/event/event.types";
+import { EventResponse, EventMealResponse, MealType, EventRecipeResponse, EventItemResponse } from "@/services/event/event.types";
 import { Recipe } from "@/services/recipe";
 import { RecipeCard } from "../../recipes/components/recipe-card";
 import { RecipeDetailsDialog } from "../../recipes/components/recipe-details-dialog";
@@ -143,8 +147,8 @@ export default function EventDetailPage() {
     const eventId = params.id as string;
 
     // Fetch event data
-    const { data: event, isLoading, error } = useEvent(eventId);
-    const { data: meals } = useEventMeals(eventId);
+    const { data: event, isLoading, error, refetch: refetchEvent } = useEvent(eventId);
+    const { data: meals, refetch: refetchMeals } = useEventMeals(eventId);
 
     // Mutations
     const deleteEventMutation = useDeleteEvent();
@@ -152,6 +156,7 @@ export default function EventDetailPage() {
     const generateShoppingListMutation = useGenerateShoppingList();
     const deleteEventMealMutation = useDeleteEventMeal();
     const removeRecipeFromMealMutation = useRemoveRecipeFromMeal();
+    const deleteEventItemMutation = useDeleteEventItem();
 
     const [isDeleting, setIsDeleting] = useState(false);
     const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
@@ -161,6 +166,11 @@ export default function EventDetailPage() {
     const { data: fullRecipe } = useRecipe(selectedRecipeId);
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+    // Quick Item Selector State
+    const [isQuickSelectOpen, setIsQuickSelectOpen] = useState(false);
+    const [quickSelectMealId, setQuickSelectMealId] = useState<string>("");
+    const [quickSelectMealType, setQuickSelectMealType] = useState<MealType>("snacks");
 
     if (isLoading) {
         return (
@@ -250,6 +260,16 @@ export default function EventDetailPage() {
         }
     };
 
+    const handleRemoveItem = async (itemId: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!confirm("Remove this item from the event?")) return;
+        try {
+            await deleteEventItemMutation.mutateAsync({ eventId, itemId });
+        } catch (error) {
+            // Error handled by mutation
+        }
+    };
+
     const getStatusStyle = (status: string) => {
         switch (status) {
             case 'completed': return "bg-green-100 text-green-700 border-green-200";
@@ -288,7 +308,7 @@ export default function EventDetailPage() {
                         <Button
                             variant="default"
                             size="sm"
-                            className="bg-[#313131] hover:bg-black text-white font-bold py-2.5 px-4 rounded-lg shadow-none transition-all flex items-center gap-2 text-sm h-auto" onClick={() => router.push(`/event-meal-plan/${eventId}/menu`)}
+                            className="bg-[#313131] hover:bg-black text-white font-bold py-2.5 px-4 rounded-lg shadow-none transition-all flex items-center gap-2 text-sm h-auto" onClick={() => router.push(`/event-meal-plan/${eventId}/generate-recipe`)}
                         >
                             <Plus className="w-4 h-4" />
                             Add Meal
@@ -397,7 +417,7 @@ export default function EventDetailPage() {
                                     Event Menu
                                 </h2>
                                 {meals && meals.length > 0 && (
-                                    <Button variant="outline" size="sm" onClick={() => router.push(`/event-meal-plan/${eventId}/menu`)}>
+                                    <Button variant="outline" size="sm" onClick={() => router.push(`/event-meal-plan/${eventId}/generate-recipe`)}>
                                         Manage Menu
                                     </Button>
                                 )}
@@ -408,6 +428,7 @@ export default function EventDetailPage() {
                                     {meals.map((meal: EventMealResponse) => {
                                         const mealOption = getMealTypeOption(meal.mealType as MealType);
                                         const MealIcon = mealOption?.icon || ChefHat;
+                                        const extraItems = event.extraItems?.filter(i => i.category === meal.mealType) || [];
 
                                         return (
                                             <div
@@ -435,29 +456,135 @@ export default function EventDetailPage() {
                                                             <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-[var(--primary)] transition-colors" />
                                                         </div>
 
-                                                        {meal.recipes && meal.recipes.length > 0 ? (
-                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 mt-4">
-                                                                {meal.recipes.map((eventRecipe: EventRecipeResponse) => {
-                                                                    const recipe = adaptEventRecipeToRecipe(eventRecipe);
-                                                                    return (
-                                                                        <div key={eventRecipe.id} className="h-full">
-                                                                            <RecipeCard
-                                                                                recipe={recipe}
-                                                                                onViewDetails={(r) => {
-                                                                                    setSelectedRecipe(r);
-                                                                                    setSelectedRecipeId(r.id);
-                                                                                    setIsDialogOpen(true);
-                                                                                }}
-                                                                            />
+                                                        {(meal.recipes && meal.recipes.length > 0) || (extraItems && extraItems.length > 0) ? (
+                                                            ['breakfast', 'lunch', 'dinner', 'brunch'].includes(meal.mealType) ? (
+                                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 mt-4">
+                                                                    {meal.recipes?.map((eventRecipe: EventRecipeResponse) => {
+                                                                        const recipe = adaptEventRecipeToRecipe(eventRecipe);
+                                                                        return (
+                                                                            <div key={eventRecipe.id} className="h-full relative group/wrapper">
+                                                                                <RecipeCard
+                                                                                    recipe={recipe}
+                                                                                    onViewDetails={(r) => {
+                                                                                        setSelectedRecipe(r);
+                                                                                        setSelectedRecipeId(r.id);
+                                                                                        setIsDialogOpen(true);
+                                                                                    }}
+                                                                                />
+                                                                                <Button
+                                                                                    variant="destructive"
+                                                                                    size="icon"
+                                                                                    className="absolute -top-2 -right-2 h-8 w-8 rounded-full shadow-lg opacity-0 group-hover/wrapper:opacity-100 transition-opacity z-20"
+                                                                                    onClick={(e) => handleRemoveRecipe(meal.id, eventRecipe.recipeId || "", e)}
+                                                                                >
+                                                                                    <Trash2 className="w-4 h-4" />
+                                                                                </Button>
+                                                                            </div>
+                                                                        );
+                                                                    })}
+                                                                    <div
+                                                                        className="h-full min-h-[300px] border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center p-6 text-center hover:border-indigo-300 hover:bg-indigo-50/30 transition-all cursor-pointer group/add"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            router.push(`/event-meal-plan/${eventId}/recipe-selection`);
+                                                                        }}
+                                                                    >
+                                                                        <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mb-3 group-hover/add:scale-110 transition-transform shadow-sm">
+                                                                            <Plus className="w-6 h-6" />
                                                                         </div>
-                                                                    );
-                                                                })}
-                                                            </div>
+                                                                        <h4 className="font-semibold text-gray-900">Add Recipes</h4>
+                                                                        <p className="text-xs text-gray-500 mt-1">
+                                                                            Generate or select more
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+
+
+                                                                /* Compact Grid for Snacks & Beverages */
+                                                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 mt-4">
+                                                                    {extraItems.map((item: EventItemResponse) => {
+                                                                        return (
+                                                                            <div key={item.id} className="relative group/compact-card bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-all flex flex-col h-full">
+                                                                                {/* Image Area - Placeholder for Items */}
+                                                                                <div className="h-24 w-full bg-gray-100 relative overflow-hidden flex items-center justify-center">
+                                                                                    <img
+                                                                                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&background=random`}
+                                                                                        alt={item.name}
+                                                                                        className="w-full h-full object-cover group-hover/compact-card:scale-105 transition-transform duration-300"
+                                                                                    />
+                                                                                    {/* Overlay Actions */}
+                                                                                    <div className="absolute inset-x-0 bottom-0 p-1 bg-gradient-to-t from-black/60 to-transparent flex justify-end opacity-0 group-hover/compact-card:opacity-100 transition-opacity">
+                                                                                        <Button
+                                                                                            variant="destructive"
+                                                                                            size="icon"
+                                                                                            className="h-6 w-6 rounded-full"
+                                                                                            onClick={(e) => handleRemoveItem(item.id, e)}
+                                                                                        >
+                                                                                            <Trash2 className="w-3 h-3" />
+                                                                                        </Button>
+                                                                                    </div>
+                                                                                </div>
+
+                                                                                {/* Content */}
+                                                                                <div className="p-2 flex-1 flex flex-col">
+                                                                                    <h4 className="text-xs font-semibold text-gray-900 line-clamp-2 mb-1 leading-tight min-h-[2.5em]" title={item.name}>
+                                                                                        {item.name}
+                                                                                    </h4>
+                                                                                    <p className="text-[10px] text-gray-500 mb-2">
+                                                                                        {item.quantity} {item.unit}
+                                                                                    </p>
+                                                                                </div>
+                                                                            </div>
+                                                                        );
+                                                                    })}
+
+                                                                    {/* Compact Add More */}
+                                                                    <div
+                                                                        className="h-full min-h-[140px] border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center p-2 text-center hover:border-indigo-300 hover:bg-indigo-50/30 transition-all cursor-pointer group/add-compact"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setQuickSelectMealId(meal.id);
+                                                                            setQuickSelectMealType(meal.mealType as MealType);
+                                                                            setIsQuickSelectOpen(true);
+                                                                        }}
+                                                                    >
+                                                                        <div className="w-8 h-8 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mb-2 group-hover/add-compact:scale-110 transition-transform">
+                                                                            <Plus className="w-4 h-4" />
+                                                                        </div>
+                                                                        <span className="text-xs font-medium text-gray-600 group-hover/add-compact:text-indigo-600">Add Item</span>
+                                                                    </div>
+                                                                </div>
+                                                            )
                                                         ) : (
-                                                            <p className="text-sm text-yellow-600 mt-2 flex items-center gap-1.5">
-                                                                <AlertCircle className="w-3.5 h-3.5" />
-                                                                No recipes added yet
-                                                            </p>
+                                                            <div className="mt-4 p-8 bg-gray-50/50 rounded-xl border border-dashed border-gray-200 flex flex-col items-center justify-center text-center">
+                                                                <div className="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center mb-3">
+                                                                    <Sparkles className="w-6 h-6 text-indigo-600" />
+                                                                </div>
+                                                                <h4 className="text-sm font-semibold text-gray-900 mb-1">No recipes yet</h4>
+                                                                <p className="text-xs text-gray-500 mb-4 max-w-[250px]">
+                                                                    {['breakfast', 'lunch', 'dinner'].includes(meal.mealType)
+                                                                        ? 'Start building your menu by generating recipes with AI.'
+                                                                        : 'Add items from our curated list.'}
+                                                                </p>
+                                                                <Button
+                                                                    size="sm"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        if (['breakfast', 'lunch', 'dinner'].includes(meal.mealType)) {
+                                                                            router.push(`/event-meal-plan/${eventId}/recipe-selection`);
+                                                                        } else {
+                                                                            setQuickSelectMealId(meal.id);
+                                                                            setQuickSelectMealType(meal.mealType as MealType);
+                                                                            setIsQuickSelectOpen(true);
+                                                                        }
+                                                                    }}
+                                                                    className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
+                                                                >
+                                                                    <Plus className="w-3.5 h-3.5 mr-1.5" />
+                                                                    {['breakfast', 'lunch', 'dinner'].includes(meal.mealType) ? 'Add Recipes' : 'Add Items'}
+                                                                </Button>
+                                                            </div>
                                                         )}
                                                     </div>
                                                 </div>
@@ -582,11 +709,12 @@ export default function EventDetailPage() {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div >
 
             {/* Recipe Details Dialog */}
-            <RecipeDetailsDialog
-                recipe={fullRecipe ?? selectedRecipe}
+            < RecipeDetailsDialog
+                recipe={fullRecipe ?? selectedRecipe
+                }
                 open={isDialogOpen}
                 onOpenChange={(open) => {
                     setIsDialogOpen(open);
@@ -596,6 +724,18 @@ export default function EventDetailPage() {
                     }
                 }}
             />
-        </div>
+            {/* Quick Item Selector for Snacks/Beverages */}
+            <QuickItemSelector
+                open={isQuickSelectOpen}
+                onOpenChange={setIsQuickSelectOpen}
+                mealId={quickSelectMealId}
+                mealType={quickSelectMealType}
+                eventId={eventId}
+                onSuccess={() => {
+                    refetchEvent();
+                    refetchMeals();
+                }}
+            />
+        </div >
     );
 }

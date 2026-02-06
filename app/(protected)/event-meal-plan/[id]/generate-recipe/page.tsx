@@ -10,7 +10,7 @@ import { AnimatePresence, motion } from "framer-motion";
 // Services & Redux
 import { useEvent } from "@/services/event/event.query";
 import { useMembers } from "@/services/member/member.query";
-import { useAddMealToEvent, useAddRecipeToMeal, useSuggestBudget, useGenerateEventRecipes } from "@/services/event/event.mutation";
+import { useAddMealToEvent, useAddRecipeToMeal, useSuggestBudget, useGenerateEventRecipes, useAddEventItem, useGetEventItems, useDeleteEventItem } from "@/services/event/event.mutation";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store.redux";
 
@@ -23,7 +23,9 @@ import { MEAL_TYPE_CONFIG, DEFAULT_BUDGET_WEIGHTS } from "./_components/constant
 import { StepIndicator } from "./_components/StepIndicator";
 import { HealthProfileSection } from "./_components/HealthProfileSection";
 import { BudgetDistributionSection } from "./_components/BudgetDistributionSection";
+
 import { RecipeSelectionSection } from "./_components/RecipeSelectionSection";
+import { ReviewMenuSection } from "./_components/ReviewMenuSection";
 
 export default function EventRecipeSelectionPage() {
     const params = useParams();
@@ -31,7 +33,7 @@ export default function EventRecipeSelectionPage() {
     const eventId = params.id as string;
 
     // States
-    const [step, setStep] = useState<"health" | "budget" | "recipes">("health");
+    const [step, setStep] = useState<"health" | "budget" | "main-courses" | "extras" | "review">("health");
     const [budgetStrategy, setBudgetStrategy] = useState<"manual" | "ai">("ai");
     const [totalBudget, setTotalBudget] = useState<number>(100);
     // selectedMealTypes is now derived from event data
@@ -58,6 +60,9 @@ export default function EventRecipeSelectionPage() {
     const { mutateAsync: addMeal } = useAddMealToEvent();
     const { mutateAsync: addRecipe } = useAddRecipeToMeal();
     const suggestBudgetMutation = useSuggestBudget();
+    const { mutateAsync: addEventItem } = useAddEventItem();
+    const { mutateAsync: deleteEventItem } = useDeleteEventItem();
+    const { data: eventItems } = useGetEventItems(eventId);
 
     // Derived Data
     const participants = useMemo(() => {
@@ -123,6 +128,27 @@ export default function EventRecipeSelectionPage() {
         return stats;
     }, [activeHealthParticipants]);
 
+    // Dynamic Steps Calculation
+    const steps = useMemo(() => {
+        const s = [
+            { id: 'health', label: 'Health' },
+            { id: 'budget', label: 'Budget' }
+        ];
+
+        const hasMainMeals = selectedMealTypes.some(mt => ['breakfast', 'lunch', 'dinner', 'brunch'].includes(mt));
+        if (hasMainMeals) {
+            s.push({ id: 'main-courses', label: 'Main Courses' });
+        }
+
+        const hasExtras = selectedMealTypes.some(mt => ['snacks', 'beverages', 'dessert'].includes(mt));
+        if (hasExtras) {
+            s.push({ id: 'extras', label: 'Snacks & Drinks' });
+        }
+
+        s.push({ id: 'review', label: 'Review Menu' });
+        return s;
+    }, [selectedMealTypes]);
+
     // Initialize meal types from event
     // Initialize total budget if set in event
     useEffect(() => {
@@ -176,16 +202,40 @@ export default function EventRecipeSelectionPage() {
         });
     }, [selectedMealTypes, totalBudget, budgetStrategy]);
 
-    // Initialize meal recipes state with existing event data
+    // Initialize meal recipes state with existing event data and items
     useEffect(() => {
         if (selectedMealTypes.length > 0) {
             setMealRecipes(prev => {
                 const updated: GeneratedRecipeForMeal[] = selectedMealTypes.map(mt => {
                     const existing = prev.find(p => p.mealType === mt);
-                    // If we have local state with recipes, preserve it (user might have generated something)
-                    if (existing && existing.recipes.length > 0) return existing;
 
-                    // Otherwise, try to populate from event data (Edit/Resume mode)
+                    // Handling for Add-ons (Snacks, Beverages, Dessert) using Event Items
+                    if (['snacks', 'beverages', 'dessert'].includes(mt) && eventItems) {
+                        const items = eventItems.filter((i: any) => i.category === mt);
+                        const itemRecipes = items.map((i: any) => ({
+                            id: i.id,
+                            name: i.name,
+                            description: i.notes || '',
+                            imageUrl: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80", // Generic food image
+                            cookingTime: "Ready to serve",
+                            price: i.estimatedCost ? `$${i.estimatedCost}` : "N/A",
+                            servings: i.quantity,
+                            isAIGenerated: false,
+                            isSaved: true
+                        }));
+
+                        return {
+                            mealType: mt,
+                            recipes: itemRecipes,
+                            selectedRecipeIds: itemRecipes.map(r => r.id),
+                            isGenerating: existing?.isGenerating || false,
+                            customSearch: existing?.customSearch
+                        };
+                    }
+
+                    // Handling for Main Meals (Preserve local state if generating, otherwise sync with Event)
+                    if (existing && existing.recipes.length > 0 && existing.recipes.some(r => !r.isSaved)) return existing;
+
                     const eventMeal = (event as any)?.meals?.find((m: any) => m.mealType === mt);
 
                     if (eventMeal && eventMeal.recipes && eventMeal.recipes.length > 0) {
@@ -193,7 +243,7 @@ export default function EventRecipeSelectionPage() {
                             const r = er.recipe || {};
                             return {
                                 ...r,
-                                id: r.id, // Ensure ID is top level
+                                id: r.id,
                                 isAIGenerated: false,
                                 isSaved: true,
                                 cookingTime: r.cookTimeMinutes ? `${r.cookTimeMinutes} min` : (r.totalTimeMinutes ? `${r.totalTimeMinutes} min` : 'N/A'),
@@ -202,28 +252,26 @@ export default function EventRecipeSelectionPage() {
                                 servings: er.servings
                             };
                         });
-                        const selectedIds = existingRecipes.map((r: any) => r.id);
 
                         return {
                             mealType: mt,
                             recipes: existingRecipes,
-                            selectedRecipeIds: selectedIds,
+                            selectedRecipeIds: existingRecipes.map((r: any) => r.id),
                             isGenerating: false,
                             customSearch: existing?.customSearch
                         };
                     }
 
-                    // Fallback to existing state or empty
                     return existing || { mealType: mt, recipes: [], isGenerating: false };
                 });
                 return updated;
             });
-            // Set first meal as active tab if not set
+
             if (!selectedMealTypes.includes(activeMealTab)) {
                 setActiveMealTab(selectedMealTypes[0]);
             }
         }
-    }, [selectedMealTypes, activeMealTab, event]);
+    }, [selectedMealTypes, activeMealTab, event, eventItems]);
 
     // Handler for manual budget amount change
     const handleManualBudgetChange = useCallback((mealType: MealType, value: string) => {
@@ -272,7 +320,7 @@ export default function EventRecipeSelectionPage() {
     }, [totalBudget]);
 
     const handleContinueToBudget = () => {
-        setStep("budget");
+        goToNextStep();
     };
 
     // AI Budget Distribution using actual API
@@ -351,10 +399,60 @@ export default function EventRecipeSelectionPage() {
             toast.error("Please fix validation errors before continuing");
             return;
         }
-        setStep("recipes");
+        goToNextStep();
     };
 
     const handleGenerateRecipesForMeal = async (mealType: MealType, customSearch?: string) => {
+        // Handle Add-ons (Event Items) - Direct to DB
+        if (['snacks', 'beverages', 'dessert'].includes(mealType)) {
+            if (!customSearch) {
+                toast.error("Please select items to add");
+                return;
+            }
+
+            setMealRecipes(prev => prev.map(mr =>
+                mr.mealType === mealType ? { ...mr, isGenerating: true } : mr
+            ));
+
+            try {
+                const itemsToAdd = customSearch.split(", ");
+                let addedCount = 0;
+
+                for (const name of itemsToAdd) {
+                    // Avoid duplicates locally if possible, but backend will handle ID creation
+                    const exists = eventItems?.some((i: any) => i.name === name.trim() && i.category === mealType);
+                    if (exists) continue;
+
+                    await addEventItem({
+                        eventId,
+                        data: {
+                            name: name.trim(),
+                            category: mealType as any,
+                            quantity: 1,
+                            unit: 'serving',
+                            estimatedCost: 0
+                        }
+                    });
+                    addedCount++;
+                }
+
+                if (addedCount > 0) {
+                    toast.success(`Added ${addedCount} item${addedCount !== 1 ? 's' : ''} to ${MEAL_TYPE_CONFIG[mealType].label}`);
+                } else {
+                    toast.info("Selected items already added");
+                }
+
+            } catch (error: any) {
+                console.error(error);
+                toast.error("Failed to add items");
+            } finally {
+                setMealRecipes(prev => prev.map(mr =>
+                    mr.mealType === mealType ? { ...mr, isGenerating: false } : mr
+                ));
+            }
+            return;
+        }
+
         const mealBudget = mealBudgets.find(mb => mb.mealType === mealType)?.budget || 0;
 
         setMealRecipes(prev => prev.map(mr =>
@@ -400,7 +498,11 @@ export default function EventRecipeSelectionPage() {
                 };
             }));
 
-            toast.success(`Generated ${newRecipes.length} ${MEAL_TYPE_CONFIG[mealType].label} recipes!`);
+            if (['snacks', 'beverages', 'dessert'].includes(mealType)) {
+                toast.success(`Added ${newRecipes.length} item${newRecipes.length !== 1 ? 's' : ''} to ${MEAL_TYPE_CONFIG[mealType].label}`);
+            } else {
+                toast.success(`Generated ${newRecipes.length} ${MEAL_TYPE_CONFIG[mealType].label} recipes!`);
+            }
         } catch (error: any) {
             console.error(error);
             toast.error(error?.response?.data?.message || "Failed to generate recipes. Please try again.");
@@ -428,6 +530,28 @@ export default function EventRecipeSelectionPage() {
         }));
     };
 
+    const handleRemoveRecipe = async (mealType: string, recipeId: string) => {
+        // Handle Add-ons (Event Items) - Direct from DB
+        if (['snacks', 'beverages', 'dessert'].includes(mealType)) {
+            try {
+                await deleteEventItem({ eventId, itemId: recipeId });
+                toast.success("Item removed");
+            } catch (error) {
+                console.error(error);
+                toast.error("Failed to remove item");
+            }
+            return;
+        }
+
+        setMealRecipes(prev => prev.map(mr => {
+            if (mr.mealType !== mealType) return mr;
+            return {
+                ...mr,
+                selectedRecipeIds: (mr.selectedRecipeIds || []).filter(id => id !== recipeId)
+            };
+        }));
+    };
+
     const handleSaveAllRecipes = async () => {
         // Gather all selected recipes across all meal types
         const mealsWithSelections = mealRecipes.filter(mr => mr.selectedRecipeIds && mr.selectedRecipeIds.length > 0);
@@ -444,6 +568,9 @@ export default function EventRecipeSelectionPage() {
             let savedCount = 0;
 
             for (const mr of mealsWithSelections) {
+                // Skip Add-ons (Snacks, Bev, Dessert) as they are saved immediately to Event Items
+                if (['snacks', 'beverages', 'dessert'].includes(mr.mealType)) continue;
+
                 // Get or create meal for this meal type
                 let mealId = (event as any)?.meals?.find((m: any) => m.mealType === mr.mealType)?.id;
 
@@ -505,17 +632,36 @@ export default function EventRecipeSelectionPage() {
 
     if (!event) return <div className="flex h-screen items-center justify-center text-gray-500">Event not found</div>;
 
-    const steps = [
-        { id: 'health', label: 'Health' },
-        { id: 'budget', label: 'Budget' },
-        { id: 'recipes', label: 'Recipes' }
-    ] as const;
 
 
-    console.log({
-        budgetStrategy,
-        mealBudgets
-    })
+    // Navigation Helpers
+    const goToNextStep = () => {
+        const currentIndex = steps.findIndex(s => s.id === step);
+        if (currentIndex < steps.length - 1) {
+            const nextStepId = steps[currentIndex + 1].id;
+
+            // Set active tab logic based on target step
+            if (nextStepId === 'main-courses') {
+                const mainMeals = selectedMealTypes.filter(mt => ['breakfast', 'lunch', 'dinner', 'brunch'].includes(mt));
+                if (mainMeals.length > 0) setActiveMealTab(mainMeals[0]);
+            } else if (nextStepId === 'extras') {
+                const extraMeals = selectedMealTypes.filter(mt => ['snacks', 'beverages', 'dessert'].includes(mt));
+                if (extraMeals.length > 0) setActiveMealTab(extraMeals[0]);
+            }
+
+            setStep(nextStepId as any);
+        }
+    };
+
+    const goToPrevStep = () => {
+        const currentIndex = steps.findIndex(s => s.id === step);
+        if (currentIndex > 0) {
+            setStep(steps[currentIndex - 1].id as any);
+        }
+    };
+
+
+
 
     return (
         <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-50/80 via-gray-50 to-gray-50 font-sans pb-20">
@@ -555,7 +701,7 @@ export default function EventRecipeSelectionPage() {
                     </div>
 
                     {/* Premium Stepper */}
-                    <div className="max-w-3xl mx-auto bg-white/80 backdrop-blur-md rounded-2xl shadow-xl shadow-indigo-100/40 border border-white/20 p-6 md:p-8 mb-2 relative">
+                    <div className="max-w-5xl mx-auto bg-white/80 backdrop-blur-md rounded-2xl shadow-xl shadow-indigo-100/40 border border-white/20 p-6 md:p-8 mb-2 relative">
                         <div className="relative flex justify-between items-center">
                             {/* Connecting Line */}
                             <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-100 rounded-full -z-10 transform -translate-y-1/2 overflow-hidden">
@@ -616,28 +762,60 @@ export default function EventRecipeSelectionPage() {
                             isAIDistributing={suggestBudgetMutation.isPending}
                             validationErrors={budgetValidationErrors}
                             aiRecommendations={aiRecommendations}
-                            onBack={() => setStep("health")}
+                            onBack={goToPrevStep}
                             onContinue={handleContinueToRecipes}
                             canContinue={canContinueToRecipes}
                         />
                     )}
 
-                    {step === "recipes" && (
+                    {step === "main-courses" && (
                         <RecipeSelectionSection
-                            key="recipes"
+                            key="main-courses"
                             globalCuisine={globalCuisine}
                             setGlobalCuisine={setGlobalCuisine}
-                            selectedMealTypes={selectedMealTypes}
+                            selectedMealTypes={selectedMealTypes.filter(mt => ['breakfast', 'lunch', 'dinner', 'brunch'].includes(mt))}
                             handleGenerateRecipesForMeal={handleGenerateRecipesForMeal}
                             activeMealTab={activeMealTab}
                             setActiveMealTab={setActiveMealTab}
                             mealRecipes={mealRecipes}
                             mealBudgets={mealBudgets}
                             handleSelectRecipeForMeal={handleSelectRecipeForMeal}
-                            onBack={() => setStep("budget")}
-                            handleSaveAllRecipes={handleSaveAllRecipes}
-                            isSavingAll={isSavingAll}
+                            onBack={goToPrevStep}
+                            handleSaveAllRecipes={goToNextStep}
+                            isSavingAll={false}
                             getSelectedCount={getSelectedCount}
+                            actionLabel="Continue"
+                        />
+                    )}
+
+                    {step === "extras" && (
+                        <RecipeSelectionSection
+                            key="extras"
+                            globalCuisine={globalCuisine}
+                            setGlobalCuisine={setGlobalCuisine}
+                            selectedMealTypes={selectedMealTypes.filter(mt => ['snacks', 'beverages', 'dessert'].includes(mt))}
+                            handleGenerateRecipesForMeal={handleGenerateRecipesForMeal}
+                            activeMealTab={activeMealTab}
+                            setActiveMealTab={setActiveMealTab}
+                            mealRecipes={mealRecipes}
+                            mealBudgets={mealBudgets}
+                            handleSelectRecipeForMeal={handleSelectRecipeForMeal}
+                            onBack={goToPrevStep}
+                            handleSaveAllRecipes={goToNextStep}
+                            isSavingAll={false}
+                            getSelectedCount={getSelectedCount}
+                            actionLabel="Review Final Menu"
+                        />
+                    )}
+
+                    {step === "review" && (
+                        <ReviewMenuSection
+                            mealRecipes={mealRecipes}
+                            onBack={goToPrevStep}
+                            onSave={handleSaveAllRecipes}
+                            isSaving={isSavingAll}
+                            onRemoveRecipe={handleRemoveRecipe}
+                            totalBudget={totalBudget}
                         />
                     )}
                 </AnimatePresence>

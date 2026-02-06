@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { EventService } from "./event.service";
 import { eventQueryKeys } from "./event.query";
@@ -11,6 +11,8 @@ import {
     GenerateMenuDto,
     LogMemberConsumptionDto,
     EventRecipeGenerationDto,
+    CreateEventItemDto,
+    UpdateEventItemDto,
 } from "./event.types";
 
 /**
@@ -345,6 +347,67 @@ export function useGenerateEventRecipes() {
         },
         onError: (error: any) => {
             toast.error(error?.message || "Failed to generate event recipes");
+        },
+    });
+}
+
+// ===== Event Items (Add-ons) =====
+
+export function useAddEventItem() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ eventId, data }: { eventId: string; data: CreateEventItemDto }) =>
+            EventService.addEventItem(eventId, data),
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({ queryKey: eventQueryKeys.detail(variables.eventId) });
+            queryClient.invalidateQueries({ queryKey: ['event-items', variables.eventId] });
+            toast.success("Item added successfully!");
+        },
+        onError: (error: any) => {
+            toast.error(error?.message || "Failed to add item");
+        },
+    });
+}
+
+export function useGetEventItems(eventId: string) {
+    return useQuery({
+        queryKey: ['event-items', eventId],
+        queryFn: () => EventService.getEventItems(eventId),
+        enabled: !!eventId,
+    });
+}
+
+export function useUpdateEventItem() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ eventId, itemId, data }: { eventId: string; itemId: string; data: UpdateEventItemDto }) =>
+            EventService.updateEventItem(eventId, itemId, data),
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({ queryKey: eventQueryKeys.detail(variables.eventId) });
+            queryClient.invalidateQueries({ queryKey: ['event-items', variables.eventId] });
+            toast.success("Item updated!");
+        },
+        onError: (error: any) => {
+            toast.error(error?.message || "Failed to update item");
+        },
+    });
+}
+
+export function useDeleteEventItem() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ eventId, itemId }: { eventId: string; itemId: string }) =>
+            EventService.deleteEventItem(eventId, itemId),
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({ queryKey: eventQueryKeys.detail(variables.eventId) });
+            queryClient.invalidateQueries({ queryKey: ['event-items', variables.eventId] });
+            toast.success("Item removed!");
+        },
+        onError: (error: any) => {
+            toast.error(error?.message || "Failed to remove item");
         },
     });
 }

@@ -143,6 +143,40 @@ export interface EventResponse {
     budget?: EventBudgetResponse;
     shoppingList?: EventShoppingListResponse;
     costAnalysis?: CostAnalysisResponse;
+    extraItems?: EventItemResponse[];
+}
+
+export interface EventItemResponse {
+    id: string;
+    eventId: string;
+    name: string;
+    category?: string;
+    quantity: number;
+    unit: string;
+    estimatedCost?: number;
+    actualCost?: number;
+    notes?: string;
+    createdAt: string;
+}
+
+export interface CreateEventItemDto {
+    name: string;
+    category?: string;
+    quantity: number;
+    unit: string;
+    estimatedCost?: number;
+    actualCost?: number;
+    notes?: string;
+}
+
+export interface UpdateEventItemDto {
+    name?: string;
+    category?: string;
+    quantity?: number;
+    unit?: string;
+    estimatedCost?: number;
+    actualCost?: number;
+    notes?: string;
 }
 
 export interface EventMealResponse {

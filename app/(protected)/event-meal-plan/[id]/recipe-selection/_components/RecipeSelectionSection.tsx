@@ -19,11 +19,17 @@ import {
     Flame,
     Leaf,
     Star,
-    Info
+    Info,
+    Check
 } from "lucide-react";
+import { STATIC_ITEMS } from "../../_components/StaticItems";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area"; // Add ScrollArea import
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { sweets, drinks } from "@/data/add-items";
+import { indianSnacks } from "@/data/indian-snacks";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -341,6 +347,25 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
         setSearchInputs(prev => ({ ...prev, [mealType]: value }));
     };
 
+    const [staticSelections, setStaticSelections] = useState<Record<MealType, string[]>>({} as Record<MealType, string[]>);
+
+    const handleStaticItemToggle = (mealType: MealType, item: string) => {
+        setStaticSelections(prev => {
+            const current = prev[mealType] || [];
+            const updated = current.includes(item)
+                ? current.filter(i => i !== item)
+                : [...current, item];
+            return { ...prev, [mealType]: updated };
+        });
+    };
+
+    const handleStaticItemsAdd = (mealType: MealType) => {
+        const items = staticSelections[mealType];
+        if (items && items.length > 0) {
+            handleGenerateRecipesForMeal(mealType, items.join(", "));
+        }
+    };
+
     const handleSearchSubmit = (mealType: MealType) => {
         handleGenerateRecipesForMeal(mealType, searchInputs[mealType]);
     };
@@ -520,40 +545,160 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
                                         </CardHeader>
                                         <CardContent className="pt-6 px-6">
                                             <div className="space-y-6">
-                                                {/* Search and Generate */}
-                                                <div className="flex flex-col md:flex-row gap-4">
-                                                    <div className="flex-1 relative">
-                                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                                        <Input
-                                                            value={searchInputs[mealType] || ''}
-                                                            onChange={(e) => handleSearchChange(mealType, e.target.value)}
-                                                            placeholder={`Search specific recipe for ${config.label}...`}
-                                                            className="pl-10 h-11"
-                                                            onKeyPress={(e) => {
-                                                                if (e.key === 'Enter') {
-                                                                    handleSearchSubmit(mealType);
-                                                                }
-                                                            }}
-                                                        />
+                                                {/* Search and Generate / Static Selection */}
+                                                {['breakfast', 'lunch', 'dinner'].includes(mealType) ? (
+                                                    <div className="flex flex-col md:flex-row gap-4">
+                                                        <div className="flex-1 relative">
+                                                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                                            <Input
+                                                                value={searchInputs[mealType] || ''}
+                                                                onChange={(e) => handleSearchChange(mealType, e.target.value)}
+                                                                placeholder={`Search specific recipe for ${config.label}...`}
+                                                                className="pl-10 h-11"
+                                                                onKeyPress={(e) => {
+                                                                    if (e.key === 'Enter') {
+                                                                        handleSearchSubmit(mealType);
+                                                                    }
+                                                                }}
+                                                            />
+                                                        </div>
+                                                        <Button
+                                                            onClick={() => handleGenerateRecipesForMeal(mealType, searchInputs[mealType])}
+                                                            disabled={mealRecipesData?.isGenerating}
+                                                            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white h-11 px-6 font-semibold"
+                                                        >
+                                                            {mealRecipesData?.isGenerating ? (
+                                                                <>
+                                                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                                    Generating...
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <Sparkles className="w-4 h-4 mr-2" />
+                                                                    Generate Suggestions
+                                                                </>
+                                                            )}
+                                                        </Button>
                                                     </div>
-                                                    <Button
-                                                        onClick={() => handleGenerateRecipesForMeal(mealType, searchInputs[mealType])}
-                                                        disabled={mealRecipesData?.isGenerating}
-                                                        className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white h-11 px-6 font-semibold"
-                                                    >
-                                                        {mealRecipesData?.isGenerating ? (
-                                                            <>
-                                                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                                                Generating...
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <Sparkles className="w-4 h-4 mr-2" />
-                                                                Generate Suggestions
-                                                            </>
-                                                        )}
-                                                    </Button>
-                                                </div>
+                                                ) : (
+                                                    <div className="space-y-4">
+                                                        <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                                                            <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+                                                                <h3 className="text-sm font-bold text-gray-900 block">
+                                                                    Select Items for {config.label}
+                                                                </h3>
+
+                                                                {/* Search for static items */}
+                                                                <div className="relative w-full md:w-64">
+                                                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                                                                    <Input
+                                                                        placeholder="Search items..."
+                                                                        className="pl-9 h-9 text-xs"
+                                                                        value={searchInputs[mealType] || ''}
+                                                                        onChange={(e) => handleSearchChange(mealType, e.target.value)}
+                                                                    />
+                                                                </div>
+                                                            </div>
+
+                                                            <ScrollArea className="h-[400px] pr-4">
+                                                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                                                                    {(() => {
+                                                                        // Determine items based on mealType
+                                                                        let itemsDetails = [];
+                                                                        if (mealType === 'snacks' || mealType === 'dessert') {
+                                                                            itemsDetails = [...indianSnacks.filter(i => i.category === 'snacks'), ...sweets];
+                                                                        } else if (mealType === 'beverages') {
+                                                                            itemsDetails = [...indianSnacks.filter(i => i.category === 'beverages'), ...drinks];
+                                                                        } else {
+                                                                            // Fallback to STATIC_ITEMS simple strings mapped to objects if not found above
+                                                                            const simpleItems = STATIC_ITEMS[mealType] || [];
+                                                                            itemsDetails = simpleItems.map(name => ({
+                                                                                name,
+                                                                                image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80", // Fallback
+                                                                                unit: "serving"
+                                                                            }));
+                                                                        }
+
+                                                                        // Filter by search
+                                                                        const searchTerm = (searchInputs[mealType] || '').toLowerCase();
+                                                                        const filteredItems = itemsDetails.filter(item =>
+                                                                            item.name.toLowerCase().includes(searchTerm)
+                                                                        );
+
+                                                                        if (filteredItems.length === 0) {
+                                                                            return (
+                                                                                <div className="col-span-full py-8 text-center text-gray-500 text-sm italic">
+                                                                                    No items found.
+                                                                                </div>
+                                                                            );
+                                                                        }
+
+                                                                        return filteredItems.map((item, idx) => {
+                                                                            const isSelected = (staticSelections[mealType] || []).includes(item.name);
+                                                                            return (
+                                                                                <div
+                                                                                    key={`${idx}-${item.name}`}
+                                                                                    className={cn(
+                                                                                        "group relative rounded-lg border overflow-hidden cursor-pointer transition-all hover:shadow-md bg-white",
+                                                                                        isSelected
+                                                                                            ? "border-[var(--primary)] ring-1 ring-[var(--primary)]"
+                                                                                            : "border-gray-200 hover:border-gray-300"
+                                                                                    )}
+                                                                                    onClick={() => handleStaticItemToggle(mealType, item.name)}
+                                                                                >
+                                                                                    <div className="aspect-[4/3] w-full overflow-hidden bg-gray-100 relative">
+                                                                                        <img
+                                                                                            src={item.image}
+                                                                                            alt={item.name}
+                                                                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                                                            loading="lazy"
+                                                                                        />
+                                                                                        {isSelected && (
+                                                                                            <div className="absolute inset-0 bg-[var(--primary)]/20 flex items-center justify-center">
+                                                                                                <div className="bg-white text-[var(--primary)] rounded-full p-1 shadow-sm">
+                                                                                                    <Check className="w-4 h-4" />
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        )}
+                                                                                    </div>
+                                                                                    <div className="p-2">
+                                                                                        <h4 className={cn(
+                                                                                            "text-xs font-semibold line-clamp-1",
+                                                                                            isSelected ? "text-[var(--primary)]" : "text-gray-700"
+                                                                                        )}>
+                                                                                            {item.name}
+                                                                                        </h4>
+                                                                                    </div>
+                                                                                </div>
+                                                                            );
+                                                                        });
+                                                                    })()}
+                                                                </div>
+                                                            </ScrollArea>
+
+                                                            <div className="mt-4 pt-4 border-t border-gray-200 flex justify-end">
+                                                                <Button
+                                                                    onClick={() => handleStaticItemsAdd(mealType)}
+                                                                    disabled={mealRecipesData?.isGenerating || !(staticSelections[mealType] && staticSelections[mealType]!.length > 0)}
+                                                                    className="bg-indigo-600 text-white"
+                                                                    size="sm"
+                                                                >
+                                                                    {mealRecipesData?.isGenerating ? (
+                                                                        <>
+                                                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                                            Processing...
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            <CheckCircle className="w-4 h-4 mr-2" />
+                                                                            Fetch Selected Items ({staticSelections[mealType]?.length || 0})
+                                                                        </>
+                                                                    )}
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
 
                                                 {/* Recipes Grid */}
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

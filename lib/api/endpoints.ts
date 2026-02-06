@@ -127,6 +127,11 @@ export const API_ENDPOINTS = {
     LOG_CONSUMPTION: (eventId: string) => `/events/${eventId}/member-logs`,
     // Analytics
     GET_ANALYTICS: (eventId: string) => `/events/${eventId}/analytics`,
+    // Event Items (Add-ons)
+    GET_ITEMS: (eventId: string) => `/events/${eventId}/items`,
+    ADD_ITEM: (eventId: string) => `/events/${eventId}/items`,
+    UPDATE_ITEM: (eventId: string, itemId: string) => `/events/${eventId}/items/${itemId}`,
+    DELETE_ITEM: (eventId: string, itemId: string) => `/events/${eventId}/items/${itemId}`,
   },
 };
 
