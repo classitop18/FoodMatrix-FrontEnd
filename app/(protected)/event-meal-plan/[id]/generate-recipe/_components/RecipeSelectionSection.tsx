@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Sparkles, ArrowLeft, Loader2, CheckCircle, Search, Clock, DollarSign, ChefHat, Wallet, Eye, CheckCircle2, AlertCircle, Check, Trash2 } from "lucide-react";
+import { Sparkles, ArrowLeft, Loader2, CheckCircle, Search, ChefHat, Wallet, CheckCircle2, AlertCircle, Check, Trash2 } from "lucide-react";
+import { getUnsplashImage } from "@/app/actions/unsplash";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -19,8 +20,126 @@ import { STATIC_ITEMS } from "../../_components/StaticItems";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { sweets, drinks } from "@/data/add-items";
+import { RecipeCard } from "@/components/common/RecipeCard";
 import { indianSnacks } from "@/data/indian-snacks";
 
+
+
+interface StaticItemsGridProps {
+    mealType: MealType;
+    searchInputs: Record<MealType, string>;
+    staticSelections: Record<MealType, string[]>;
+    handleStaticItemToggle: (mealType: MealType, item: string) => void;
+}
+
+const StaticItemsGrid: React.FC<StaticItemsGridProps> = ({
+    mealType,
+    searchInputs,
+    staticSelections,
+    handleStaticItemToggle
+}) => {
+    const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80";
+
+    const itemsDetails = React.useMemo(() => {
+        let details: any[] = [];
+        if (mealType === 'snacks' || mealType === 'dessert') {
+            details = [...indianSnacks.filter(i => i.category === 'snacks'), ...sweets];
+        } else if (mealType === 'beverages') {
+            details = [...indianSnacks.filter(i => i.category === 'beverages'), ...drinks];
+        } else {
+            const simpleItems = STATIC_ITEMS[mealType] || [];
+            details = simpleItems.map((name: string) => ({
+                name,
+                image: FALLBACK_IMAGE,
+                unit: "serving"
+            }));
+        }
+        return details;
+    }, [mealType]);
+
+    const [dynamicItemImages, setDynamicItemImages] = useState<Record<string, string>>({});
+    const fetchedItemImagesRef = React.useRef<Set<string>>(new Set());
+
+    React.useEffect(() => {
+        const fetchImages = async () => {
+            const itemsToFetch = itemsDetails.filter((i: any) =>
+                (!i.image || i.image === FALLBACK_IMAGE) &&
+                !fetchedItemImagesRef.current.has(i.name)
+            );
+
+            for (const i of itemsToFetch) {
+                fetchedItemImagesRef.current.add(i.name);
+                if (dynamicItemImages[i.name]) continue;
+
+                getUnsplashImage(i.name).then(url => {
+                    if (url) {
+                        setDynamicItemImages(prev => ({ ...prev, [i.name]: url }));
+                    }
+                });
+            }
+        };
+        fetchImages();
+    }, [itemsDetails, dynamicItemImages]);
+
+    const searchTerm = (searchInputs[mealType] || '').toLowerCase();
+    const filteredItems = itemsDetails.filter((item: any) =>
+        item.name.toLowerCase().includes(searchTerm)
+    );
+
+    if (filteredItems.length === 0) {
+        return (
+            <div className="col-span-full py-8 text-center text-gray-500 text-sm italic">
+                No items found.
+            </div>
+        );
+    }
+
+    return (
+        <>
+            {filteredItems.map((item: any, idx: number) => {
+                const isSelected = (staticSelections[mealType] || []).includes(item.name);
+                const displayImage = dynamicItemImages[item.name] || item.image || FALLBACK_IMAGE;
+
+                return (
+                    <div
+                        key={`${idx}-${item.name}`}
+                        className={cn(
+                            "group relative rounded-lg border overflow-hidden cursor-pointer transition-all hover:shadow-md bg-white",
+                            isSelected
+                                ? "border-[var(--primary)] ring-1 ring-[var(--primary)]"
+                                : "border-gray-200 hover:border-gray-300"
+                        )}
+                        onClick={() => handleStaticItemToggle(mealType, item.name)}
+                    >
+                        <div className="aspect-[4/3] w-full overflow-hidden bg-gray-100 relative">
+                            <img
+                                src={displayImage}
+                                alt={item.name}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                loading="lazy"
+                            />
+                            {isSelected && (
+                                <div className="absolute inset-0 bg-[var(--primary)]/20 flex items-center justify-center">
+                                    <div className="bg-white text-[var(--primary)] rounded-full p-1 shadow-sm">
+                                        <Check className="w-4 h-4" />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                        <div className="p-2">
+                            <h4 className={cn(
+                                "text-xs font-semibold line-clamp-1",
+                                isSelected ? "text-[var(--primary)]" : "text-gray-700"
+                            )}>
+                                {item.name}
+                            </h4>
+                        </div>
+                    </div>
+                );
+            })}
+        </>
+    );
+};
 
 interface RecipeSelectionSectionProps {
     globalCuisine: string;
@@ -37,6 +156,7 @@ interface RecipeSelectionSectionProps {
     isSavingAll: boolean;
     getSelectedCount: () => number;
     actionLabel?: string;
+    onAddEventItem?: (item: { name: string, quantity: number, unit: string, category: string }) => Promise<void>;
 }
 
 export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
@@ -53,7 +173,8 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
     handleSaveAllRecipes,
     isSavingAll,
     getSelectedCount,
-    actionLabel
+    actionLabel,
+    onAddEventItem
 }) => {
     const [viewRecipe, setViewRecipe] = useState<any | null>(null);
     const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
@@ -82,9 +203,6 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
 
                 // Clear pending state
                 setPendingAutoSelect(null);
-
-                // Optional: Clear static selections to reset the picker? 
-                // No, let's keep them so user sees what they checked.
             }
         }
     }, [mealRecipes, pendingAutoSelect, handleSelectRecipeForMeal]);
@@ -100,10 +218,38 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
     };
 
     const handleStaticItemsAdd = async (mealType: MealType) => {
-        const items = staticSelections[mealType];
-        if (items && items.length > 0) {
+        const selectedNames = staticSelections[mealType];
+        if (!selectedNames || selectedNames.length === 0) return;
+
+        // If parent provided a direct add handler, use it to preserve metadata
+        if (onAddEventItem) {
+            // Re-construct the full items list to find metadata
+            let allItems: any[] = [];
+            if (mealType === 'snacks' || mealType === 'dessert') {
+                allItems = [...indianSnacks.filter(i => i.category === 'snacks'), ...sweets];
+            } else if (mealType === 'beverages') {
+                allItems = [...indianSnacks.filter(i => i.category === 'beverages'), ...drinks];
+            } else {
+                allItems = (STATIC_ITEMS[mealType] || []).map(name => ({ name, unit: 'serving' }));
+            }
+
+            for (const name of selectedNames) {
+                const itemData = allItems.find(i => i.name === name);
+                await onAddEventItem({
+                    name: name,
+                    quantity: 1, // Default to 1
+                    unit: itemData?.unit || 'serving',
+                    category: mealType
+                });
+            }
+
+            // Clear selections after adding
+            setStaticSelections(prev => ({ ...prev, [mealType]: [] }));
+
+        } else {
+            // Fallback to old string-based method
             setPendingAutoSelect(mealType);
-            await handleGenerateRecipesForMeal(mealType, items.join(", "));
+            await handleGenerateRecipesForMeal(mealType, selectedNames.join(", "));
         }
     };
 
@@ -312,77 +458,12 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
 
                                                     <ScrollArea className="h-[400px] pr-4">
                                                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-                                                            {(() => {
-                                                                // Determine items based on mealType
-                                                                let itemsDetails = [];
-                                                                if (mealType === 'snacks' || mealType === 'dessert') {
-                                                                    itemsDetails = [...indianSnacks.filter(i => i.category === 'snacks'), ...sweets];
-                                                                } else if (mealType === 'beverages') {
-                                                                    itemsDetails = [...indianSnacks.filter(i => i.category === 'beverages'), ...drinks];
-                                                                } else {
-                                                                    // Fallback to STATIC_ITEMS simple strings mapped to objects if not found above
-                                                                    const simpleItems = STATIC_ITEMS[mealType] || [];
-                                                                    itemsDetails = simpleItems.map(name => ({
-                                                                        name,
-                                                                        image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80", // Fallback
-                                                                        unit: "serving"
-                                                                    }));
-                                                                }
-
-                                                                // Filter by search
-                                                                const searchTerm = (searchInputs[mealType] || '').toLowerCase();
-                                                                const filteredItems = itemsDetails.filter(item =>
-                                                                    item.name.toLowerCase().includes(searchTerm)
-                                                                );
-
-                                                                if (filteredItems.length === 0) {
-                                                                    return (
-                                                                        <div className="col-span-full py-8 text-center text-gray-500 text-sm italic">
-                                                                            No items found.
-                                                                        </div>
-                                                                    );
-                                                                }
-
-                                                                return filteredItems.map((item, idx) => {
-                                                                    const isSelected = (staticSelections[mealType] || []).includes(item.name);
-                                                                    return (
-                                                                        <div
-                                                                            key={`${idx}-${item.name}`}
-                                                                            className={cn(
-                                                                                "group relative rounded-lg border overflow-hidden cursor-pointer transition-all hover:shadow-md bg-white",
-                                                                                isSelected
-                                                                                    ? "border-[var(--primary)] ring-1 ring-[var(--primary)]"
-                                                                                    : "border-gray-200 hover:border-gray-300"
-                                                                            )}
-                                                                            onClick={() => handleStaticItemToggle(mealType, item.name)}
-                                                                        >
-                                                                            <div className="aspect-[4/3] w-full overflow-hidden bg-gray-100 relative">
-                                                                                <img
-                                                                                    src={item.image}
-                                                                                    alt={item.name}
-                                                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                                                    loading="lazy"
-                                                                                />
-                                                                                {isSelected && (
-                                                                                    <div className="absolute inset-0 bg-[var(--primary)]/20 flex items-center justify-center">
-                                                                                        <div className="bg-white text-[var(--primary)] rounded-full p-1 shadow-sm">
-                                                                                            <Check className="w-4 h-4" />
-                                                                                        </div>
-                                                                                    </div>
-                                                                                )}
-                                                                            </div>
-                                                                            <div className="p-2">
-                                                                                <h4 className={cn(
-                                                                                    "text-xs font-semibold line-clamp-1",
-                                                                                    isSelected ? "text-[var(--primary)]" : "text-gray-700"
-                                                                                )}>
-                                                                                    {item.name}
-                                                                                </h4>
-                                                                            </div>
-                                                                        </div>
-                                                                    );
-                                                                });
-                                                            })()}
+                                                            <StaticItemsGrid
+                                                                mealType={mealType}
+                                                                searchInputs={searchInputs}
+                                                                staticSelections={staticSelections}
+                                                                handleStaticItemToggle={handleStaticItemToggle}
+                                                            />
                                                         </div>
                                                     </ScrollArea>
 
@@ -426,70 +507,34 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
                                                     recipes.map((recipe) => {
                                                         const isSelected = selectedIds.includes(recipe.id);
 
+                                                        // Adapt recipe for RecipeCard component
+                                                        const recipeForCard = {
+                                                            ...recipe,
+                                                            // Ensure numeric fields for RecipeCard
+                                                            totalTimeMinutes: recipe.totalTimeMinutes || parseInt(recipe.cookingTime) || 30,
+                                                            calories: recipe.calories || recipe.nutrition?.calories || 0,
+                                                            estimatedCostPerServing: recipe.costAnalysis?.costPerServing || (recipe.price ? parseFloat(recipe.price.replace(/[^0-9.]/g, '')) : 0),
+                                                            averageRating: recipe.averageRating || 0,
+                                                            mealType: recipe.mealType || mealType, // Fallback to current meal type
+                                                            cuisineType: recipe.cuisineType || "General",
+                                                            isFavorite: false
+                                                        };
+
                                                         return (
                                                             <div
                                                                 key={recipe.id}
-                                                                className={cn(
-                                                                    "relative rounded-xl border-2 overflow-hidden transition-all cursor-pointer group hover:shadow-lg",
-                                                                    isSelected
-                                                                        ? "border-[var(--primary)] bg-[var(--primary-bg)] shadow-md"
-                                                                        : "border-gray-200 bg-white hover:border-gray-300"
-                                                                )}
+                                                                className="h-full" // Use simple wrapper
                                                                 onClick={() => handleSelectRecipeForMeal(mealType, recipe.id)}
                                                             >
-                                                                {/* Selection Indicator */}
-                                                                <div className={cn(
-                                                                    "absolute top-3 left-3 z-10 w-6 h-6 rounded-full flex items-center justify-center transition-all",
-                                                                    isSelected
-                                                                        ? "bg-[var(--primary)] text-white"
-                                                                        : "bg-white/90 border-2 border-gray-300"
-                                                                )}>
-                                                                    {isSelected && <CheckCircle2 className="w-4 h-4" />}
-                                                                </div>
-
-                                                                {/* Recipe Image */}
-                                                                <div className="h-40 overflow-hidden relative">
-                                                                    <img
-                                                                        src={getRecipeImageUrl(recipe.imageUrl)}
-                                                                        alt={recipe.name || recipe.title}
-                                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                                                    />
-                                                                    {recipe.isAIGenerated && (
-                                                                        <Badge className="absolute top-3 right-3 bg-[var(--primary)] text-white text-[10px]">
-                                                                            <Sparkles className="w-3 h-3 mr-1" />
-                                                                            AI
-                                                                        </Badge>
-                                                                    )}
-                                                                    <Button
-                                                                        variant="secondary"
-                                                                        size="sm"
-                                                                        className="absolute bottom-3 right-3 bg-white/90 hover:bg-white text-[#313131] font-semibold text-xs shadow-md"
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            handleViewDetails(recipe);
-                                                                        }}
-                                                                    >
-                                                                        <Eye className="w-3.5 h-3.5 mr-1" />
-                                                                        Details
-                                                                    </Button>
-                                                                </div>
-
-                                                                {/* Recipe Info */}
-                                                                <div className="p-4">
-                                                                    <h4 className="font-bold text-[#313131] text-sm mb-2 line-clamp-2">
-                                                                        {recipe.name || recipe.title}
-                                                                    </h4>
-                                                                    <div className="flex items-center gap-3 text-xs text-gray-500">
-                                                                        <span className="flex items-center gap-1">
-                                                                            <Clock className="w-3.5 h-3.5" />
-                                                                            {recipe.cookingTime || recipe.totalTimeMinutes ? `${recipe.totalTimeMinutes} min` : 'N/A'}
-                                                                        </span>
-                                                                        <span className="flex items-center gap-1">
-                                                                            <DollarSign className="w-3.5 h-3.5" />
-                                                                            {recipe.price || (recipe.costAnalysis?.costPerServing ? `$${recipe.costAnalysis.costPerServing.toFixed(2)}` : 'N/A')}
-                                                                        </span>
-                                                                    </div>
-                                                                </div>
+                                                                <RecipeCard
+                                                                    recipe={recipeForCard}
+                                                                    onViewDetails={() => handleViewDetails(recipe)}
+                                                                    className="cursor-pointer" // Add cursor pointer to card
+                                                                    selectionMode={true}
+                                                                    selected={isSelected}
+                                                                    isCustom={recipe.isCustomSearch}
+                                                                    showAiBadge={recipe.isAIGenerated}
+                                                                />
                                                             </div>
                                                         );
                                                     })

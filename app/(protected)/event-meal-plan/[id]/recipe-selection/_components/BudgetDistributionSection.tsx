@@ -43,6 +43,8 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
     const remainingBudget = totalBudget - totalAllocated;
     const allocationPercentage = Math.round((totalAllocated / totalBudget) * 100);
 
+    console.log({ mealBudgets })
+
     return (
         <motion.div
             initial={{ opacity: 0, x: 20 }}

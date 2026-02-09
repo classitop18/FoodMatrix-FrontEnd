@@ -48,10 +48,6 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
     canContinue
 }) => {
 
-
-
-
-
     const totalAllocated = mealBudgets.reduce((sum, mb) => sum + mb.budget, 0);
     const totalPercentage = mealBudgets.reduce((sum, mb) => sum + mb.percentage, 0);
 
@@ -87,8 +83,6 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
 
     const validationMessage = getValidationMessage();
     const canProceed = canContinue && isBudgetDistributed;
-
-    console.log({ mealBudgets }, "mealBudgets")
 
     return (
         <motion.div
@@ -182,18 +176,12 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                         </div>
 
                         {/* Total Budget Input */}
-                        {/* <div className="bg-[var(--primary-bg)] p-6 rounded-xl border border-[var(--primary-light)]/20 shadow-sm relative overflow-hidden group"> */}
-                        {/* <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                                <DollarSign className="w-16 h-16 text-[var(--primary)]" />
-                            </div> */}
                         <div className="flex items-center gap-2 mb-2">
                             <Label htmlFor="total-budget" className="text-sm font-bold text-[#313131]">
                                 Total Event Budget ($) {totalBudget}
                             </Label>
-                            {/* <span className="text-red-500 text-sm">*</span> */}
                         </div>
                         <p className="text-xs text-gray-500 mt-2">This is set from your event configuration</p>
-                        {/* </div> */}
 
                         {/* AI Distribution Button */}
                         {budgetStrategy === "ai" && (
@@ -261,8 +249,8 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                                 </div>
                                 <div className="space-y-3">
                                     {mealBudgets.map((mb) => {
-                                        const config = MEAL_TYPE_CONFIG[mb.mealType];
-                                        const minPercentage = MIN_BUDGET_PERCENTAGES[mb.mealType];
+                                        const config = MEAL_TYPE_CONFIG[mb.mealType] || { label: mb.mealType, icon: Info, color: "text-gray-500", defaultTime: "" };
+                                        const minPercentage = MIN_BUDGET_PERCENTAGES[mb.mealType] || 0;
                                         const hasError = validationErrors[mb.mealType];
 
                                         return (
@@ -281,7 +269,7 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                                                             <config.icon className="w-5 h-5" />
                                                         </div>
                                                         <div>
-                                                            <span className="text-sm font-bold text-[#313131] block">{config.label}</span>
+                                                            <span className="text-sm font-bold text-[#313131] block capitalize">{config.label}</span>
                                                             <span className="text-xs text-gray-400">Min {minPercentage}%</span>
                                                         </div>
                                                     </div>
@@ -375,7 +363,7 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                                 </div>
                                 <div className="space-y-3">
                                     {mealBudgets.map((mb) => {
-                                        const config = MEAL_TYPE_CONFIG[mb.mealType];
+                                        const config = MEAL_TYPE_CONFIG[mb.mealType] || { label: mb.mealType, icon: Info, color: "text-gray-500", defaultTime: "" };
                                         return (
                                             <div key={mb.mealType} className="p-4 bg-[var(--primary-bg)] rounded-xl border border-[var(--primary-light)]/20">
                                                 <div className="flex items-center gap-4">
@@ -383,7 +371,7 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                                                         <div className={`p-2 rounded-lg bg-white shadow-sm border border-gray-100 ${config.color}`}>
                                                             <config.icon className="w-5 h-5" />
                                                         </div>
-                                                        <span className="text-sm font-bold text-[#313131]">{config.label}</span>
+                                                        <span className="text-sm font-bold text-[#313131] capitalize">{config.label}</span>
                                                     </div>
                                                     <div className="flex-1">
                                                         <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">

@@ -11,14 +11,6 @@ export const MEAL_TYPE_CONFIG: Record<MealType, MealTypeConfig> = {
         description: "Start your day with a nutritious morning meal",
         budgetWeight: 15
     },
-    brunch: {
-        icon: Coffee,
-        label: "Brunch",
-        color: "text-orange-600",
-        defaultTime: "10:30",
-        description: "Late morning meal combining breakfast and lunch",
-        budgetWeight: 20
-    },
     lunch: {
         icon: Utensils,
         label: "Lunch",
@@ -63,7 +55,6 @@ export const MEAL_TYPE_CONFIG: Record<MealType, MealTypeConfig> = {
 
 export const DEFAULT_BUDGET_WEIGHTS: Record<MealType, number> = {
     breakfast: 15,
-    brunch: 20,
     lunch: 25,
     snacks: 10,
     dinner: 35,

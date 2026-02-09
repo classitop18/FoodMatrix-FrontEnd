@@ -18,7 +18,7 @@ export type BudgetType = "separate" | "weekly";
 export type EventStatus = "draft" | "planned" | "in_progress" | "completed" | "cancelled";
 
 // Meal Types
-export type MealType = "breakfast" | "brunch" | "lunch" | "snacks" | "dinner" | "dessert" | "beverages";
+export type MealType = "breakfast" | "lunch" | "snacks" | "dinner" | "dessert" | "beverages";
 
 // Meal Status
 export type MealStatus = "planned" | "prepared" | "served" | "cancelled";

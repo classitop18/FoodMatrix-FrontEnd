@@ -85,12 +85,5 @@ export const STATIC_ITEMS: Partial<Record<MealType, string[]>> = {
         "Soup",
         "Salad",
         "Papad"
-    ],
-    brunch: [
-        "Pancakes",
-        "Waffles",
-        "Eggs Benedict",
-        "Fruit Platter",
-        "Juice"
     ]
 };

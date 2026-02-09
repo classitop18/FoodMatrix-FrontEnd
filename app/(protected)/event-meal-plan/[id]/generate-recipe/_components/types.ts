@@ -44,7 +44,6 @@ export interface AIBudgetSuggestionResponse {
 // Minimum percentage constraints per meal type
 export const MIN_BUDGET_PERCENTAGES: Record<MealType, number> = {
     breakfast: 5,
-    brunch: 8,
     lunch: 10,
     snacks: 3,
     dinner: 15,

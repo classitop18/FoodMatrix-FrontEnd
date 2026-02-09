@@ -90,13 +90,6 @@ export const MEAL_TYPE_OPTIONS: MealTypeOption[] = [
         description: "Start the day right",
     },
     {
-        value: "brunch",
-        label: "Brunch",
-        icon: Sun,
-        color: "text-orange-500",
-        description: "Late morning feast",
-    },
-    {
         value: "lunch",
         label: "Lunch",
         icon: Sandwich,

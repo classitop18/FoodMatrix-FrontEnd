@@ -98,9 +98,10 @@ export const EventService = {
     /**
      * Get AI-suggested budget allocation for event meals
      */
-    suggestBudget: async (eventId: string): Promise<BudgetSuggestionResponse> => {
-        const response = await apiClient.get(
-            API_ENDPOINTS.EVENT.SUGGEST_BUDGET(eventId)
+    suggestBudget: async (eventId: string, mealTypes?: string[]): Promise<BudgetSuggestionResponse> => {
+        const response = await apiClient.post(
+            API_ENDPOINTS.EVENT.SUGGEST_BUDGET(eventId),
+            { mealTypes }
         );
         return response.data.data;
     },

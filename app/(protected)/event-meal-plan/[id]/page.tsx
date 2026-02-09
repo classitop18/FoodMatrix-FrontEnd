@@ -2,7 +2,6 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { motion } from "framer-motion";
 import Link from "next/link";
 import {
     ArrowLeft,
@@ -19,14 +18,9 @@ import {
     AlertCircle,
     Trash2,
     Edit,
-    PartyPopper,
     ListChecks,
     Utensils,
     ChevronRight,
-    Search,
-    Filter,
-    X,
-    Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -38,16 +32,6 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
-import { Input } from "@/components/ui/input";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog";
 
 // Hooks
 import { useEvent, useEventMeals } from "@/services/event/event.query";
@@ -59,15 +43,14 @@ import {
     useGenerateShoppingList,
     useDeleteEventMeal,
     useRemoveRecipeFromMeal,
-    useAddRecipeToMeal,
     useDeleteEventItem,
 } from "@/services/event/event.mutation";
 import { QuickItemSelector } from "./_components/QuickItemSelector";
+import { MealSection } from "./_components/MealSection";
 
 // Constants
 import {
     getOccasionOption,
-    getMealTypeOption,
     formatEventDate,
     formatEventTime,
     formatCurrency,
@@ -75,10 +58,11 @@ import {
 import { cn } from "@/lib/utils";
 
 // Types
-import { EventResponse, EventMealResponse, MealType, EventRecipeResponse, EventItemResponse } from "@/services/event/event.types";
+import { EventRecipeResponse, MealType } from "@/services/event/event.types";
 import { Recipe } from "@/services/recipe";
-import { RecipeCard } from "../../recipes/components/recipe-card";
-import { RecipeDetailsDialog } from "../../recipes/components/recipe-details-dialog";
+import { RecipeDetailsDialog } from "@/components/common/RecipeDetailsDialog";
+import ThemeButton from "@/components/common/buttons/theme-button";
+
 
 // Helper to adapt EventRecipeResponse to Recipe
 const adaptEventRecipeToRecipe = (eventRecipe: EventRecipeResponse): Recipe => {
@@ -126,7 +110,7 @@ const adaptEventRecipeToRecipe = (eventRecipe: EventRecipeResponse): Recipe => {
         estimatedCostPerServing: r.estimatedCostPerServing || 0,
         calories: r.calories || 0,
         isPublic: true,
-        createdAt: new Date().toISOString(), // Fallback as event recipes might not have this
+        createdAt: new Date().toISOString(),
         ingredients: (r as any).ingredients || [],
         instructions: (r as any).instructions || [],
         nutrition: (r as any).nutrition || null,
@@ -134,7 +118,6 @@ const adaptEventRecipeToRecipe = (eventRecipe: EventRecipeResponse): Recipe => {
         timesCooked: 0,
         totalRatings: 0,
         isFavorite: false, // Default
-        // Add other fields as necessary from r if available
         ...((r as any).nutrition ? { nutrition: (r as any).nutrition } : {}),
         ...((r as any).instructions ? { instructions: (r as any).instructions } : {}),
         ...((r as any).ingredients ? { ingredients: (r as any).ingredients } : {}),
@@ -158,7 +141,6 @@ export default function EventDetailPage() {
     const removeRecipeFromMealMutation = useRemoveRecipeFromMeal();
     const deleteEventItemMutation = useDeleteEventItem();
 
-    const [isDeleting, setIsDeleting] = useState(false);
     const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
     const [selectedRecipeId, setSelectedRecipeId] = useState<string | null>(null);
 
@@ -186,7 +168,7 @@ export default function EventDetailPage() {
     if (error || !event) {
         return (
             <div className="flex items-center justify-center min-h-[calc(100vh-64px)] bg-gray-50 p-6">
-                <div className="max-w-md w-full bg-white rounded-xl  border border-gray-200 p-8 text-center">
+                <div className="max-w-md w-full bg-white rounded-xl border border-gray-200 p-8 text-center">
                     <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
                         <AlertCircle className="w-6 h-6 text-red-600" />
                     </div>
@@ -206,19 +188,17 @@ export default function EventDetailPage() {
     }
 
     const occasionOption = getOccasionOption(event.occasionType);
-    const OccasionIcon = occasionOption?.icon || Sparkles;
 
     const handleDelete = async () => {
         if (!confirm("Are you sure you want to delete this event? This action cannot be undone.")) {
             return;
         }
 
-        setIsDeleting(true);
         try {
             await deleteEventMutation.mutateAsync(eventId);
             router.push("/event-meal-plan/list");
         } catch (error) {
-            setIsDeleting(false);
+            // Error handling
         }
     };
 
@@ -240,33 +220,30 @@ export default function EventDetailPage() {
         }
     };
 
-    const handleDeleteMeal = async (mealId: string, e: React.MouseEvent) => {
-        e.stopPropagation();
+    const handleDeleteMeal = async (mealId: string) => {
         if (!confirm("Remove this meal time from the event?")) return;
         try {
             await deleteEventMealMutation.mutateAsync({ eventId, mealId });
         } catch (error) {
-            // Error handled by mutation
+            toast.error("Failed to delete meal");
         }
     };
 
-    const handleRemoveRecipe = async (mealId: string, recipeId: string, e: React.MouseEvent) => {
-        e.stopPropagation();
+    const handleRemoveRecipe = async (mealId: string, recipeId: string) => {
         if (!confirm("Remove this recipe from the meal?")) return;
         try {
             await removeRecipeFromMealMutation.mutateAsync({ eventId, mealId, recipeId });
         } catch (error) {
-            // Error handled by mutation
+            toast.error("Failed to remove recipe");
         }
     };
 
-    const handleRemoveItem = async (itemId: string, e: React.MouseEvent) => {
-        e.stopPropagation();
+    const handleRemoveItem = async (itemId: string) => {
         if (!confirm("Remove this item from the event?")) return;
         try {
             await deleteEventItemMutation.mutateAsync({ eventId, itemId });
         } catch (error) {
-            // Error handled by mutation
+            toast.error("Failed to remove item");
         }
     };
 
@@ -340,7 +317,6 @@ export default function EventDetailPage() {
 
             <div className="max-w-8xl mx-auto px-4 md:px-6 relative z-10 py-8">
 
-
                 {/* Event Header Section */}
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-6">
                     <div className="flex-1">
@@ -383,7 +359,6 @@ export default function EventDetailPage() {
 
                 <div className="rounded-2xl overflow-hidden bg-white lg:p-6 p-4">
 
-
                     {/* KPI Grid */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                         {[
@@ -410,204 +385,64 @@ export default function EventDetailPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
                         {/* Left Column: Menu Schedule (2/3 width) */}
-                        <div className="lg:col-span-2 space-y-6">
-                            <div className="flex items-center justify-between">
-                                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                        <div className="lg:col-span-2 space-y-8">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                                     <Utensils className="w-5 h-5 text-gray-400" />
                                     Event Menu
                                 </h2>
                                 {meals && meals.length > 0 && (
-                                    <Button variant="outline" size="sm" onClick={() => router.push(`/event-meal-plan/${eventId}/generate-recipe`)}>
-                                        Manage Menu
-                                    </Button>
+
+                                    <ThemeButton
+                                        label="Manage Meals"
+                                        onClick={() => router.push(`/event-meal-plan/${eventId}/generate-recipe`)}
+                                        className="rounded-xl"
+                                    />
+
                                 )}
+
+
                             </div>
 
                             {meals && meals.length > 0 ? (
-                                <div className="space-y-4">
-                                    {meals.map((meal: EventMealResponse) => {
-                                        const mealOption = getMealTypeOption(meal.mealType as MealType);
-                                        const MealIcon = mealOption?.icon || ChefHat;
-                                        const extraItems = event.extraItems?.filter(i => i.category === meal.mealType) || [];
-
-                                        return (
-                                            <div
-                                                key={meal.id}
-                                                className="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-indigo-300 transition-colors cursor-pointer"
-                                                onClick={() => router.push(`/event-meal-plan/${eventId}/meals/${meal.id}`)}
-                                            >
-                                                <div className="p-5 flex flex-col sm:flex-row gap-4">
-                                                    <div className="flex-shrink-0">
-                                                        <div className={cn("w-12 h-12 rounded-lg flex items-center justify-center", mealOption?.color ? `bg-${mealOption.color.split('-')[1]}-50 text-${mealOption.color.split('-')[1]}-600` : "bg-gray-100 text-gray-600")}>
-                                                            <MealIcon className="w-6 h-6" />
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <div className="flex items-start justify-between mb-2">
-                                                            <div>
-                                                                <h3 className="text-base font-bold text-gray-900 capitalize">{mealOption?.label || meal.mealType}</h3>
-                                                                {meal.scheduledTime && (
-                                                                    <p className="text-sm text-gray-500 font-medium flex items-center gap-1.5 mt-0.5">
-                                                                        <Clock className="w-3.5 h-3.5" />
-                                                                        {formatEventTime(meal.scheduledTime)}
-                                                                    </p>
-                                                                )}
-                                                            </div>
-                                                            <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-[var(--primary)] transition-colors" />
-                                                        </div>
-
-                                                        {(meal.recipes && meal.recipes.length > 0) || (extraItems && extraItems.length > 0) ? (
-                                                            ['breakfast', 'lunch', 'dinner', 'brunch'].includes(meal.mealType) ? (
-                                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 mt-4">
-                                                                    {meal.recipes?.map((eventRecipe: EventRecipeResponse) => {
-                                                                        const recipe = adaptEventRecipeToRecipe(eventRecipe);
-                                                                        return (
-                                                                            <div key={eventRecipe.id} className="h-full relative group/wrapper">
-                                                                                <RecipeCard
-                                                                                    recipe={recipe}
-                                                                                    onViewDetails={(r) => {
-                                                                                        setSelectedRecipe(r);
-                                                                                        setSelectedRecipeId(r.id);
-                                                                                        setIsDialogOpen(true);
-                                                                                    }}
-                                                                                />
-                                                                                <Button
-                                                                                    variant="destructive"
-                                                                                    size="icon"
-                                                                                    className="absolute -top-2 -right-2 h-8 w-8 rounded-full shadow-lg opacity-0 group-hover/wrapper:opacity-100 transition-opacity z-20"
-                                                                                    onClick={(e) => handleRemoveRecipe(meal.id, eventRecipe.recipeId || "", e)}
-                                                                                >
-                                                                                    <Trash2 className="w-4 h-4" />
-                                                                                </Button>
-                                                                            </div>
-                                                                        );
-                                                                    })}
-                                                                    <div
-                                                                        className="h-full min-h-[300px] border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center p-6 text-center hover:border-indigo-300 hover:bg-indigo-50/30 transition-all cursor-pointer group/add"
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            router.push(`/event-meal-plan/${eventId}/recipe-selection`);
-                                                                        }}
-                                                                    >
-                                                                        <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mb-3 group-hover/add:scale-110 transition-transform shadow-sm">
-                                                                            <Plus className="w-6 h-6" />
-                                                                        </div>
-                                                                        <h4 className="font-semibold text-gray-900">Add Recipes</h4>
-                                                                        <p className="text-xs text-gray-500 mt-1">
-                                                                            Generate or select more
-                                                                        </p>
-                                                                    </div>
-                                                                </div>
-                                                            ) : (
-
-
-                                                                /* Compact Grid for Snacks & Beverages */
-                                                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 mt-4">
-                                                                    {extraItems.map((item: EventItemResponse) => {
-                                                                        return (
-                                                                            <div key={item.id} className="relative group/compact-card bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-all flex flex-col h-full">
-                                                                                {/* Image Area - Placeholder for Items */}
-                                                                                <div className="h-24 w-full bg-gray-100 relative overflow-hidden flex items-center justify-center">
-                                                                                    <img
-                                                                                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&background=random`}
-                                                                                        alt={item.name}
-                                                                                        className="w-full h-full object-cover group-hover/compact-card:scale-105 transition-transform duration-300"
-                                                                                    />
-                                                                                    {/* Overlay Actions */}
-                                                                                    <div className="absolute inset-x-0 bottom-0 p-1 bg-gradient-to-t from-black/60 to-transparent flex justify-end opacity-0 group-hover/compact-card:opacity-100 transition-opacity">
-                                                                                        <Button
-                                                                                            variant="destructive"
-                                                                                            size="icon"
-                                                                                            className="h-6 w-6 rounded-full"
-                                                                                            onClick={(e) => handleRemoveItem(item.id, e)}
-                                                                                        >
-                                                                                            <Trash2 className="w-3 h-3" />
-                                                                                        </Button>
-                                                                                    </div>
-                                                                                </div>
-
-                                                                                {/* Content */}
-                                                                                <div className="p-2 flex-1 flex flex-col">
-                                                                                    <h4 className="text-xs font-semibold text-gray-900 line-clamp-2 mb-1 leading-tight min-h-[2.5em]" title={item.name}>
-                                                                                        {item.name}
-                                                                                    </h4>
-                                                                                    <p className="text-[10px] text-gray-500 mb-2">
-                                                                                        {item.quantity} {item.unit}
-                                                                                    </p>
-                                                                                </div>
-                                                                            </div>
-                                                                        );
-                                                                    })}
-
-                                                                    {/* Compact Add More */}
-                                                                    <div
-                                                                        className="h-full min-h-[140px] border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center p-2 text-center hover:border-indigo-300 hover:bg-indigo-50/30 transition-all cursor-pointer group/add-compact"
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            setQuickSelectMealId(meal.id);
-                                                                            setQuickSelectMealType(meal.mealType as MealType);
-                                                                            setIsQuickSelectOpen(true);
-                                                                        }}
-                                                                    >
-                                                                        <div className="w-8 h-8 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mb-2 group-hover/add-compact:scale-110 transition-transform">
-                                                                            <Plus className="w-4 h-4" />
-                                                                        </div>
-                                                                        <span className="text-xs font-medium text-gray-600 group-hover/add-compact:text-indigo-600">Add Item</span>
-                                                                    </div>
-                                                                </div>
-                                                            )
-                                                        ) : (
-                                                            <div className="mt-4 p-8 bg-gray-50/50 rounded-xl border border-dashed border-gray-200 flex flex-col items-center justify-center text-center">
-                                                                <div className="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center mb-3">
-                                                                    <Sparkles className="w-6 h-6 text-indigo-600" />
-                                                                </div>
-                                                                <h4 className="text-sm font-semibold text-gray-900 mb-1">No recipes yet</h4>
-                                                                <p className="text-xs text-gray-500 mb-4 max-w-[250px]">
-                                                                    {['breakfast', 'lunch', 'dinner'].includes(meal.mealType)
-                                                                        ? 'Start building your menu by generating recipes with AI.'
-                                                                        : 'Add items from our curated list.'}
-                                                                </p>
-                                                                <Button
-                                                                    size="sm"
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        if (['breakfast', 'lunch', 'dinner'].includes(meal.mealType)) {
-                                                                            router.push(`/event-meal-plan/${eventId}/recipe-selection`);
-                                                                        } else {
-                                                                            setQuickSelectMealId(meal.id);
-                                                                            setQuickSelectMealType(meal.mealType as MealType);
-                                                                            setIsQuickSelectOpen(true);
-                                                                        }
-                                                                    }}
-                                                                    className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
-                                                                >
-                                                                    <Plus className="w-3.5 h-3.5 mr-1.5" />
-                                                                    {['breakfast', 'lunch', 'dinner'].includes(meal.mealType) ? 'Add Recipes' : 'Add Items'}
-                                                                </Button>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
+                                <div className="space-y-6">
+                                    {meals.map((meal) => (
+                                        <MealSection
+                                            key={meal.id}
+                                            meal={meal}
+                                            eventItems={event.extraItems || []}
+                                            onRemoveRecipe={handleRemoveRecipe}
+                                            onDeleteMeal={handleDeleteMeal}
+                                            onAddRecipe={(mealId) => router.push(`/event-meal-plan/${eventId}/recipe-selection`)}
+                                            onAddQuickItem={(mealId, type) => {
+                                                setQuickSelectMealId(mealId);
+                                                setQuickSelectMealType(type);
+                                                setIsQuickSelectOpen(true);
+                                            }}
+                                            onRemoveItem={handleRemoveItem}
+                                            onViewRecipe={(recipe) => {
+                                                setSelectedRecipe(recipe);
+                                                setSelectedRecipeId(recipe.id);
+                                                setIsDialogOpen(true);
+                                            }}
+                                            adaptRecipe={adaptEventRecipeToRecipe}
+                                        />
+                                    ))}
                                 </div>
                             ) : (
-                                <div className="bg-white rounded-xl border border-dashed border-gray-300 p-10 text-center flex flex-col items-center justify-center">
-                                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                                        <ChefHat className="w-8 h-8 text-gray-400" />
+                                <div className="bg-white rounded-xl border border-dashed border-gray-300 p-10 text-center flex flex-col items-center justify-center min-h-[300px]">
+                                    <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mb-4">
+                                        <ChefHat className="w-8 h-8 text-indigo-400" />
                                     </div>
-                                    <h3 className="text-lg font-medium text-gray-900 mb-1">Create your menu</h3>
-                                    <p className="text-gray-500 max-w-xs mx-auto mb-6 text-sm">Start by adding meal times (Breakfast, Lunch, Dinner, etc.) for your event.</p>
-                                    <Button onClick={() => router.push(`/event-meal-plan/${eventId}/generate-recipe`)} className="bg-[var(--primary)] hover:bg-indigo-700 text-white">
+                                    <h3 className="text-lg font-bold text-gray-900 mb-2">Build your menu</h3>
+                                    <p className="text-gray-500 max-w-xs mx-auto mb-6">Start by adding meal times (Breakfast, Lunch, Dinner, etc.) for your event.</p>
+                                    <Button onClick={() => router.push(`/event-meal-plan/${eventId}/generate-recipe`)} className="bg-[var(--primary)] hover:bg-indigo-700 text-white font-semibold px-6">
                                         <Sparkles className="w-4 h-4 mr-2" />
                                         Launch Recipe Wizard
                                     </Button>
                                 </div>
                             )}
                         </div>
-
-
 
                         {/* Right Column: Context & Tools (1/3 width) */}
                         <div className="space-y-6">
@@ -646,11 +481,10 @@ export default function EventDetailPage() {
                                         <div className="text-center space-y-3">
                                             <p className="text-sm text-gray-500">Generate a master shopping list from all your planned recipes.</p>
                                             <Button
-                                                className="w-full bg-gray-900 text-white hover:bg-black h-12 text-base"
-                                                onClick={handleGenerateShoppingList}
-                                                disabled={generateShoppingListMutation.isPending}
+                                                className="w-full bg-gray-900 text-white hover:bg-black h-12 text-base font-medium"
+                                                onClick={() => router.push(`/event-meal-plan/${eventId}/shopping-list`)}
                                             >
-                                                {generateShoppingListMutation.isPending ? "Processing..." : "Generate List"}
+                                                Build & Generate List
                                             </Button>
                                         </div>
                                     )}
@@ -705,21 +539,18 @@ export default function EventDetailPage() {
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 </div>
             </div >
 
             {/* Recipe Details Dialog */}
-            < RecipeDetailsDialog
-                recipe={fullRecipe ?? selectedRecipe
-                }
+            <RecipeDetailsDialog
+                recipe={fullRecipe ?? selectedRecipe}
                 open={isDialogOpen}
                 onOpenChange={(open) => {
                     setIsDialogOpen(open);
                     if (!open) {
-                        // Optional: Clear selection after animation
                         setTimeout(() => setSelectedRecipeId(null), 300);
                     }
                 }}

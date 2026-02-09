@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, Calendar, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ import { MEAL_TYPE_CONFIG, DEFAULT_BUDGET_WEIGHTS } from "./_components/constant
 import { StepIndicator } from "./_components/StepIndicator";
 import { HealthProfileSection } from "./_components/HealthProfileSection";
 import { BudgetDistributionSection } from "./_components/BudgetDistributionSection";
+import { getUnsplashImage } from "@/app/actions/unsplash";
 
 import { RecipeSelectionSection } from "./_components/RecipeSelectionSection";
 import { ReviewMenuSection } from "./_components/ReviewMenuSection";
@@ -76,19 +77,21 @@ export default function EventRecipeSelectionPage() {
     }, [event, membersData]);
 
     const selectedMealTypes = useMemo<MealType[]>(() => {
-        if (!event) return [];
+        let types: MealType[] = [];
 
         // First priority: Use selectedMealTypes from event creation
         if ((event as any)?.selectedMealTypes && Array.isArray((event as any).selectedMealTypes) && (event as any).selectedMealTypes.length > 0) {
-            return (event as any).selectedMealTypes as MealType[];
+            types = (event as any).selectedMealTypes as MealType[];
         }
         // Fallback: Use existing meals if they exist
         else if ((event as any)?.meals && (event as any).meals.length > 0) {
             const existingMealTypes = (event as any).meals.map((m: any) => m.mealType as MealType);
-            // Deduplicate if necessary, though usually meal types are unique per meal
-            return Array.from(new Set(existingMealTypes));
+            types = Array.from(new Set(existingMealTypes));
         }
-        return [];
+
+        // USER REQUEST: Only allow Dinner, Lunch, Breakfast in this flow. 
+        // Snacks/Beverages/Desserts should be handled in Shopping List flow only.
+        return types.filter(t => ['breakfast', 'lunch', 'dinner'].includes(t.toLowerCase() as any));
     }, [event]);
 
     // Initialize selected members
@@ -135,7 +138,7 @@ export default function EventRecipeSelectionPage() {
             { id: 'budget', label: 'Budget' }
         ];
 
-        const hasMainMeals = selectedMealTypes.some(mt => ['breakfast', 'lunch', 'dinner', 'brunch'].includes(mt));
+        const hasMainMeals = selectedMealTypes.some(mt => ['breakfast', 'lunch', 'dinner'].includes(mt));
         if (hasMainMeals) {
             s.push({ id: 'main-courses', label: 'Main Courses' });
         }
@@ -202,6 +205,36 @@ export default function EventRecipeSelectionPage() {
         });
     }, [selectedMealTypes, totalBudget, budgetStrategy]);
 
+    // Dynamic Image State for Event Items
+    const [dynamicImages, setDynamicImages] = useState<Record<string, string>>({});
+    const fetchedImagesRef = useRef<Set<string>>(new Set());
+
+    // Fetch images for existing event items
+    useEffect(() => {
+        if (!eventItems) return;
+
+        const fetchImages = async () => {
+            const itemsToFetch = eventItems.filter((i: any) =>
+                ['snacks', 'beverages', 'dessert'].includes(i.category) &&
+                !fetchedImagesRef.current.has(i.name)
+            );
+
+            for (const i of itemsToFetch) {
+                fetchedImagesRef.current.add(i.name);
+                // Check if we already have it in state (optimization)
+                if (dynamicImages[i.name]) continue;
+
+                getUnsplashImage(i.name).then(url => {
+                    if (url) {
+                        setDynamicImages(prev => ({ ...prev, [i.name]: url }));
+                    }
+                });
+            }
+        };
+
+        fetchImages();
+    }, [eventItems]);
+
     // Initialize meal recipes state with existing event data and items
     useEffect(() => {
         if (selectedMealTypes.length > 0) {
@@ -216,7 +249,7 @@ export default function EventRecipeSelectionPage() {
                             id: i.id,
                             name: i.name,
                             description: i.notes || '',
-                            imageUrl: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80", // Generic food image
+                            imageUrl: dynamicImages[i.name] || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80", // Dynamic or Generic food image
                             cookingTime: "Ready to serve",
                             price: i.estimatedCost ? `$${i.estimatedCost}` : "N/A",
                             servings: i.quantity,
@@ -271,7 +304,7 @@ export default function EventRecipeSelectionPage() {
                 setActiveMealTab(selectedMealTypes[0]);
             }
         }
-    }, [selectedMealTypes, activeMealTab, event, eventItems]);
+    }, [selectedMealTypes, activeMealTab, event, eventItems, dynamicImages]);
 
     // Handler for manual budget amount change
     const handleManualBudgetChange = useCallback((mealType: MealType, value: string) => {
@@ -327,7 +360,7 @@ export default function EventRecipeSelectionPage() {
     const handleAIDistributeBudget = useCallback(async () => {
         try {
             // Call the actual budget suggestion API
-            const response = await suggestBudgetMutation.mutateAsync(eventId);
+            const response = await suggestBudgetMutation.mutateAsync({ eventId, mealTypes: selectedMealTypes });
 
             // Transform API response to local state format
             const allocations: MealBudgetAllocation[] = response.allocations.map(a => ({
@@ -466,7 +499,7 @@ export default function EventRecipeSelectionPage() {
                 eventId,
                 data: {
                     mealType,
-                    recipeCount: 3,
+                    recipeCount: customSearch ? 1 : 3,
                     budget: mealBudget > 0 ? mealBudget : undefined,
                     customSearch: customSearch?.trim(),
                     preferredCuisines: (globalCuisine && globalCuisine !== "ALL" && !customSearch) ? [globalCuisine] : undefined,
@@ -479,6 +512,7 @@ export default function EventRecipeSelectionPage() {
                 ...r,
                 id: r.id || `ai-${Date.now()}-${idx}`,
                 isAIGenerated: true,
+                isCustomSearch: !!customSearch,
                 cookingTime: r.cookingTime || (r.totalTimeMinutes ? `${r.totalTimeMinutes} min` : '30 min'),
                 price: r.price || (r.costAnalysis?.costPerServing ? `$${r.costAnalysis.costPerServing.toFixed(2)}` : 'N/A'),
             }));
@@ -486,20 +520,43 @@ export default function EventRecipeSelectionPage() {
             setMealRecipes(prev => prev.map(mr => {
                 if (mr.mealType !== mealType) return mr;
 
-                // Merge: Keep currently selected recipes + add new ones (filtering duplicates)
-                const currentSelectedIds = mr.selectedRecipeIds || [];
-                const keptRecipes = mr.recipes.filter(r => currentSelectedIds.includes(r.id));
+                // Merge Logic:
+                // If Custom Search: Append new recipe to EXISTING list (keep all previous recipes)
+                // If Full Generate: Keep only SELECTED recipes + New keys (replace unselected)
+
+                let keptRecipes = [];
+                if (customSearch) {
+                    // Keep ALL existing recipes for this meal type
+                    keptRecipes = mr.recipes;
+                } else {
+                    // Keep only currently selected recipes (standard "Regenerate" behavior)
+                    const currentSelectedIds = mr.selectedRecipeIds || [];
+                    keptRecipes = mr.recipes.filter(r => currentSelectedIds.includes(r.id));
+                }
+
                 const uniqueNewRecipes = newRecipes.filter((n: any) => !keptRecipes.some(k => k.id === n.id));
+
+                // Auto-select custom search results
+                const newSelectedIds = customSearch
+                    ? [...(mr.selectedRecipeIds || []), ...uniqueNewRecipes.map((r: any) => r.id)]
+                    : (mr.selectedRecipeIds || []);
 
                 return {
                     ...mr,
                     recipes: [...keptRecipes, ...uniqueNewRecipes],
+                    selectedRecipeIds: newSelectedIds,
                     isGenerating: false
                 };
             }));
 
             if (['snacks', 'beverages', 'dessert'].includes(mealType)) {
                 toast.success(`Added ${newRecipes.length} item${newRecipes.length !== 1 ? 's' : ''} to ${MEAL_TYPE_CONFIG[mealType].label}`);
+            } else if (customSearch) {
+                if (newRecipes.length > 0) {
+                    toast.success(`Added "${newRecipes[0].name}" to your list!`);
+                } else {
+                    toast.error(`No recipe found for "${customSearch}". Please check the name and try again.`);
+                }
             } else {
                 toast.success(`Generated ${newRecipes.length} ${MEAL_TYPE_CONFIG[mealType].label} recipes!`);
             }
@@ -530,6 +587,29 @@ export default function EventRecipeSelectionPage() {
         }));
     };
 
+    const handleDirectAddItem = async (item: { name: string, quantity: number, unit: string, category: string }) => {
+        try {
+            await addEventItem({
+                eventId,
+                data: {
+                    name: item.name,
+                    category: item.category as any, // category should match MealType mostly, or handled
+                    quantity: item.quantity,
+                    unit: item.unit,
+                    estimatedCost: 0
+                }
+            });
+            toast.success(`Added ${item.quantity} ${item.unit} of ${item.name}`);
+
+            // Refresh logic if needed? 
+            // The existing MealSection uses optimistic updates or query invalidation?
+            // addEventItem mutation typically invalidates 'event-items'.
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to add item");
+        }
+    };
+
     const handleRemoveRecipe = async (mealType: string, recipeId: string) => {
         // Handle Add-ons (Event Items) - Direct from DB
         if (['snacks', 'beverages', 'dessert'].includes(mealType)) {
@@ -542,6 +622,7 @@ export default function EventRecipeSelectionPage() {
             }
             return;
         }
+
 
         setMealRecipes(prev => prev.map(mr => {
             if (mr.mealType !== mealType) return mr;
@@ -600,7 +681,7 @@ export default function EventRecipeSelectionPage() {
                         data: {
                             recipeId: recipe.id,
                             servings: event?.totalServings || 4,
-                            notes: `AI Selected - Budget Optimized`
+                            notes: recipe.isCustomSearch ? `Custom Selection - ${recipe.name}` : `AI Selected - Budget Optimized`
                         }
                     });
                     savedCount++;
@@ -642,7 +723,7 @@ export default function EventRecipeSelectionPage() {
 
             // Set active tab logic based on target step
             if (nextStepId === 'main-courses') {
-                const mainMeals = selectedMealTypes.filter(mt => ['breakfast', 'lunch', 'dinner', 'brunch'].includes(mt));
+                const mainMeals = selectedMealTypes.filter(mt => ['breakfast', 'lunch', 'dinner'].includes(mt));
                 if (mainMeals.length > 0) setActiveMealTab(mainMeals[0]);
             } else if (nextStepId === 'extras') {
                 const extraMeals = selectedMealTypes.filter(mt => ['snacks', 'beverages', 'dessert'].includes(mt));
@@ -773,7 +854,7 @@ export default function EventRecipeSelectionPage() {
                             key="main-courses"
                             globalCuisine={globalCuisine}
                             setGlobalCuisine={setGlobalCuisine}
-                            selectedMealTypes={selectedMealTypes.filter(mt => ['breakfast', 'lunch', 'dinner', 'brunch'].includes(mt))}
+                            selectedMealTypes={selectedMealTypes.filter(mt => ['breakfast', 'lunch', 'dinner'].includes(mt))}
                             handleGenerateRecipesForMeal={handleGenerateRecipesForMeal}
                             activeMealTab={activeMealTab}
                             setActiveMealTab={setActiveMealTab}
@@ -785,6 +866,7 @@ export default function EventRecipeSelectionPage() {
                             isSavingAll={false}
                             getSelectedCount={getSelectedCount}
                             actionLabel="Continue"
+                            onAddEventItem={handleDirectAddItem}
                         />
                     )}
 
