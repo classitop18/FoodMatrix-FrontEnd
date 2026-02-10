@@ -371,6 +371,24 @@ export function useAddEventItem() {
     });
 }
 
+
+export function useAddEventItemsBulk() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ eventId, data }: { eventId: string; data: CreateEventItemDto[] }) =>
+            EventService.addEventItemsBulk(eventId, data),
+        onSuccess: (items, variables) => {
+            queryClient.invalidateQueries({ queryKey: eventQueryKeys.detail(variables.eventId) });
+            queryClient.invalidateQueries({ queryKey: ['event-items', variables.eventId] });
+            toast.success(`Allocated ${items.length} items successfully!`);
+        },
+        onError: (error: any) => {
+            toast.error(error?.message || "Failed to add items");
+        },
+    });
+}
+
 export function useGetEventItems(eventId: string) {
     return useQuery({
         queryKey: ['event-items', eventId],

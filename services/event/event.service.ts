@@ -120,6 +120,17 @@ export const EventService = {
         return response.data.data;
     },
 
+    /**
+     * Merge ingredients using AI
+     */
+    mergeIngredients: async (ingredients: any[]): Promise<any[]> => {
+        const response = await apiClient.post(
+            API_ENDPOINTS.EVENT.MERGE_INGREDIENTS,
+            { ingredients }
+        );
+        return response.data.data;
+    },
+
     // ===== Event Meals =====
 
     /**
@@ -305,6 +316,14 @@ export const EventService = {
         return response.data.data;
     },
 
+    addEventItemsBulk: async (eventId: string, data: CreateEventItemDto[]): Promise<EventItemResponse[]> => {
+        const response = await apiClient.post(
+            API_ENDPOINTS.EVENT.ADD_ITEMS_BULK(eventId),
+            data
+        );
+        return response.data.data;
+    },
+
     getEventItems: async (eventId: string): Promise<EventItemResponse[]> => {
         const response = await apiClient.get(
             API_ENDPOINTS.EVENT.GET_ITEMS(eventId)
@@ -324,5 +343,33 @@ export const EventService = {
         await apiClient.delete(
             API_ENDPOINTS.EVENT.DELETE_ITEM(eventId, itemId)
         );
+    },
+
+    /**
+     * Download Shopping List PDF
+     */
+    downloadShoppingListPdf: async (payload: any): Promise<void> => {
+        try {
+            const response = await apiClient.post(
+                "/pdf/shopping-list",
+                payload,
+                {
+                    responseType: "blob",
+                }
+            );
+
+            // Create download link
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download", `event-shopping-list-${Date.now()}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode?.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error("PDF Download Error:", error);
+            throw error;
+        }
     },
 };

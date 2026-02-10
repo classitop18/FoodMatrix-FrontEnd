@@ -4,23 +4,17 @@ import {
     ArrowLeft,
     ChefHat,
     Clock,
-    DollarSign,
-    Sparkles,
     Trash2,
-    Calendar,
-    Users,
     Utensils,
     Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { GeneratedRecipeForMeal } from "./types";
 import { MEAL_TYPE_CONFIG } from "./constants";
 import { getRecipeImageUrl } from "@/lib/recipe-utils";
-import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
 interface ReviewMenuSectionProps {
@@ -153,9 +147,9 @@ export const ReviewMenuSection: React.FC<ReviewMenuSectionProps> = ({
                     <div className="sticky top-24 space-y-4">
                         <Card className="border-gray-200 shadow-md bg-white">
                             <CardHeader className="pb-2">
-                                <CardTitle className="text-lg font-bold text-gray-900">Event Summary</CardTitle>
+                                <CardTitle className=" mt-3 text-lg font-bold text-gray-900">Event Summary</CardTitle>
                             </CardHeader>
-                            <CardContent className="space-y-4">
+                            <CardContent className="space-y-4 p-5">
                                 <div className="space-y-2">
                                     <div className="flex justify-between text-sm">
                                         <span className="text-gray-500">Total Items</span>

@@ -31,7 +31,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { toast } from "sonner";
+
 
 // Hooks
 import { useEvent, useEventMeals } from "@/services/event/event.query";
@@ -62,6 +62,7 @@ import { EventRecipeResponse, MealType } from "@/services/event/event.types";
 import { Recipe } from "@/services/recipe";
 import { RecipeDetailsDialog } from "@/components/common/RecipeDetailsDialog";
 import ThemeButton from "@/components/common/buttons/theme-button";
+import { useToast } from "@/hooks/use-toast";
 
 
 // Helper to adapt EventRecipeResponse to Recipe
@@ -128,6 +129,8 @@ export default function EventDetailPage() {
     const params = useParams();
     const router = useRouter();
     const eventId = params.id as string;
+
+    const { toast } = useToast();
 
     // Fetch event data
     const { data: event, isLoading, error, refetch: refetchEvent } = useEvent(eventId);
@@ -205,18 +208,36 @@ export default function EventDetailPage() {
     const handleComplete = async () => {
         try {
             await completeEventMutation.mutateAsync(eventId);
-            toast.success("Event marked as complete");
+
+            toast({
+                title: "Event marked as completed",
+                description: "You can still view the event details, but it is now read-only.",
+
+            });
         } catch (error) {
-            toast.error("Failed to complete event");
+            console.log(error);
+
+            toast({
+                title: "Error",
+                description: "Failed to complete event",
+                variant: "destructive",
+            })
         }
     };
 
     const handleGenerateShoppingList = async () => {
         try {
             await generateShoppingListMutation.mutateAsync(eventId);
-            toast.success("Shopping list generated successfully");
+            toast({
+                title: "Success",
+                description: "Shopping list generated successfully",
+            })
         } catch (error) {
-            toast.error("Failed to generate shopping list");
+            toast({
+                title: "Error",
+                description: "Failed to generate shopping list",
+                variant: "destructive",
+            })
         }
     };
 
@@ -225,7 +246,13 @@ export default function EventDetailPage() {
         try {
             await deleteEventMealMutation.mutateAsync({ eventId, mealId });
         } catch (error) {
-            toast.error("Failed to delete meal");
+            console.log(error);
+
+            toast({
+                title: "Error",
+                description: "Failed to delete meal",
+                variant: "destructive",
+            })
         }
     };
 
@@ -234,7 +261,13 @@ export default function EventDetailPage() {
         try {
             await removeRecipeFromMealMutation.mutateAsync({ eventId, mealId, recipeId });
         } catch (error) {
-            toast.error("Failed to remove recipe");
+            console.log(error);
+
+            toast({
+                title: "Error",
+                description: "Failed to remove recipe",
+                variant: "destructive",
+            })
         }
     };
 
@@ -243,7 +276,13 @@ export default function EventDetailPage() {
         try {
             await deleteEventItemMutation.mutateAsync({ eventId, itemId });
         } catch (error) {
-            toast.error("Failed to remove item");
+            console.log(error);
+
+            toast({
+                title: "Error",
+                description: "Failed to remove item",
+                variant: "destructive",
+            })
         }
     };
 
@@ -297,7 +336,9 @@ export default function EventDetailPage() {
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-56 p-2 bg-white border-gray-200">
-                                <DropdownMenuItem onClick={() => router.push(`/event-meal-plan/${eventId}/edit`)} className="cursor-pointer">
+                                <DropdownMenuItem onClick={() => toast({
+
+                                })} className="cursor-pointer">
                                     <Edit className="w-4 h-4 mr-2" /> Edit Event
                                 </DropdownMenuItem>
                                 {event.status !== "completed" && (
@@ -404,41 +445,52 @@ export default function EventDetailPage() {
 
                             </div>
 
-                            {meals && meals.length > 0 ? (
-                                <div className="space-y-6">
-                                    {meals.map((meal) => (
-                                        <MealSection
-                                            key={meal.id}
-                                            meal={meal}
-                                            eventItems={event.extraItems || []}
-                                            onRemoveRecipe={handleRemoveRecipe}
-                                            onDeleteMeal={handleDeleteMeal}
-                                            onAddRecipe={(mealId) => router.push(`/event-meal-plan/${eventId}/recipe-selection`)}
-                                            onAddQuickItem={(mealId, type) => {
-                                                setQuickSelectMealId(mealId);
-                                                setQuickSelectMealType(type);
-                                                setIsQuickSelectOpen(true);
-                                            }}
-                                            onRemoveItem={handleRemoveItem}
-                                            onViewRecipe={(recipe) => {
-                                                setSelectedRecipe(recipe);
-                                                setSelectedRecipeId(recipe.id);
-                                                setIsDialogOpen(true);
-                                            }}
-                                            adaptRecipe={adaptEventRecipeToRecipe}
-                                        />
-                                    ))}
+                            {meals && meals.filter(m => ['breakfast', 'lunch', 'dinner'].includes(m.mealType)).length > 0 ? (
+                                <div className="space-y-8">
+                                    {meals
+                                        .filter(m => ['breakfast', 'lunch', 'dinner'].includes(m.mealType))
+                                        .sort((a, b) => {
+                                            const order = { 'breakfast': 1, 'lunch': 2, 'dinner': 3 };
+                                            return (order[a.mealType as keyof typeof order] || 99) - (order[b.mealType as keyof typeof order] || 99);
+                                        })
+                                        .map((meal) => (
+                                            <MealSection
+                                                key={meal.id}
+                                                meal={meal}
+                                                eventItems={event.extraItems || []}
+                                                onRemoveRecipe={handleRemoveRecipe}
+                                                onDeleteMeal={handleDeleteMeal}
+                                                onAddRecipe={(mealId) => router.push(`/event-meal-plan/${eventId}/generate-recipe`)}
+                                                onAddQuickItem={(mealId, type) => {
+                                                    setQuickSelectMealId(mealId);
+                                                    setQuickSelectMealType(type);
+                                                    setIsQuickSelectOpen(true);
+                                                }}
+                                                onRemoveItem={handleRemoveItem}
+                                                onViewRecipe={(recipe) => {
+                                                    setSelectedRecipe(recipe);
+                                                    setSelectedRecipeId(recipe.id);
+                                                    setIsDialogOpen(true);
+                                                }}
+                                                adaptRecipe={adaptEventRecipeToRecipe}
+                                            />
+                                        ))}
                                 </div>
                             ) : (
-                                <div className="bg-white rounded-xl border border-dashed border-gray-300 p-10 text-center flex flex-col items-center justify-center min-h-[300px]">
-                                    <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mb-4">
-                                        <ChefHat className="w-8 h-8 text-indigo-400" />
+                                <div className="bg-white/50 backdrop-blur-sm rounded-2xl border border-dashed border-gray-300 p-12 text-center flex flex-col items-center justify-center min-h-[400px] transition-all hover:bg-white hover:border-[#3d326d]/20 hover:shadow-lg group">
+                                    <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
+                                        <ChefHat className="w-10 h-10 text-[var(--primary)]" />
                                     </div>
-                                    <h3 className="text-lg font-bold text-gray-900 mb-2">Build your menu</h3>
-                                    <p className="text-gray-500 max-w-xs mx-auto mb-6">Start by adding meal times (Breakfast, Lunch, Dinner, etc.) for your event.</p>
-                                    <Button onClick={() => router.push(`/event-meal-plan/${eventId}/generate-recipe`)} className="bg-[var(--primary)] hover:bg-indigo-700 text-white font-semibold px-6">
-                                        <Sparkles className="w-4 h-4 mr-2" />
-                                        Launch Recipe Wizard
+                                    <h3 className="text-xl font-extrabold text-[#313131] mb-3">Your Menu is Empty</h3>
+                                    <p className="text-gray-500 max-w-sm mx-auto mb-8 font-medium">
+                                        Start planning your event by adding Breakfast, Lunch, or Dinner. Our AI can help satisfy all your guests!
+                                    </p>
+                                    <Button
+                                        onClick={() => router.push(`/event-meal-plan/${eventId}/generate-recipe`)}
+                                        className="bg-[var(--primary)] hover:bg-[#2d2454] text-white font-bold px-8 py-6 h-auto rounded-xl shadow-lg hover:shadow-xl transition-all text-base"
+                                    >
+                                        <Sparkles className="w-5 h-5 mr-3" />
+                                        Launch Meal Planner
                                     </Button>
                                 </div>
                             )}

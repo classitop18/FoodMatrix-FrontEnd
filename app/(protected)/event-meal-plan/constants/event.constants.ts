@@ -97,33 +97,12 @@ export const MEAL_TYPE_OPTIONS: MealTypeOption[] = [
         description: "Midday meal",
     },
     {
-        value: "snacks",
-        label: "Snacks",
-        icon: Cookie,
-        color: "text-purple-500",
-        description: "Light bites & appetizers",
-    },
-    {
         value: "dinner",
         label: "Dinner",
         icon: Moon,
         color: "text-[var(--primary)]",
         description: "Evening main course",
-    },
-    {
-        value: "dessert",
-        label: "Dessert",
-        icon: Cake,
-        color: "text-pink-500",
-        description: "Sweet endings",
-    },
-    {
-        value: "beverages",
-        label: "Beverages",
-        icon: Wine,
-        color: "text-rose-500",
-        description: "Drinks & refreshments",
-    },
+    }
 ];
 
 // Form wizard steps

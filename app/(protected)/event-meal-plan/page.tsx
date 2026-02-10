@@ -8,7 +8,8 @@ import {
     ChevronLeft,
     ChevronRight,
     X,
-    AlertCircle
+    AlertCircle,
+    ArrowLeft
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -230,24 +231,38 @@ export default function EventMealPlan() {
     const isFirstStep = currentStep === 1;
 
     return (
-        <div className="h-[calc(100vh-57px)] bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] relative overflow-auto">
+        <div className="h-[calc(100vh-57px)] bg-gray-50/50 relative overflow-auto">
             {/* Top Navigation Bar */}
-            <div className="bg-white border-b border-gray-200 sticky top-0 z-30">
+
+            <div className="order-b border-gray-200 sticky top-0 z-30">
                 <div className="flex items-center gap-3 px-4 md:px-6 h-16">
+
+                    {/* Close Button */}
                     <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => router.push("/event-meal-plan/list")}
-                        className="text-gray-500 hover:text-gray-900 rounded-full hover:bg-gray-100 border-gray-100 border"
+                        className="text-gray-500 hover:text-gray-900 rounded-full hover:bg-gray-100 border border-gray-200"
                     >
-                        <X className="w-5 h-5" />
+                        <ArrowLeft className="w-5 h-5" />
                     </Button>
-                    <div>
-                        <h1 className="text-lg font-bold text-gray-900 leading-tight">Create Event</h1>
-                        <p className="text-xs text-gray-500 font-medium hidden sm:block">Step {currentStep} of {FORM_STEPS.length}</p>
+
+                    {/* Dynamic Tab Button */}
+                    <div className="flex items-center gap-2">
+                        <span className="px-4 py-2 rounded-full bg-indigo-600 text-white text-sm font-semibold shadow-sm">
+                            {FORM_STEPS[currentStep - 1]?.title}
+                        </span>
+
+                        {/* Step Counter */}
+                        <p className="text-xs text-gray-500 font-medium hidden sm:block">
+                            Step {currentStep} of {FORM_STEPS.length}
+                        </p>
                     </div>
                 </div>
             </div>
+
+
+
 
             <div className="flex-1 w-full mx-auto p-4 md:p-8">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">

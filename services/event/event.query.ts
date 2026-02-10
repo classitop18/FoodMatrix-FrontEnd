@@ -34,6 +34,7 @@ export function useEvent(id: string | undefined | null) {
         queryKey: eventQueryKeys.detail(id || ""),
         queryFn: () => EventService.getEventById(id!),
         enabled: !!id,
+        staleTime: 5 * 60 * 1000, // 5 minutes
     });
 }
 
@@ -44,6 +45,7 @@ export function useEventStats() {
     return useQuery({
         queryKey: eventQueryKeys.stats(),
         queryFn: () => EventService.getEventStats(),
+        staleTime: 5 * 60 * 1000,
     });
 }
 
@@ -55,6 +57,7 @@ export function useEventMeals(eventId: string | undefined | null) {
         queryKey: eventQueryKeys.meals(eventId || ""),
         queryFn: () => EventService.getEventMeals(eventId!),
         enabled: !!eventId,
+        staleTime: 5 * 60 * 1000,
     });
 }
 

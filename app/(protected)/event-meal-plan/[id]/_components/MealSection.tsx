@@ -5,7 +5,7 @@ import { Plus, Trash2, Clock, ChefHat, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EventMealResponse, MealType, EventRecipeResponse, EventItemResponse } from "@/services/event/event.types";
 import { Recipe } from "@/services/recipe";
-import { RecipeCard } from "@/components/common/RecipeCard";
+import { HorizontalRecipeCard } from "@/components/common/HorizontalRecipeCard";
 import { cn } from "@/lib/utils";
 import { getMealTypeOption, formatEventTime } from "../../constants/event.constants";
 
@@ -61,117 +61,69 @@ export function MealSection({
                         )}
                     </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onAddRecipe(meal.id)}
+                        className="text-[var(--primary)] border-[var(--primary)] hover:bg-[var(--primary)] hover:text-white font-semibold transition-all shadow-sm h-9 px-4 gap-2 text-xs uppercase tracking-wider"
+                    >
+                        <Plus className="w-3.5 h-3.5" />
+                        Add Recipe
+                    </Button>
+                    <div className="h-6 w-px bg-gray-200 mx-1"></div>
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                        className="text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors h-8 w-8"
                         onClick={(e) => {
                             e.stopPropagation();
                             onDeleteMeal(meal.id);
                         }}
                     >
-                        <Trash2 className="w-5 h-5" />
+                        <Trash2 className="w-4 h-4" />
                     </Button>
                 </div>
             </div>
 
             {/* Content Area */}
             <div className="p-6 bg-gray-50/30">
-                {(meal.recipes && meal.recipes.length > 0) || (extraItems && extraItems.length > 0) ? (
-                    <div className="space-y-6">
-                        {isMainMeal ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
-                                {meal.recipes?.map((eventRecipe: EventRecipeResponse) => {
-                                    const recipe = adaptRecipe(eventRecipe);
-                                    return (
-                                        <div key={eventRecipe.id} className="relative group/wrapper h-full">
-                                            <RecipeCard
-                                                recipe={recipe}
-                                                onViewDetails={onViewRecipe}
-                                                className="h-full border-gray-200 shadow-sm hover:shadow-xl"
-                                            />
-                                            <Button
-                                                variant="destructive"
-                                                size="icon"
-                                                className="absolute -top-2 -right-3 h-5 w-5 rounded-full shadow-lg z-20 hover:scale-90 bg-red-500 hover:bg-red-400 text-white border-1 border-white"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    onRemoveRecipe(meal.id, eventRecipe.recipeId || "");
-                                                }}
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </Button>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        ) : (
-                            /* Compact List for Snacks/Beverages */
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                                {extraItems.map((item: EventItemResponse) => (
-                                    <div key={item.id} className="relative group/compact-card bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all flex flex-col h-full shadow-sm">
-                                        <div className="h-28 w-full bg-gray-100 relative overflow-hidden flex items-center justify-center">
-                                            <img
-                                                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&background=random&color=fff`}
-                                                alt={item.name}
-                                                className="w-full h-full object-cover group-hover/compact-card:scale-110 transition-transform duration-500"
-                                            />
-                                            <div className="absolute top-2 right-2 z-20">
-                                                <Button
-                                                    variant="destructive"
-                                                    size="icon"
-                                                    className="h-7 w-7 rounded-full shadow-md bg-red-500 hover:bg-red-600 text-white border-2 border-white"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        onRemoveItem(item.id);
-                                                    }}
-                                                >
-                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                </Button>
-                                            </div>
-                                        </div>
-                                        <div className="p-3 flex-1 flex flex-col justify-between">
-                                            <h4 className="text-sm font-bold text-gray-900 line-clamp-2 leading-tight" title={item.name}>
-                                                {item.name}
-                                            </h4>
-                                            <p className="text-xs text-gray-500 font-medium mt-2 bg-gray-100 px-2 py-1 rounded-md w-fit">
-                                                {item.quantity} {item.unit}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                {meal.recipes && meal.recipes.length > 0 ? (
+                    <div className="grid grid-cols-1 gap-4">
+                        {meal.recipes?.map((eventRecipe: EventRecipeResponse) => {
+                            const recipe = adaptRecipe(eventRecipe);
+                            return (
+                                <HorizontalRecipeCard
+                                    key={eventRecipe.id}
+                                    recipe={recipe}
+                                    onViewDetails={onViewRecipe}
+                                    onRemove={() => onRemoveRecipe(meal.id, eventRecipe.recipeId || "")}
+                                    showRemoveButton={true}
+                                    className="h-full"
+                                />
+                            );
+                        })}
                     </div>
                 ) : (
-                    <div className="py-8 flex flex-col items-center justify-center text-center">
-                        <div className="w-12 h-12 bg-white border border-gray-200 shadow-sm rounded-full flex items-center justify-center mb-3">
-                            <Sparkles className="w-5 h-5 text-[#3d326d]" />
+                    <div className="py-12 flex flex-col items-center justify-center text-center">
+                        <div className="w-16 h-16 bg-white border border-dashed border-gray-300 rounded-full flex items-center justify-center mb-4 group-hover:border-[var(--primary)]/50 transition-colors">
+                            <Sparkles className="w-6 h-6 text-gray-300 group-hover:text-[var(--primary)] transition-colors" />
                         </div>
-                        <h4 className="text-sm font-bold text-[#313131] mb-1">It's empty here!</h4>
-                        <p className="text-xs text-gray-500 max-w-xs mb-4">
-                            {isMainMeal
-                                ? 'Start building your menu by adding delicious recipes.'
-                                : 'Add snacks, beverages, or other items to your list.'}
+                        <h4 className="text-base font-bold text-[#313131] mb-2">No Recipes Added</h4>
+                        <p className="text-sm text-gray-500 max-w-xs mb-6">
+                            This {meal.mealType} slot is currently empty. Add some delicious recipes!
                         </p>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onAddRecipe(meal.id)}
+                            className="mt-4 border-dashed border-gray-300 text-gray-500 hover:text-[var(--primary)] hover:border-[var(--primary)]"
+                        >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add Recipe
+                        </Button>
                     </div>
                 )}
-
-                {/* Add Button Area */}
-                <div className="mt-6 flex justify-center">
-                    <Button
-                        variant="outline"
-                        onClick={() => isMainMeal ? onAddRecipe(meal.id) : onAddQuickItem(meal.id, meal.mealType as MealType)}
-                        className="group relative border-2 border-dashed border-gray-300 hover:border-[#3d326d] hover:bg-[#3d326d]/5 text-gray-600 hover:text-[#3d326d] font-semibold transition-all duration-300 h-12 w-full max-w-[240px] rounded-xl flex items-center justify-center gap-2 overflow-hidden"
-                    >
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#3d326d]/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                        <div className="w-6 h-6 rounded-full bg-gray-100 group-hover:bg-[#3d326d]/10 flex items-center justify-center transition-colors">
-                            <Plus className="w-4 h-4" />
-                        </div>
-                        {isMainMeal ? 'Add Recipe' : 'Add Item'}
-                    </Button>
-                </div>
             </div>
         </motion.div>
     );

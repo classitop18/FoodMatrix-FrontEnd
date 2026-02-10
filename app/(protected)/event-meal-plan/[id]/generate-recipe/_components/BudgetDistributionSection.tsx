@@ -58,8 +58,15 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
             // For AI strategy, need to have run AI distribution (all budgets must have values)
             return mealBudgets.every(mb => mb.budget > 0 && mb.percentage > 0);
         }
-        // For manual, total must be 100% and no validation errors
-        return totalPercentage === 100 && Object.keys(validationErrors).length === 0;
+        if (budgetStrategy === "manual") {
+            const mainMeals = ["breakfast", "lunch", "dinner"];
+            const relevantBudgets = mealBudgets.filter(mb => mainMeals.includes(mb.mealType.toLowerCase()));
+            const relevantTotalPercentage = relevantBudgets.reduce((sum, mb) => sum + mb.percentage, 0);
+
+            // Validation: Total must be 100% and no validation errors for main meals
+            const hasMainValidationErrors = Object.keys(validationErrors).some(vt => mainMeals.includes(vt.toLowerCase()));
+            return relevantTotalPercentage === 100 && !hasMainValidationErrors;
+        }
     }, [mealBudgets, budgetStrategy, totalPercentage, validationErrors]);
 
     // Get validation message for continue button
@@ -71,11 +78,16 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
             return "Please click 'Distribute Budget with AI' to allocate budget";
         }
         if (budgetStrategy === "manual") {
-            if (Object.keys(validationErrors).length > 0) {
+            const mainMeals = ["breakfast", "lunch", "dinner"];
+            const relevantTotalPercentage = mealBudgets
+                .filter(mb => mainMeals.includes(mb.mealType.toLowerCase()))
+                .reduce((sum, mb) => sum + mb.percentage, 0);
+
+            if (Object.keys(validationErrors).some(err => mainMeals.includes(err.toLowerCase()))) {
                 return "Please fix the validation errors above";
             }
-            if (totalPercentage !== 100) {
-                return `Total allocation must be 100% (currently ${totalPercentage}%)`;
+            if (relevantTotalPercentage !== 100) {
+                return `Total allocation must be 100% (currently ${relevantTotalPercentage}%)`;
             }
         }
         return null;
@@ -183,6 +195,14 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                         </div>
                         <p className="text-xs text-gray-500 mt-2">This is set from your event configuration</p>
 
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4 text-xs text-blue-800 flex items-start gap-2">
+                            <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                            <span>
+                                <strong>Note:</strong> Budget distribution focuses on main meals (Breakfast, Lunch, Dinner).
+                                Snacks, Beverages, and other items are not included here and will be handled via the Shopping List.
+                            </span>
+                        </div>
+
                         {/* AI Distribution Button */}
                         {budgetStrategy === "ai" && (
                             <div className="space-y-3">
@@ -203,12 +223,6 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                                         </>
                                     )}
                                 </Button>
-                                {!mealBudgets.every(mb => mb.budget > 0) && (
-                                    <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 text-sm">
-                                        <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                                        <span>Click the button above to distribute your budget using AI recommendations</span>
-                                    </div>
-                                )}
                             </div>
                         )}
 
@@ -248,7 +262,7 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                                     </div>
                                 </div>
                                 <div className="space-y-3">
-                                    {mealBudgets.map((mb) => {
+                                    {mealBudgets.filter(mb => ["breakfast", "lunch", "dinner"].includes(mb.mealType.toLowerCase())).map((mb) => {
                                         const config = MEAL_TYPE_CONFIG[mb.mealType] || { label: mb.mealType, icon: Info, color: "text-gray-500", defaultTime: "" };
                                         const minPercentage = MIN_BUDGET_PERCENTAGES[mb.mealType] || 0;
                                         const hasError = validationErrors[mb.mealType];
@@ -323,34 +337,39 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                                 </div>
 
                                 {/* Total Percentage Validation */}
-                                {mealBudgets.length > 0 && (
-                                    <div className={cn(
-                                        "flex items-center gap-2 p-4 rounded-xl text-sm font-medium",
-                                        totalPercentage === 100
-                                            ? "bg-green-50 text-green-700 border border-green-200"
-                                            : totalPercentage > 100
-                                                ? "bg-red-50 text-red-700 border border-red-200"
-                                                : "bg-amber-50 text-amber-700 border border-amber-200"
-                                    )}>
-                                        {totalPercentage === 100 ? (
-                                            <>
-                                                <CheckCircle2 className="w-5 h-5" />
-                                                <span>Perfect! Budget is fully allocated (100%)</span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <AlertTriangle className="w-5 h-5" />
-                                                <span>
-                                                    Total allocation is {totalPercentage}%.
-                                                    {totalPercentage > 100
-                                                        ? " Exceeds 100% - please reduce allocations."
-                                                        : ` Allocate remaining ${100 - totalPercentage}% to continue.`
-                                                    }
-                                                </span>
-                                            </>
-                                        )}
-                                    </div>
-                                )}
+                                {(() => {
+                                    const relevantMealBudgets = mealBudgets.filter(mb => ["breakfast", "lunch", "dinner"].includes(mb.mealType.toLowerCase()));
+                                    const relevantTotalPercentage = relevantMealBudgets.reduce((sum, mb) => sum + mb.percentage, 0);
+
+                                    return relevantMealBudgets.length > 0 && (
+                                        <div className={cn(
+                                            "flex items-center gap-2 p-4 rounded-xl text-sm font-medium",
+                                            relevantTotalPercentage === 100
+                                                ? "bg-green-50 text-green-700 border border-green-200"
+                                                : relevantTotalPercentage > 100
+                                                    ? "bg-red-50 text-red-700 border border-red-200"
+                                                    : "bg-amber-50 text-amber-700 border border-amber-200"
+                                        )}>
+                                            {relevantTotalPercentage === 100 ? (
+                                                <>
+                                                    <CheckCircle2 className="w-5 h-5" />
+                                                    <span>Perfect! Budget is fully allocated (100%)</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <AlertTriangle className="w-5 h-5" />
+                                                    <span>
+                                                        Total allocation is {relevantTotalPercentage}%.
+                                                        {relevantTotalPercentage > 100
+                                                            ? " Exceeds 100% - please reduce allocations."
+                                                            : ` Allocate remaining ${100 - relevantTotalPercentage}% to continue.`
+                                                        }
+                                                    </span>
+                                                </>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
                             </div>
                         )}
 
@@ -362,7 +381,7 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                                     <CheckCircle2 className="w-4 h-4 text-green-600" />
                                 </div>
                                 <div className="space-y-3">
-                                    {mealBudgets.map((mb) => {
+                                    {mealBudgets.filter(mb => ["breakfast", "lunch", "dinner"].includes(mb.mealType.toLowerCase())).map((mb) => {
                                         const config = MEAL_TYPE_CONFIG[mb.mealType] || { label: mb.mealType, icon: Info, color: "text-gray-500", defaultTime: "" };
                                         return (
                                             <div key={mb.mealType} className="p-4 bg-[var(--primary-bg)] rounded-xl border border-[var(--primary-light)]/20">
@@ -401,63 +420,58 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                             </div>
                         )}
 
-                        {/* Visualization */}
-                        {mealBudgets.length > 0 && mealBudgets.some(mb => mb.budget > 0) && (
-                            <div className="p-6 bg-[var(--primary)] rounded-xl text-white shadow-xl relative overflow-hidden">
-                                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent"></div>
-                                <div className="relative z-10">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <span className="text-sm font-medium text-white/80">Total Allocated</span>
-                                        <span className="text-xl font-bold font-mono tracking-tight">
-                                            ${totalAllocated.toLocaleString()}
-                                            <span className="text-sm font-normal text-white/60 ml-2 font-sans">
-                                                of ${totalBudget.toLocaleString()}
+                        {/* Visualization - Main Meals Only */}
+                        {(() => {
+                            const mainMeals = ["breakfast", "lunch", "dinner"];
+                            const relevantMealBudgets = mealBudgets.filter(mb => mainMeals.includes(mb.mealType.toLowerCase()));
+                            const relevantTotalAllocated = relevantMealBudgets.reduce((sum, mb) => sum + mb.budget, 0);
+
+                            return relevantMealBudgets.length > 0 && relevantMealBudgets.some(mb => mb.budget > 0) && (
+                                <div className="p-6 bg-[var(--primary)] rounded-xl text-white shadow-xl relative overflow-hidden">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent"></div>
+                                    <div className="relative z-10">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <span className="text-sm font-medium text-white/80">Total Allocated</span>
+                                            <span className="text-xl font-bold font-mono tracking-tight">
+                                                ${relevantTotalAllocated.toLocaleString()}
+                                                <span className="text-sm font-normal text-white/60 ml-2 font-sans">
+                                                    of ${totalBudget.toLocaleString()}
+                                                </span>
                                             </span>
-                                        </span>
-                                    </div>
-                                    <div className="w-full bg-white/20 rounded-full h-4 overflow-hidden shadow-inner">
-                                        <div
-                                            className={cn(
-                                                "h-full rounded-full transition-all duration-500 ease-out shadow-lg",
-                                                totalAllocated > totalBudget
-                                                    ? "bg-gradient-to-r from-red-400 to-red-500"
-                                                    : totalAllocated === totalBudget
-                                                        ? "bg-gradient-to-r from-green-400 to-emerald-400"
-                                                        : "bg-gradient-to-r from-[var(--primary-light)] to-white/80"
+                                        </div>
+                                        <div className="w-full bg-white/20 rounded-full h-4 overflow-hidden shadow-inner">
+                                            <div
+                                                className={cn(
+                                                    "h-full rounded-full transition-all duration-500 ease-out shadow-lg",
+                                                    relevantTotalAllocated > totalBudget
+                                                        ? "bg-gradient-to-r from-red-400 to-red-500"
+                                                        : relevantTotalAllocated === totalBudget
+                                                            ? "bg-gradient-to-r from-green-400 to-emerald-400"
+                                                            : "bg-gradient-to-r from-[var(--primary-light)] to-white/80"
+                                                )}
+                                                style={{
+                                                    width: `${Math.min((relevantTotalAllocated / totalBudget) * 100, 100)}%`
+                                                }}
+                                            />
+                                        </div>
+                                        <div className="mt-3 flex justify-between text-xs font-medium text-white/70">
+                                            <span>{Math.round((relevantTotalAllocated / totalBudget) * 100)}% Used</span>
+                                            {relevantTotalAllocated < totalBudget && (
+                                                <span className="text-green-300 flex items-center gap-1">
+                                                    <DollarSign className="w-3 h-3" />
+                                                    {(totalBudget - relevantTotalAllocated).toLocaleString()} available
+                                                </span>
                                             )}
-                                            style={{
-                                                width: `${Math.min((totalAllocated / totalBudget) * 100, 100)}%`
-                                            }}
-                                        />
-                                    </div>
-                                    <div className="mt-3 flex justify-between text-xs font-medium text-white/70">
-                                        <span>{Math.round((totalAllocated / totalBudget) * 100)}% Used</span>
-                                        {totalAllocated < totalBudget && (
-                                            <span className="text-green-300 flex items-center gap-1">
-                                                <DollarSign className="w-3 h-3" />
-                                                {(totalBudget - totalAllocated).toLocaleString()} available
-                                            </span>
-                                        )}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        )}
+                            );
+                        })()}
                     </div>
                 </CardContent>
             </Card>
 
-            {/* Validation Error Message */}
-            {
-                validationMessage && (
-                    <div className="flex items-center gap-3 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700">
-                        <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                        <div>
-                            <p className="font-semibold text-sm">Cannot proceed</p>
-                            <p className="text-sm">{validationMessage}</p>
-                        </div>
-                    </div>
-                )
-            }
+
 
             {/* Navigation */}
             <div className="flex justify-between pt-4">

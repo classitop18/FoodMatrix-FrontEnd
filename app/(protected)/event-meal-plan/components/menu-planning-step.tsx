@@ -31,9 +31,9 @@ export function MenuPlanningStep({
                 </div>
                 <div className="flex-1">
                     <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">Plan Your Menu</h2>
-                <p className="text-gray-500 font-medium mt-1">
-                    Which meals do you plan to serve at this event?
-                </p>
+                    <p className="text-gray-500 font-medium mt-1">
+                        Which meals do you plan to serve at this event?
+                    </p>
                 </div>
             </div>
 
@@ -126,7 +126,7 @@ export function MenuPlanningStep({
 
             {/* Helper */}
             <div className="text-center mt-8">
-                <p className="text-sm font-medium text-gray-500 bg-gray-50 inline-block px-4 py-2 rounded-full border border-gray-100 animate-pulse">
+                <p className="text-sm font-medium text-gray-500 bg-gray-50 inline-block px-4 py-2 rounded-full border border-gray-100">
                     Select a meal type above to include it in the plan.
                 </p>
             </div>

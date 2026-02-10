@@ -55,25 +55,23 @@ export function RecipeCard({
   };
 
   return (
-    <motion.div
-      whileHover={{ y: -5 }}
-      transition={{ duration: 0.2 }}
+    <div
       className={cn(
-        "group relative bg-white rounded-xl shadow-sm border transition-all duration-300 overflow-hidden flex flex-col h-full",
+        "group relative bg-white rounded-xl shadow-sm border transition-all duration-300 overflow-hidden flex flex-col h-full hover:shadow-lg",
         selected
-          ? "border-[var(--primary)] ring-2 ring-[var(--primary)] shadow-md"
-          : "border-gray-200 hover:shadow-md hover:border-[#3d326d]/20",
+          ? "border-[var(--primary)] border-2 shadow-md bg-indigo-50/10"
+          : "border-gray-200 hover:border-[var(--primary)]/30",
         className
       )}
     >
       {/* Image/Gradient Header */}
-      <div className={cn("relative w-full overflow-hidden bg-gray-100 dark:bg-gray-800", compact ? "h-32" : "h-48")}>
+      < div className={cn("relative w-full overflow-hidden bg-gray-100 dark:bg-gray-800", compact ? "h-32" : "h-48")} >
         {imageUrl && !hasError ? (
           <Image
             src={imageUrl}
             alt={recipe.name}
             fill
-            className="object-cover transition-transform duration-700 group-hover:scale-110"
+            className="object-cover transition-transform duration-700"
             sizes="(max-width: 768px) 100vw, 33vw"
             onError={(err) => {
               setHasError(true);
@@ -81,14 +79,15 @@ export function RecipeCard({
             unoptimized
             priority={true}
           />
-        ) : null}
+        ) : null
+        }
 
         {/* Fallback Gradient (shown if no image or on error) */}
         <div
           className={`absolute inset-0 bg-gradient-to-br from-[#3d326d] to-[#7661d3] group-hover:from-[#2d2454] group-hover:to-[#604abd] transition-colors duration-500 ${imageUrl && !hasError ? "hidden" : ""}`}
         >
           <div className="absolute inset-0 flex items-center justify-center">
-            <Utensils className="w-12 h-12 text-white/30 group-hover:scale-110 transition-transform duration-500" />
+            <Utensils className="w-12 h-12 text-white/30 transition-transform duration-500" />
           </div>
         </div>
 
@@ -155,7 +154,7 @@ export function RecipeCard({
             </span>
           </div>
         </div>
-      </div>
+      </div >
 
       <div className="p-4 flex flex-col flex-1">
         {/* Title & Rating */}
@@ -213,6 +212,6 @@ export function RecipeCard({
           <ChevronRight className="w-3 h-3 ml-1 text-[#3d326d] group-hover/btn:text-white transition-colors" />
         </Button>
       </div>
-    </motion.div>
+    </div>
   );
 }

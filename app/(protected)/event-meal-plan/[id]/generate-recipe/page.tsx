@@ -52,7 +52,7 @@ export default function EventRecipeSelectionPage() {
     const { data: event, isLoading: isEventLoading } = useEvent(eventId);
     const { activeAccountId } = useSelector((state: RootState) => state.account);
     const { data: membersData, isLoading: isMembersLoading } = useMembers(
-        { accountId: activeAccountId || "", limit: 100 },
+        { accountId: activeAccountId || "", limit: 100, includeHealthProfile: true },
         { enabled: !!activeAccountId }
     );
 
@@ -184,14 +184,40 @@ export default function EventRecipeSelectionPage() {
             const isStructureMatching = currentTypes.length === selectedMealTypes.length &&
                 selectedMealTypes.every(mt => currentTypes.includes(mt));
 
-            // If manual strategy, calculate default weighted distribution
+            // If manual strategy, calculate default weighted distribution for MAIN MEALS ONLY
             if (budgetStrategy === "manual") {
-                const totalWeight = selectedMealTypes.reduce((sum, mt) => sum + DEFAULT_BUDGET_WEIGHTS[mt], 0);
-                return selectedMealTypes.map(mealType => ({
-                    mealType,
-                    percentage: Math.round((DEFAULT_BUDGET_WEIGHTS[mealType] / totalWeight) * 100),
-                    budget: Math.round((DEFAULT_BUDGET_WEIGHTS[mealType] / totalWeight) * totalBudget),
-                    minPercentage: MIN_BUDGET_PERCENTAGES[mealType]
+                const mainMeals = ["breakfast", "lunch", "dinner"];
+                const targetMeals = selectedMealTypes.filter(mt => mainMeals.includes(mt.toLowerCase()));
+
+                const totalWeight = targetMeals.reduce((sum, mt) => sum + DEFAULT_BUDGET_WEIGHTS[mt], 0);
+
+                return selectedMealTypes.map(mealType => {
+                    const isMainMeal = mainMeals.includes(mealType.toLowerCase());
+                    if (!isMainMeal) {
+                        return {
+                            mealType,
+                            percentage: 0,
+                            budget: 0,
+                            minPercentage: 0
+                        };
+                    }
+
+                    return {
+                        mealType,
+                        percentage: Math.round((DEFAULT_BUDGET_WEIGHTS[mealType] / totalWeight) * 100),
+                        budget: Math.round((DEFAULT_BUDGET_WEIGHTS[mealType] / totalWeight) * totalBudget),
+                        minPercentage: MIN_BUDGET_PERCENTAGES[mealType]
+                    };
+                });
+            }
+
+            // AI STRATEGY
+            // If structure matches and we have existing data (from AI run), preserve it but update budget amounts if totalBudget changed
+            if (isStructureMatching && prev.some(mb => mb.percentage > 0)) {
+                // Recalculate budget amounts based on percentages in case totalBudget changed
+                return prev.map(mb => ({
+                    ...mb,
+                    budget: Math.round((mb.percentage / 100) * totalBudget)
                 }));
             }
 
@@ -435,7 +461,7 @@ export default function EventRecipeSelectionPage() {
         goToNextStep();
     };
 
-    const handleGenerateRecipesForMeal = async (mealType: MealType, customSearch?: string) => {
+    const handleGenerateRecipesForMeal = async (mealType: MealType, customSearch?: string, count: number = 3, specificCuisine?: string) => {
         // Handle Add-ons (Event Items) - Direct to DB
         if (['snacks', 'beverages', 'dessert'].includes(mealType)) {
             if (!customSearch) {
@@ -499,10 +525,10 @@ export default function EventRecipeSelectionPage() {
                 eventId,
                 data: {
                     mealType,
-                    recipeCount: customSearch ? 1 : 3,
+                    recipeCount: customSearch ? 1 : count,
                     budget: mealBudget > 0 ? mealBudget : undefined,
                     customSearch: customSearch?.trim(),
-                    preferredCuisines: (globalCuisine && globalCuisine !== "ALL" && !customSearch) ? [globalCuisine] : undefined,
+                    preferredCuisines: ((specificCuisine || globalCuisine) && (specificCuisine || globalCuisine) !== "ALL" && !customSearch) ? [specificCuisine || globalCuisine] : undefined,
                     considerHealthProfiles: considerHealthProfile,
                     targetMemberIds: considerHealthProfile && activeHealthParticipants.length > 0 ? activeHealthParticipants.map((p: any) => p.id) : [],
                 }

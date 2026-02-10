@@ -16,6 +16,7 @@ export interface GetMembersParams {
   limit?: number;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
+  includeHealthProfile?: boolean;
 }
 
 export interface CreateMemberPayload {

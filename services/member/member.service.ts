@@ -15,6 +15,7 @@ export class MemberService {
         limit: params.limit ?? 10,
         sortBy: params.sortBy ?? "createdAt",
         sortOrder: params.sortOrder ?? "desc",
+        includeHealthProfile: params.includeHealthProfile,
       },
     });
 

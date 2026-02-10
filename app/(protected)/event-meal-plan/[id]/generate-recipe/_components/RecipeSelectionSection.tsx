@@ -145,7 +145,7 @@ interface RecipeSelectionSectionProps {
     globalCuisine: string;
     setGlobalCuisine: (value: string) => void;
     selectedMealTypes: MealType[];
-    handleGenerateRecipesForMeal: (mealType: MealType, customSearch?: string) => Promise<void>;
+    handleGenerateRecipesForMeal: (mealType: MealType, customSearch?: string, count?: number, cuisine?: string) => Promise<void>;
     activeMealTab: MealType;
     setActiveMealTab: (value: MealType) => void;
     mealRecipes: GeneratedRecipeForMeal[];
@@ -179,6 +179,8 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
     const [viewRecipe, setViewRecipe] = useState<any | null>(null);
     const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
     const [searchInputs, setSearchInputs] = useState<Record<MealType, string>>({} as Record<MealType, string>);
+    const [recipeCounts, setRecipeCounts] = useState<Partial<Record<MealType, number>>>({});
+    const [mealCuisines, setMealCuisines] = useState<Partial<Record<MealType, string>>>({});
 
     const handleViewDetails = (recipe: any) => {
         setViewRecipe(recipe);
@@ -303,9 +305,10 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
                         {/* Generate All Button */}
                         <Button
                             onClick={() => Promise.all(
-                                selectedMealTypes.map(mealType =>
-                                    handleGenerateRecipesForMeal(mealType)
-                                )
+                                selectedMealTypes.map(mealType => {
+                                    const effectiveCuisine = (mealCuisines[mealType] || 'GLOBAL') === 'GLOBAL' ? globalCuisine : mealCuisines[mealType];
+                                    return handleGenerateRecipesForMeal(mealType, undefined, recipeCounts[mealType] || 3, effectiveCuisine);
+                                })
                             )}
                             className="bg-[var(--primary)] hover:bg-[#2d2454] text-white h-11 px-6 rounded-lg font-bold shadow-md w-full md:w-auto"
                         >
@@ -413,13 +416,52 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
                                                         onChange={(e) => setSearchInputs(prev => ({ ...prev, [mealType]: e.target.value }))}
                                                         onKeyPress={(e) => {
                                                             if (e.key === 'Enter') {
-                                                                handleGenerateRecipesForMeal(mealType, searchInputs[mealType]);
+                                                                const effectiveCuisine = (mealCuisines[mealType] || 'GLOBAL') === 'GLOBAL' ? globalCuisine : mealCuisines[mealType];
+                                                                handleGenerateRecipesForMeal(mealType, searchInputs[mealType], recipeCounts[mealType] || 3, effectiveCuisine);
                                                             }
                                                         }}
                                                     />
                                                 </div>
+                                                <div className="w-[180px]">
+                                                    <Select
+                                                        value={mealCuisines[mealType] || "GLOBAL"}
+                                                        onValueChange={(val) => setMealCuisines(prev => ({ ...prev, [mealType]: val }))}
+                                                    >
+                                                        <SelectTrigger className="h-11 border-gray-200 focus:border-[var(--primary)] focus:ring-[var(--primary)]">
+                                                            <SelectValue placeholder="Cuisine" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="GLOBAL" className="font-semibold text-[var(--primary)]">
+                                                                Global ({globalCuisine === 'ALL' || !globalCuisine ? 'All' : cuisineOptions.find(c => c.value === globalCuisine)?.label})
+                                                            </SelectItem>
+                                                            {cuisineOptions.map(cuisine => (
+                                                                <SelectItem key={cuisine.value} value={cuisine.value}>
+                                                                    {cuisine.label}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <div className="w-[140px]">
+                                                    <Select
+                                                        value={(recipeCounts[mealType] || 3).toString()}
+                                                        onValueChange={(val) => setRecipeCounts(prev => ({ ...prev, [mealType]: parseInt(val) }))}
+                                                    >
+                                                        <SelectTrigger className="h-11 border-gray-200 focus:border-[var(--primary)] focus:ring-[var(--primary)]">
+                                                            <SelectValue placeholder="Count" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {[1, 2, 3, 4, 5, 6].map(num => (
+                                                                <SelectItem key={num} value={num.toString()}>{num} Recipes</SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
                                                 <Button
-                                                    onClick={() => handleGenerateRecipesForMeal(mealType, searchInputs[mealType])}
+                                                    onClick={() => {
+                                                        const effectiveCuisine = (mealCuisines[mealType] || 'GLOBAL') === 'GLOBAL' ? globalCuisine : mealCuisines[mealType];
+                                                        handleGenerateRecipesForMeal(mealType, searchInputs[mealType], recipeCounts[mealType] || 3, effectiveCuisine);
+                                                    }}
                                                     disabled={isGenerating}
                                                     className="bg-[var(--primary)] hover:bg-[#2d2454] text-white h-11 px-6 font-semibold"
                                                 >

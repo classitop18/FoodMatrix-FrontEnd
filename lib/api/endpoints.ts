@@ -106,6 +106,7 @@ export const API_ENDPOINTS = {
     // AI-Powered Features
     SUGGEST_BUDGET: (eventId: string) => `/events/${eventId}/suggest-budget`,
     GENERATE_RECIPES: (eventId: string) => `/events/${eventId}/generate-recipes`,
+    MERGE_INGREDIENTS: "/events/ai/merge-ingredients",
     // Meals
     GET_MEALS: (eventId: string) => `/events/${eventId}/meals`,
     ADD_MEAL: (eventId: string) => `/events/${eventId}/meals`,
@@ -130,6 +131,7 @@ export const API_ENDPOINTS = {
     // Event Items (Add-ons)
     GET_ITEMS: (eventId: string) => `/events/${eventId}/items`,
     ADD_ITEM: (eventId: string) => `/events/${eventId}/items`,
+    ADD_ITEMS_BULK: (eventId: string) => `/events/${eventId}/items/bulk`,
     UPDATE_ITEM: (eventId: string, itemId: string) => `/events/${eventId}/items/${itemId}`,
     DELETE_ITEM: (eventId: string, itemId: string) => `/events/${eventId}/items/${itemId}`,
   },

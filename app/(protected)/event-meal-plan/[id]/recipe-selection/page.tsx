@@ -222,7 +222,7 @@ export default function EventRecipeSelectionPage() {
     // AI Budget Distribution using NEW API
     const handleAIDistributeBudget = useCallback(async () => {
         try {
-            const result = await suggestBudgetMutation.mutateAsync(eventId);
+            const result = await suggestBudgetMutation.mutateAsync({ eventId, mealTypes: selectedMealTypes });
 
             // Convert API response to our local state format
             const allocations: MealBudgetAllocation[] = result.allocations.map(a => ({
