@@ -134,6 +134,9 @@ export const API_ENDPOINTS = {
     ADD_ITEMS_BULK: (eventId: string) => `/events/${eventId}/items/bulk`,
     UPDATE_ITEM: (eventId: string, itemId: string) => `/events/${eventId}/items/${itemId}`,
     DELETE_ITEM: (eventId: string, itemId: string) => `/events/${eventId}/items/${itemId}`,
+    // Generation State
+    GET_GENERATION_STATE: (eventId: string) => `/events/${eventId}/generation-state`,
+    SAVE_GENERATION_STATE: (eventId: string) => `/events/${eventId}/generation-state`,
   },
 };
 

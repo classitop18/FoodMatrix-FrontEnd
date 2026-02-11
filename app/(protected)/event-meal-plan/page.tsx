@@ -12,7 +12,7 @@ import {
     ArrowLeft
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+
 
 // Redux
 import { useSelector } from "react-redux";
@@ -38,6 +38,7 @@ import { FORM_STEPS, INITIAL_FORM_DATA, calculateTotalServings } from "./constan
 import { EventFormData } from "./types/event.types";
 import { CreateEventDto } from "@/services/event/event.types";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 export default function EventMealPlan() {
     const router = useRouter();
@@ -57,6 +58,8 @@ export default function EventMealPlan() {
 
     // Mutations
     const createEventMutation = useCreateEvent();
+
+    const { toast } = useToast();
 
     // Form hooks
     const { canProceed, getStepErrors } = useEventFormValidation({ formData, currentStep });
@@ -88,20 +91,20 @@ export default function EventMealPlan() {
         const errors = getStepErrors(currentStep);
         if (errors.length > 0) {
             // Show toast with validation errors
-            toast.error(
-                <div className="flex flex-col gap-1">
-                    <span className="font-semibold">Please fix the following issues:</span>
-                    <ul className="list-disc list-inside text-sm mt-1">
-                        {errors.map((error, idx) => (
-                            <li key={idx}>{error}</li>
-                        ))}
-                    </ul>
-                </div>,
-                {
-                    duration: 5000,
-                    icon: <AlertCircle className="w-5 h-5 text-red-500" />,
-                }
-            );
+            toast({
+                title: "Validation Error",
+                description: (
+                    <div className="flex flex-col gap-1">
+                        <span className="font-semibold">Please fix the following issues:</span>
+                        <ul className="list-disc list-inside text-sm mt-1">
+                            {errors.map((error, idx) => (
+                                <li key={idx}>{error}</li>
+                            ))}
+                        </ul>
+                    </div>
+                ),
+                duration: 5000,
+            });
             return;
         }
 
@@ -140,7 +143,11 @@ export default function EventMealPlan() {
     // Submit handler
     const handleSubmit = useCallback(async () => {
         if (!activeAccountId) {
-            toast.error("Account not found");
+            toast({
+                title: "Error",
+                description: "Account not found",
+                duration: 5000,
+            });
             return;
         }
 
@@ -166,13 +173,21 @@ export default function EventMealPlan() {
 
         try {
             const createdEvent = await createEventMutation.mutateAsync(eventData);
-            toast.success("Event created successfully!");
+            toast({
+                title: "Success",
+                description: "Event created successfully!",
+                duration: 5000,
+            });
 
             // Navigate to event detail page
             router.push(`/event-meal-plan/${createdEvent.id}`);
         } catch (error: any) {
             console.error("Failed to create event:", error);
-            toast.error(error?.message || "Failed to create event. Please try again.");
+            toast({
+                title: "Error",
+                description: error?.message || "Failed to create event. Please try again.",
+                duration: 5000,
+            });
         }
     }, [activeAccountId, formData, createEventMutation, router]);
 

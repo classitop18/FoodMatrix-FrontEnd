@@ -7,6 +7,20 @@
   --primary-bg: #f3f0fd;
   --green: #7dab4f;
   --green-light: #9bc76d;
+
+  /* ShadCN UI Variables matching theme */
+  --background: #ffffff;
+  --foreground: #313131;
+  --popover: #ffffff;
+  --popover-foreground: #313131;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --card: #ffffff;
+  --card-foreground: #313131;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --ring: #3d326d;
+  --radius: 0.5rem;
 }
 
 html {

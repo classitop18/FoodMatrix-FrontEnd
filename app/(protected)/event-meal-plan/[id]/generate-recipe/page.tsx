@@ -4,13 +4,22 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, Calendar, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import { AnimatePresence, motion } from "framer-motion";
 
 // Services & Redux
 import { useEvent } from "@/services/event/event.query";
 import { useMembers } from "@/services/member/member.query";
-import { useAddMealToEvent, useAddRecipeToMeal, useSuggestBudget, useGenerateEventRecipes, useAddEventItem, useGetEventItems, useDeleteEventItem } from "@/services/event/event.mutation";
+import {
+    useAddMealToEvent,
+    useAddRecipeToMeal,
+    useSuggestBudget,
+    useGenerateEventRecipes,
+    useAddEventItem,
+    useGetEventItems,
+    useDeleteEventItem,
+} from "@/services/event/event.mutation";
+import { EventService } from "@/services/event/event.service";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store.redux";
 
@@ -47,6 +56,78 @@ export default function EventRecipeSelectionPage() {
     const [selectedHealthMembers, setSelectedHealthMembers] = useState<string[]>([]);
     const [aiRecommendations, setAIRecommendations] = useState<string[]>([]);
     const [budgetValidationErrors, setBudgetValidationErrors] = useState<Partial<Record<MealType, string>>>({});
+
+    // Persistence Ref
+    const isRestoring = useRef(false);
+
+    // RESTORE STATE
+    useEffect(() => {
+        if (!eventId) return;
+
+        const restoreState = async () => {
+            try {
+                // 1. Try fetching from Backend first
+                const backendState = await EventService.getGenerationState(eventId);
+
+                let savedState = null;
+
+                if (backendState && backendState.stateData) {
+                    savedState = backendState.stateData;
+                    console.log("Restored wizard state from Backend");
+                } else {
+                    // 2. Fallback to Local Storage
+                    const localSaved = localStorage.getItem(`event-wizard-state-${eventId}`);
+                    if (localSaved) {
+                        savedState = JSON.parse(localSaved);
+                        console.log("Restored wizard state from Local Storage");
+                    }
+                }
+
+                if (savedState) {
+                    isRestoring.current = true;
+
+                    if (savedState.step) setStep(savedState.step);
+                    if (savedState.budgetStrategy) setBudgetStrategy(savedState.budgetStrategy);
+                    if (savedState.totalBudget) setTotalBudget(savedState.totalBudget);
+                    if (savedState.mealBudgets) setMealBudgets(savedState.mealBudgets);
+                    if (savedState.mealRecipes) setMealRecipes(savedState.mealRecipes);
+                    if (savedState.activeMealTab) setActiveMealTab(savedState.activeMealTab);
+                    if (savedState.globalCuisine) setGlobalCuisine(savedState.globalCuisine);
+                    if (savedState.considerHealthProfile !== undefined) setConsiderHealthProfile(savedState.considerHealthProfile);
+                    if (savedState.selectedHealthMembers) setSelectedHealthMembers(savedState.selectedHealthMembers);
+
+                    // Clear restoring flag after effects run
+                    setTimeout(() => { isRestoring.current = false; }, 500);
+                }
+            } catch (e) {
+                console.error("Failed to restore wizard state", e);
+            }
+        };
+
+        restoreState();
+    }, [eventId]);
+
+    // SAVE STATE Helper
+    const saveWizardState = async (stepOverride?: string, dataOverrides?: any) => {
+        const stateToSave = {
+            step: stepOverride || step,
+            budgetStrategy,
+            totalBudget,
+            mealBudgets,
+            mealRecipes,
+            activeMealTab,
+            globalCuisine,
+            considerHealthProfile,
+            selectedHealthMembers,
+            ...dataOverrides
+        };
+
+        try {
+            await EventService.saveGenerationState(eventId, stateToSave, stateToSave.step);
+        } catch (error) {
+            console.error("Failed to save state to backend", error);
+        }
+    };
 
     // Queries
     const { data: event, isLoading: isEventLoading } = useEvent(eventId);
@@ -186,6 +267,14 @@ export default function EventRecipeSelectionPage() {
 
             // If manual strategy, calculate default weighted distribution for MAIN MEALS ONLY
             if (budgetStrategy === "manual") {
+                // If restoring from saved state, preserve the saved values instead of resetting
+                if (isRestoring.current && isStructureMatching && prev.some(mb => mb.percentage > 0)) {
+                    return prev.map(mb => ({
+                        ...mb,
+                        budget: Math.round((mb.percentage / 100) * totalBudget)
+                    }));
+                }
+
                 const mainMeals = ["breakfast", "lunch", "dinner"];
                 const targetMeals = selectedMealTypes.filter(mt => mainMeals.includes(mt.toLowerCase()));
 
@@ -639,12 +728,24 @@ export default function EventRecipeSelectionPage() {
     const handleRemoveRecipe = async (mealType: string, recipeId: string) => {
         // Handle Add-ons (Event Items) - Direct from DB
         if (['snacks', 'beverages', 'dessert'].includes(mealType)) {
+            // Optimistic update for UI responsiveness
+            setMealRecipes(prev => prev.map(mr => {
+                if (mr.mealType !== mealType) return mr;
+                const updatedRecipes = mr.recipes.filter(r => r.id !== recipeId);
+                return {
+                    ...mr,
+                    recipes: updatedRecipes,
+                    selectedRecipeIds: updatedRecipes.map(r => r.id)
+                };
+            }));
+
             try {
                 await deleteEventItem({ eventId, itemId: recipeId });
                 toast.success("Item removed");
             } catch (error) {
                 console.error(error);
                 toast.error("Failed to remove item");
+                // Rollback if needed (simplest is to let react-query refetch fix it)
             }
             return;
         }
@@ -757,6 +858,9 @@ export default function EventRecipeSelectionPage() {
             }
 
             setStep(nextStepId as any);
+
+            // Save state on successful navigation
+            saveWizardState(nextStepId);
         }
     };
 
@@ -888,11 +992,12 @@ export default function EventRecipeSelectionPage() {
                             mealBudgets={mealBudgets}
                             handleSelectRecipeForMeal={handleSelectRecipeForMeal}
                             onBack={goToPrevStep}
-                            handleSaveAllRecipes={goToNextStep}
+                            handleSaveAllRecipes={goToNextStep} // Continue to next step
                             isSavingAll={false}
                             getSelectedCount={getSelectedCount}
                             actionLabel="Continue"
                             onAddEventItem={handleDirectAddItem}
+                            onRemoveRecipe={handleRemoveRecipe}
                         />
                     )}
 
@@ -909,10 +1014,11 @@ export default function EventRecipeSelectionPage() {
                             mealBudgets={mealBudgets}
                             handleSelectRecipeForMeal={handleSelectRecipeForMeal}
                             onBack={goToPrevStep}
-                            handleSaveAllRecipes={goToNextStep}
+                            handleSaveAllRecipes={goToNextStep} // Continue to Review
                             isSavingAll={false}
                             getSelectedCount={getSelectedCount}
                             actionLabel="Review Final Menu"
+                            onRemoveRecipe={handleRemoveRecipe}
                         />
                     )}
 

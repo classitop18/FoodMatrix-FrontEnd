@@ -96,7 +96,7 @@ const GuestStepComponent: React.FC<GuestStepProps> = ({
                                             : "bg-gray-100 text-gray-500 group-hover:bg-white border border-gray-100"
                                     )}
                                 >
-                                    {member.name?.charAt(0)?.toUpperCase() || "?"}
+                                    {(member.name || member?.user?.firstName)?.charAt(0)?.toUpperCase() || "?"}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className={cn(
@@ -105,7 +105,7 @@ const GuestStepComponent: React.FC<GuestStepProps> = ({
                                             ? "text-indigo-900"
                                             : "text-gray-700"
                                     )}>
-                                        {member.name || "Member"}
+                                        {member.name || (member?.user?.firstName + " " + member?.user?.lastName) || "Member"}
                                     </p>
                                     <p className="text-xs text-gray-400 capitalize">Family Member</p>
                                 </div>

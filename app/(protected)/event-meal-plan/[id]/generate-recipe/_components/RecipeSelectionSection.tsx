@@ -157,6 +157,7 @@ interface RecipeSelectionSectionProps {
     getSelectedCount: () => number;
     actionLabel?: string;
     onAddEventItem?: (item: { name: string, quantity: number, unit: string, category: string }) => Promise<void>;
+    onRemoveRecipe?: (mealType: string, recipeId: string) => void;
 }
 
 export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
@@ -174,7 +175,8 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
     isSavingAll,
     getSelectedCount,
     actionLabel,
-    onAddEventItem
+    onAddEventItem,
+    onRemoveRecipe
 }) => {
     const [viewRecipe, setViewRecipe] = useState<any | null>(null);
     const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
@@ -640,7 +642,13 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
                                                                         <Button
                                                                             size="icon"
                                                                             variant="ghost"
-                                                                            onClick={() => handleSelectRecipeForMeal(mealType, recipe.id)}
+                                                                            onClick={() => {
+                                                                                if (onRemoveRecipe) {
+                                                                                    onRemoveRecipe(mealType, recipe.id);
+                                                                                } else {
+                                                                                    handleSelectRecipeForMeal(mealType, recipe.id);
+                                                                                }
+                                                                            }}
                                                                             className="h-8 w-8 text-gray-400 hover:text-red-500 hover:bg-red-50"
                                                                         >
                                                                             <Trash2 className="w-4 h-4" />

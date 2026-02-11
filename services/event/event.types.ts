@@ -418,3 +418,13 @@ export interface AIGeneratedEventRecipe {
     eventRecommendations?: string[];
     aiReasoningNotes?: string;
 }
+
+// Event Generation State
+export interface EventGenerationState {
+    id: string;
+    eventId: string;
+    stateData: any; // JSON blob of wizard state
+    lastStep?: string;
+    createdAt: string;
+    updatedAt: string;
+}

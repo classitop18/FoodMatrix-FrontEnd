@@ -693,7 +693,7 @@ export default function EventShoppingListPage() {
 
     return (
         <div className="h-[calc(100vh-57px)] bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] relative overflow-auto">
-            <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10 py-8">
+            <div className="max-w-8xl mx-auto px-4 md:px-6 relative z-10 py-8">
                 {/* Header */}
                 <div className="flex flex-col items-start lg:items-center justify-between mb-6 gap-3 animate-fade-in relative">
                     <Button
@@ -729,7 +729,7 @@ export default function EventShoppingListPage() {
 
                 {/* Pending Items Alert */}
                 {pendingItems.length > 0 && (
-                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex items-center gap-3">
+                    <div className= "bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex items-center gap-3">
                         <div className="flex-shrink-0 w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
                             <span className="text-amber-700 font-bold">{pendingItems.length}</span>
                         </div>
@@ -743,7 +743,7 @@ export default function EventShoppingListPage() {
                 )}
 
                 {/* Add Items Section */}
-                <div className="bg-gradient-to-r from-white via-[#F3F0FD] to-white border border-[#EDE9FF] rounded-xl p-6 py-4 mb-6">
+                <div className="max-w-7xl m-auto bg-gradient-to-r from-white via-[#F3F0FD] to-white border border-[#EDE9FF] rounded-xl p-6 py-4 mb-6">
                     <div className="flex gap-3 items-center font-bold mb-4 flex-wrap">
                         <ShoppingCart className="size-5 text-[var(--primary)]" />
                         Add Extra Items (Fruits, Snacks, etc.)
@@ -886,7 +886,7 @@ export default function EventShoppingListPage() {
                 {/* Main Content Area */}
                 <div className="space-y-8 pb-24">
                     {/* 1. AI Merged Recipe Ingredients Section */}
-                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden animate-fade-in delay-100">
+                    <div className=" max-w-7xl m-auto  bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden animate-fade-in delay-100">
                         <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-green-50 rounded-lg">
@@ -981,7 +981,7 @@ export default function EventShoppingListPage() {
 
                     {/* 2. Extra / Manual Items Section */}
                     {(manualIngredients.length > 0) && (
-                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden animate-fade-in delay-200">
+                        <div className=" mt-5 max-w-7xl m-auto bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden animate-fade-in delay-200">
                             <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-amber-50/30">
                                 <div className="flex items-center gap-3">
                                     <div className="p-2 bg-amber-100 rounded-lg">

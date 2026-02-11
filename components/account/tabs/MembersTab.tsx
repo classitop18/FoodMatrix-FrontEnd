@@ -75,9 +75,8 @@ export const MembersTab: React.FC<MembersTabProps> = ({
           <button
             onClick={handleRefetch}
             disabled={isLoading}
-            className={`bg-gray-200 hover:bg-gray-300 text-gray-700 p-2 rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed h-10 w-10 flex items-center justify-center ${
-              isLoading ? "animate-spin" : ""
-            }`}
+            className={`bg-gray-200 hover:bg-gray-300 text-gray-700 p-2 rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed h-10 w-10 flex items-center justify-center ${isLoading ? "animate-spin" : ""
+              }`}
             title="Refetch Members"
           >
             <RefreshCw size={16} />
@@ -85,17 +84,15 @@ export const MembersTab: React.FC<MembersTabProps> = ({
           <div className="flex items-center bg-gray-100 rounded-lg p-1">
             <button
               onClick={() => setViewMode("card")}
-              className={`p-1.5 rounded transition-all h-8 ${
-                viewMode === "card" ? "bg-white shadow-sm" : "text-gray-400"
-              }`}
+              className={`p-1.5 rounded transition-all h-8 ${viewMode === "card" ? "bg-white shadow-sm" : "text-gray-400"
+                }`}
             >
               <Grid3x3 size={16} />
             </button>
             <button
               onClick={() => setViewMode("table")}
-              className={`p-1.5 rounded transition-all h-8 ${
-                viewMode === "table" ? "bg-white shadow-sm" : "text-gray-400"
-              }`}
+              className={`p-1.5 rounded transition-all h-8 ${viewMode === "table" ? "bg-white shadow-sm" : "text-gray-400"
+                }`}
             >
               <List size={16} />
             </button>
@@ -175,11 +172,10 @@ export const MembersTab: React.FC<MembersTabProps> = ({
             <button
               disabled={!pagination.hasPrev}
               onClick={() => setCurrentPage((p) => p - 1)}
-              className={`h-9 w-9 rounded-lg flex items-center justify-center transition-all ${
-                pagination.hasPrev
-                  ? "bg-white border border-gray-200 hover:bg-gray-50 text-gray-600"
-                  : "bg-gray-100 text-gray-400 cursor-not-allowed"
-              }`}
+              className={`h-9 w-9 rounded-lg flex items-center justify-center transition-all ${pagination.hasPrev
+                ? "bg-white border border-gray-200 hover:bg-gray-50 text-gray-600"
+                : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                }`}
             >
               <ChevronLeft size={16} />
             </button>
@@ -188,11 +184,10 @@ export const MembersTab: React.FC<MembersTabProps> = ({
                 <button
                   key={page}
                   onClick={() => setCurrentPage(page)}
-                  className={`h-9 px-3 rounded-lg font-bold text-sm transition-all ${
-                    page === pagination.page
-                      ? "bg-[#313131] text-white shadow-md"
-                      : "bg-white border border-gray-200 hover:bg-gray-50 text-gray-600"
-                  }`}
+                  className={`h-9 px-3 rounded-lg font-bold text-sm transition-all ${page === pagination.page
+                    ? "bg-[#313131] text-white shadow-md"
+                    : "bg-white border border-gray-200 hover:bg-gray-50 text-gray-600"
+                    }`}
                 >
                   {page}
                 </button>
@@ -201,11 +196,10 @@ export const MembersTab: React.FC<MembersTabProps> = ({
             <button
               disabled={!pagination.hasNext}
               onClick={() => setCurrentPage((p) => p + 1)}
-              className={`h-9 w-9 rounded-lg flex items-center justify-center transition-all ${
-                pagination.hasNext
-                  ? "bg-white border border-gray-200 hover:bg-gray-50 text-gray-600"
-                  : "bg-gray-100 text-gray-400 cursor-not-allowed"
-              }`}
+              className={`h-9 w-9 rounded-lg flex items-center justify-center transition-all ${pagination.hasNext
+                ? "bg-white border border-gray-200 hover:bg-gray-50 text-gray-600"
+                : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                }`}
             >
               <ChevronRight size={16} />
             </button>

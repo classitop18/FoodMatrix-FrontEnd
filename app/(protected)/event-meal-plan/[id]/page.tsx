@@ -148,7 +148,13 @@ export default function EventDetailPage() {
     const [selectedRecipeId, setSelectedRecipeId] = useState<string | null>(null);
 
     // Fetch full recipe details when selected
-    const { data: fullRecipe } = useRecipe(selectedRecipeId);
+    const { data: fullRecipe, isLoading: isRecipeLoading } = useRecipe(selectedRecipeId);
+
+    // Merge logic: Use fullRecipe if available, but preserve imageUrl from selectedRecipe if fullRecipe lacks it
+    // This fixes the issue where event recipes might have images in the list but not in the detailed fetch
+    const displayRecipe = fullRecipe
+        ? { ...fullRecipe, imageUrl: fullRecipe.imageUrl || selectedRecipe?.imageUrl }
+        : selectedRecipe;
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -295,6 +301,8 @@ export default function EventDetailPage() {
         }
     };
 
+    console.log({ participants: event.participants });
+
     return (
         <div className="h-[calc(100vh-57px)] bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] relative overflow-auto">
 
@@ -321,14 +329,14 @@ export default function EventDetailPage() {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <Button
+                        {/* <Button
                             variant="default"
                             size="sm"
                             className="bg-[#313131] hover:bg-black text-white font-bold py-2.5 px-4 rounded-lg shadow-none transition-all flex items-center gap-2 text-sm h-auto" onClick={() => router.push(`/event-meal-plan/${eventId}/generate-recipe`)}
                         >
                             <Plus className="w-4 h-4" />
                             Add Meal
-                        </Button>
+                        </Button> */}
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" size="icon" className="rounded-full border-gray-200 hover:bg-gray-50">
@@ -432,7 +440,7 @@ export default function EventDetailPage() {
                                     <Utensils className="w-5 h-5 text-gray-400" />
                                     Event Menu
                                 </h2>
-                                {meals && meals.length > 0 && (
+                                {/* {meals && meals.length > 0 && (
 
                                     <ThemeButton
                                         label="Manage Meals"
@@ -440,7 +448,7 @@ export default function EventDetailPage() {
                                         className="rounded-xl"
                                     />
 
-                                )}
+                                )} */}
 
 
                             </div>
@@ -578,7 +586,9 @@ export default function EventDetailPage() {
                                                         <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs border border-indigo-200">
                                                             {participant.member?.name?.charAt(0)?.toUpperCase()}
                                                         </div>
-                                                        <span className="text-sm font-medium text-gray-700">{participant.member?.name}</span>
+                                                        <span className="text-sm font-medium text-gray-700">
+                                                            {participant.member?.name || (participant?.member?.user?.firstName + " " + participant?.member?.user?.lastName)}
+                                                        </span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -598,7 +608,8 @@ export default function EventDetailPage() {
 
             {/* Recipe Details Dialog */}
             <RecipeDetailsDialog
-                recipe={fullRecipe ?? selectedRecipe}
+                recipe={displayRecipe}
+                isLoading={isRecipeLoading}
                 open={isDialogOpen}
                 onOpenChange={(open) => {
                     setIsDialogOpen(open);

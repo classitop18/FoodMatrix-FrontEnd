@@ -3,7 +3,7 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/react-query";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/components/ui/sonner";
 
 import { store } from "./store.redux";
 import { Provider } from "react-redux";

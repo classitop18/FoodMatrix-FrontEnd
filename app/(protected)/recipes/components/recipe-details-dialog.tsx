@@ -238,6 +238,9 @@ export function RecipeDetailsDialog({
 
   if (!recipe) return null;
 
+
+  console.log({recipe})
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent

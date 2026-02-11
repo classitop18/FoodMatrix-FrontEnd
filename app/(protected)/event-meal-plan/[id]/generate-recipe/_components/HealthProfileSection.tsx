@@ -30,6 +30,13 @@ export const HealthProfileSection: React.FC<HealthProfileSectionProps> = ({
     setSelectedHealthMembers,
     onContinue
 }) => {
+
+
+
+
+    console.log("participants", participants);
+
+
     return (
         <motion.div
             initial={{ opacity: 0, x: 20 }}
@@ -155,7 +162,7 @@ export const HealthProfileSection: React.FC<HealthProfileSectionProps> = ({
                                                             isSelected ? "text-[var(--primary)]" : "text-[#313131]"
                                                         )}
                                                     >
-                                                        {p.name}
+                                                        {p.name || p?.user?.firstName + " " + p?.user?.lastName}
                                                     </Label>
                                                     {/* Optional subtitle (could add role or details here if available) */}
                                                 </div>

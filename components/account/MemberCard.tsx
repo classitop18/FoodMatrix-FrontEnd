@@ -40,7 +40,7 @@ export const MemberCard: React.FC<MemberCardProps> = ({
                 <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-[#7661d3] to-[#3d326d] flex items-center justify-center text-white text-xs font-bold ring-2 ring-[#F3F0FD] shadow-sm">
                   {member.userId
                     ? `${member.user?.firstName?.[0] || ""}${member.user?.lastName?.[0] || ""}`
-                    : member.name?.[0]?.toUpperCase() || "M"}
+                    : member.name?.toUpperCase() || "M"}
                 </div>
               )}
               {member.role === "super_admin" && (
@@ -60,15 +60,14 @@ export const MemberCard: React.FC<MemberCardProps> = ({
               </div>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <div
-                  className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide leading-none ${
-                    member.role === "super_admin"
+                  className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide leading-none ${member.role === "super_admin"
                       ? "bg-amber-50 text-amber-700"
                       : member.role === "admin"
                         ? "bg-blue-50 text-blue-700"
                         : member.role === "member"
                           ? "bg-purple-50 text-purple-700"
                           : "bg-gray-50 text-gray-600"
-                  }`}
+                    }`}
                 >
                   {member.role === "super_admin" ? "Super" : member.role}
                 </div>

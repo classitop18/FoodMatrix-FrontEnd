@@ -21,6 +21,7 @@ import {
     EventItemResponse,
     CreateEventItemDto,
     UpdateEventItemDto,
+    EventGenerationState,
 } from "./event.types";
 
 export const EventService = {
@@ -370,6 +371,31 @@ export const EventService = {
         } catch (error) {
             console.error("PDF Download Error:", error);
             throw error;
+            throw error;
         }
+    },
+
+    // ===== Generation State Persistence =====
+    getGenerationState: async (eventId: string): Promise<EventGenerationState | null> => {
+        try {
+            const response = await apiClient.get(
+                API_ENDPOINTS.EVENT.GET_GENERATION_STATE(eventId)
+            );
+            return response.data.data;
+        } catch (error) {
+            console.error("Failed to get generation state", error);
+            return null;
+        }
+    },
+
+    saveGenerationState: async (
+        eventId: string,
+        data: any,
+        lastStep?: string
+    ): Promise<void> => {
+        await apiClient.post(
+            API_ENDPOINTS.EVENT.SAVE_GENERATION_STATE(eventId),
+            { stateData: data, lastStep }
+        );
     },
 };

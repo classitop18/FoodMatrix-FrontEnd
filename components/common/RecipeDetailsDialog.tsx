@@ -6,6 +6,7 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  DialogClose,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,13 +29,18 @@ import {
   ThumbsDown,
   Heart,
   Package,
+  Leaf,
+  Info,
   Zap,
   Repeat,
+  Globe,
   TrendingUp,
+  AlertCircle,
   CheckCircle2,
   Scale,
 } from "lucide-react";
 import {
+  ResponsiveContainer,
   BarChart,
   Bar,
   XAxis,
@@ -47,7 +53,6 @@ import {
   Pie,
   Cell,
   LineChart,
-  ResponsiveContainer,
 } from "recharts";
 import { JSX, useEffect, useState } from "react";
 
@@ -55,17 +60,21 @@ interface RecipeDetailsDialogProps {
   recipe: Recipe | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  isLoading?: boolean;
 }
 
 export function RecipeDetailsDialog({
   recipe,
   open,
   onOpenChange,
+  isLoading = false,
 }: RecipeDetailsDialogProps) {
   const [viewMode, setViewMode] = useState<"details" | "graph">("details");
   const [nutritionData, setNutritionData] = useState<any[]>([]);
   const [chartType, setChartType] = useState<"bar" | "line" | "pie">("bar");
   const { mutate: interact } = useInteractWithRecipeMutation();
+
+  console.log({ recipe }, "112recipe")
 
   const handleInteraction = (action: "like" | "dislike" | "favorite") => {
     if (recipe) {
@@ -75,6 +84,11 @@ export function RecipeDetailsDialog({
 
   // Theme Colors
   const COLORS = ["#3d326d", "#7661d3", "#7dab4f", "#f97316", "#ef4444"];
+
+  const getCuisineColor = (cuisine: string) => {
+    // Return a consistent style, can be customized per cuisine if needed
+    return "bg-[#3d326d]/5 text-[#3d326d] border-[#3d326d]/20";
+  };
 
   function normalizeNutritionForChart(nutrition: any) {
     if (!nutrition) return [];
@@ -130,8 +144,6 @@ export function RecipeDetailsDialog({
     if (chartType === "bar") {
       return (
         <BarChart
-          width={500}
-          height={300}
           data={nutritionData}
           margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
         >
@@ -161,12 +173,9 @@ export function RecipeDetailsDialog({
         </BarChart>
       );
     }
-    // ... Other chart types (omitted for brevity, assume similar logic or import from original if needed, but for now I'll stick to basic)
     if (chartType === "line") {
       return (
         <LineChart
-          width={500}
-          height={300}
           data={nutritionData}
           margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
         >
@@ -201,36 +210,38 @@ export function RecipeDetailsDialog({
     }
     if (chartType === "pie") {
       return (
-        <div className="flex justify-center">
-          <PieChart width={400} height={400}>
-            <Pie
-              data={nutritionData}
-              dataKey="value"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
-              outerRadius={120}
-              innerRadius={60}
-              paddingAngle={5}
-              label={(entry) => `${entry.name}`}
-            >
-              {nutritionData.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={entry.color || COLORS[index % COLORS.length]}
-                />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip />} />
-            <Legend />
-          </PieChart>
-        </div>
+        <PieChart>
+          <Pie
+            data={nutritionData}
+            dataKey="value"
+            nameKey="name"
+            cx="50%"
+            cy="50%"
+            outerRadius={120}
+            innerRadius={60}
+            paddingAngle={5}
+            label={(entry) => `${entry.name}`}
+          >
+            {nutritionData.map((entry, index) => (
+              <Cell
+                key={`cell-${index}`}
+                fill={entry.color || COLORS[index % COLORS.length]}
+              />
+            ))}
+          </Pie>
+          <Tooltip content={<CustomTooltip />} />
+          <Legend />
+        </PieChart>
       );
     }
+
     return <div className="text-sm text-gray-500">No chart available</div>;
   };
 
-  if (!open) return null;
+  if (!recipe && !isLoading) return null;
+
+
+  console.log({ recipe })
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -238,20 +249,32 @@ export function RecipeDetailsDialog({
         showCloseButton={false}
         className="max-w-[95vw] md:max-w-screen-xl h-[95vh] p-0 overflow-hidden flex flex-col bg-[#F9FAFB] border-none outline-none shadow-2xl rounded-2xl"
       >
-        {!recipe ? (
-          <div className="flex flex-col items-center justify-center h-full space-y-4">
-            <div className="relative">
-              <div className="w-16 h-16 border-4 border-[#3d326d]/20 border-t-[#3d326d] rounded-full animate-spin"></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <ChefHat className="w-6 h-6 text-[#3d326d]" />
-              </div>
+        {/* Hidden Title for Accessibility */}
+        <DialogTitle className="sr-only">
+          {recipe?.name || "Recipe Details"}
+        </DialogTitle>
+
+        {isLoading && !recipe ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+              <p className="text-gray-500 font-medium animate-pulse">
+                Fetching recipe details...
+              </p>
             </div>
-            <p className="text-lg font-semibold text-gray-600 animate-pulse">Fetching delicious details...</p>
           </div>
-        ) : (
+        ) : recipe ? (
           <>
-            {/* Hidden Title for Accessibility */}
-            <DialogTitle className="sr-only">{recipe.name} Details</DialogTitle>
+            {isLoading && (
+              <div className="absolute inset-0 z-50 bg-white/50 backdrop-blur-sm flex items-center justify-center">
+                <div className="bg-white p-4 rounded-full shadow-2xl flex items-center gap-3 border border-gray-100">
+                  <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+                  <span className="text-sm font-bold text-indigo-900">
+                    Updating details...
+                  </span>
+                </div>
+              </div>
+            )}
 
             {/* Sticky Header */}
             <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shrink-0 z-20">
@@ -491,7 +514,6 @@ export function RecipeDetailsDialog({
                         </p>
                       </div>
                     </div>
-                    {/* ... other stats ... */}
                     <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center gap-4 hover:border-[#3d326d]/20 transition-colors">
                       <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center text-orange-500">
                         <DollarSign className="w-5 h-5" />
@@ -501,7 +523,7 @@ export function RecipeDetailsDialog({
                           Per Serving
                         </p>
                         <p className="text-lg font-extrabold text-[#313131]">
-                          ${Number(recipe.estimatedCostPerServing).toFixed(2)}
+                          ${Number(recipe.estimatedCostPerServing || 0).toFixed(2)}
                         </p>
                       </div>
                     </div>
@@ -613,6 +635,48 @@ export function RecipeDetailsDialog({
                           </CardContent>
                         </Card>
 
+                        {/* Complementary Items */}
+                        {recipe.complementaryItems &&
+                          (recipe.complementaryItems as any[]).length > 0 && (
+                            <Card className="border-none shadow-md overflow-hidden bg-white">
+                              <div className="h-1.5 bg-gradient-to-r from-purple-400 to-pink-400" />
+                              <CardContent className="p-6 md:p-8">
+                                <h3 className="text-xl font-extrabold text-[#313131] mb-6 flex items-center gap-2">
+                                  <Sparkles className="w-5 h-5 text-purple-500" />
+                                  Perfect Pairings
+                                </h3>
+                                <div className="grid gap-3">
+                                  {(recipe.complementaryItems as any[]).map(
+                                    (item: any, index: number) => (
+                                      <div
+                                        key={index}
+                                        className="flex items-center justify-between p-4 bg-purple-50/50 rounded-xl border border-purple-100"
+                                      >
+                                        <div className="flex items-center gap-3">
+                                          <div className="w-2 h-2 rounded-full bg-purple-400" />
+                                          <span className="font-bold text-gray-700">
+                                            {item.name}
+                                          </span>
+                                          {item.optional && (
+                                            <Badge
+                                              variant="secondary"
+                                              className="text-[10px] bg-white text-gray-500"
+                                            >
+                                              Optional
+                                            </Badge>
+                                          )}
+                                        </div>
+                                        <span className="font-bold text-purple-600">
+                                          ${item.cost?.toFixed(2)}
+                                        </span>
+                                      </div>
+                                    ),
+                                  )}
+                                </div>
+                              </CardContent>
+                            </Card>
+                          )}
+
                         {/* Cost Analysis Card */}
                         {recipe.costAnalysis && (
                           <Card className="border-none shadow-md overflow-hidden bg-white">
@@ -631,55 +695,26 @@ export function RecipeDetailsDialog({
                                   <p className="text-xs text-blue-600 font-bold uppercase mb-1">Per Serving</p>
                                   <p className="text-2xl font-extrabold text-[#313131]">${recipe.costAnalysis.costPerServing.toFixed(2)}</p>
                                 </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        )}
-
-                        {/* Health Restrictions Card - RED (Warning) */}
-                        {((recipe as any).suitabilityAnalysis?.notSuitableFor?.length > 0 || (recipe as any).suitabilityAnalysis?.riskNote) && (
-                          <Card className="border-none shadow-md overflow-hidden bg-white">
-                            <div className="h-1.5 bg-gradient-to-r from-red-500 to-rose-600" />
-                            <CardContent className="p-6 md:p-8">
-                              <h3 className="text-xl font-extrabold text-[#313131] mb-6 flex items-center gap-2">
-                                <Zap className="w-5 h-5 text-red-500" />
-                                Health Warnings & Restrictions
-                              </h3>
-
-                              <div className="space-y-6">
-                                {/* Risk Note */}
-                                {(recipe as any).suitabilityAnalysis?.riskNote && (
-                                  <div className="bg-red-50/80 border border-red-100 rounded-xl p-4 flex gap-3 text-red-800">
-                                    <span className="text-lg">⚠️</span>
+                                {recipe.costAnalysis.budgetEfficiency && (
+                                  <div className="bg-orange-50 p-4 rounded-xl border border-orange-100 col-span-2">
+                                    <div className="flex justify-between items-center mb-2">
+                                      <p className="text-xs text-orange-600 font-bold uppercase">Budget Efficiency</p>
+                                      <span className="text-sm font-bold text-orange-700">{(recipe.costAnalysis.budgetEfficiency * 100).toFixed(0)}%</span>
+                                    </div>
+                                    <div className="h-2 w-full bg-orange-200 rounded-full overflow-hidden">
+                                      <div className="h-full bg-orange-500 rounded-full" style={{ width: `${recipe.costAnalysis.budgetEfficiency * 100}%` }} />
+                                    </div>
+                                  </div>
+                                )}
+                                {recipe.costAnalysis.pantryItemsSavings && (
+                                  <div className="bg-purple-50 p-4 rounded-xl border border-purple-100 col-span-2 flex items-center gap-3">
+                                    <div className="p-2 bg-purple-100 rounded-lg text-purple-600">
+                                      <TrendingUp className="w-5 h-5" />
+                                    </div>
                                     <div>
-                                      <p className="text-xs font-bold uppercase tracking-wider mb-1 text-red-600">Important Advisory</p>
-                                      <p className="text-sm font-bold leading-relaxed">{(recipe as any).suitabilityAnalysis.riskNote}</p>
+                                      <p className="text-xs text-purple-600 font-bold uppercase">Pantry Savings</p>
+                                      <p className="text-sm font-medium text-gray-700">You saved <span className="font-bold text-purple-700">${(recipe.costAnalysis.pantryItemsSavings * 100).toFixed(0)}%</span> by using pantry items!</p>
                                     </div>
-                                  </div>
-                                )}
-
-                                {/* Not Suitable For List */}
-                                {((recipe as any).suitabilityAnalysis?.notSuitableFor || []).length > 0 && (
-                                  <div className="space-y-3">
-                                    <p className="text-xs text-red-500 font-bold uppercase flex items-center gap-2">
-                                      <span className="w-2 h-2 rounded-full bg-red-500" />
-                                      Not Suitable For
-                                    </p>
-                                    <div className="flex flex-wrap gap-2">
-                                      {(recipe as any).suitabilityAnalysis.notSuitableFor.map((item: string, i: number) => (
-                                        <Badge
-                                          key={i}
-                                          className="bg-red-50 text-red-700 border-red-200 hover:bg-red-100 px-3 py-1 text-sm font-semibold"
-                                          variant="outline"
-                                        >
-                                          <XIcon className="w-3 h-3 mr-1.5" />
-                                          {item}
-                                        </Badge>
-                                      ))}
-                                    </div>
-                                    <p className="text-xs text-gray-500 mt-2 italic">
-                                      This recipe contains ingredients that conflict with these health profiles.
-                                    </p>
                                   </div>
                                 )}
                               </div>
@@ -687,32 +722,50 @@ export function RecipeDetailsDialog({
                           </Card>
                         )}
 
-                        {/* Suitability/Benefits Card - GREEN (Positive) */}
-                        {((recipe as any).suitabilityAnalysis?.suitableFor?.length > 0) && (
+                        {/* Pantry Optimization */}
+                        {recipe.pantryOptimization && recipe.pantryOptimization.length > 0 && (
                           <Card className="border-none shadow-md overflow-hidden bg-white">
-                            <div className="h-1.5 bg-gradient-to-r from-emerald-500 to-green-500" />
+                            <div className="h-1.5 bg-gradient-to-r from-indigo-400 to-violet-400" />
                             <CardContent className="p-6 md:p-8">
                               <h3 className="text-xl font-extrabold text-[#313131] mb-6 flex items-center gap-2">
-                                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                                Dietary Suitability
+                                <Package className="w-5 h-5 text-[var(--primary)]" />
+                                Pantry Optimization
                               </h3>
-
-                              <div className="space-y-2">
-                                <div className="flex flex-wrap gap-2">
-                                  {(recipe as any).suitabilityAnalysis.suitableFor.map((item: string, i: number) => (
-                                    <Badge
-                                      key={i}
-                                      className="bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 px-3 py-1 text-sm font-semibold"
-                                      variant="outline"
-                                    >
-                                      {item}
-                                    </Badge>
-                                  ))}
+                              <ul className="space-y-3">
+                                {recipe.pantryOptimization.map((item, idx) => (
+                                  <li key={idx} className="flex items-start gap-3 text-gray-600 font-medium">
+                                    <CheckCircle2 className="w-5 h-5 text-[var(--primary)] shrink-0 mt-0.5" />
+                                    {item}
+                                  </li>
+                                ))}
+                              </ul>
+                              {recipe.pantryItemsUsedCount && (
+                                <div className="mt-6 p-4 bg-indigo-50 rounded-xl border border-indigo-100 flex items-center gap-3">
+                                  <span className="font-bold text-indigo-700 text-lg">{recipe.pantryItemsUsedCount}</span>
+                                  <span className="text-indigo-600 text-sm font-medium">pantry staples used in this recipe.</span>
                                 </div>
-                                <p className="text-xs text-gray-400 mt-2 italic">
-                                  This recipe aligns well with these dietary preferences.
-                                </p>
-                              </div>
+                              )}
+                            </CardContent>
+                          </Card>
+                        )}
+
+                        {/* Variations */}
+                        {recipe.variations && recipe.variations.length > 0 && (
+                          <Card className="border-none shadow-md overflow-hidden bg-white">
+                            <div className="h-1.5 bg-gradient-to-r from-pink-400 to-rose-400" />
+                            <CardContent className="p-6 md:p-8">
+                              <h3 className="text-xl font-extrabold text-[#313131] mb-6 flex items-center gap-2">
+                                <Repeat className="w-5 h-5 text-pink-500" />
+                                Variations
+                              </h3>
+                              <ul className="space-y-3">
+                                {recipe.variations.map((item, idx) => (
+                                  <li key={idx} className="flex items-start gap-3 text-gray-600 font-medium">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-pink-400 mt-2 shrink-0" />
+                                    {item}
+                                  </li>
+                                ))}
+                              </ul>
                             </CardContent>
                           </Card>
                         )}
@@ -735,6 +788,7 @@ export function RecipeDetailsDialog({
                                 : (JSON.parse(recipe.instructions as any) as any[])
                               ).map((instruction, index) => (
                                 <div key={index} className="relative pl-8 group">
+                                  {/* Step Number Bubble */}
                                   <div className="absolute -left-[21px] top-0 w-10 h-10 rounded-full bg-white border-2 border-gray-100 flex items-center justify-center z-10 group-hover:border-[#3d326d] group-hover:scale-110 transition-all duration-300">
                                     <span className="text-sm font-extrabold text-[#3d326d]">
                                       {index + 1}
@@ -753,37 +807,245 @@ export function RecipeDetailsDialog({
                             </div>
                           </CardContent>
                         </Card>
+
+                        {/* Cooking Tips */}
+                        {recipe.cookingTips && recipe.cookingTips.length > 0 && (
+                          <Card className="border-none shadow-md overflow-hidden bg-white">
+                            <div className="h-1.5 bg-gradient-to-r from-amber-400 to-orange-400" />
+                            <CardContent className="p-6 md:p-8">
+                              <h3 className="text-xl font-extrabold text-[#313131] mb-6 flex items-center gap-2">
+                                <Zap className="w-5 h-5 text-amber-500" />
+                                Pro Tips
+                              </h3>
+                              <ul className="space-y-4">
+                                {recipe.cookingTips.map((tip, idx) => (
+                                  <li key={idx} className="bg-amber-50 p-4 rounded-xl border border-amber-100 text-amber-900 font-medium text-sm flex gap-3">
+                                    <Lightbulb className="w-5 h-5 text-amber-500 shrink-0" />
+                                    {tip}
+                                  </li>
+                                ))}
+                              </ul>
+                            </CardContent>
+                          </Card>
+                        )}
+
+                        {/* Quick Nutrition Card */}
+                        <Card className="border-none shadow-md overflow-hidden bg-white">
+                          <div className="h-1.5 bg-gradient-to-r from-blue-400 to-cyan-400" />
+                          <CardContent className="p-6 md:p-8">
+                            <h3 className="text-xl font-extrabold text-[#313131] mb-6 flex items-center gap-2">
+                              <BarChart3 className="w-5 h-5 text-blue-500" />
+                              Nutrition Overview
+                            </h3>
+
+                            <div className="space-y-4">
+                              {/* Protein */}
+                              <div className="space-y-2">
+                                <div className="flex justify-between text-sm font-bold">
+                                  <span className="text-gray-600">Protein</span>
+                                  <span className="text-blue-600">
+                                    {recipe.nutrition?.protein_g}g
+                                  </span>
+                                </div>
+                                <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full bg-blue-500 rounded-full"
+                                    style={{
+                                      width: `${Math.min((recipe.nutrition?.protein_g || 0) * 1.5, 100)}%`,
+                                    }}
+                                  />
+                                </div>
+                              </div>
+
+                              {/* Carbs */}
+                              <div className="space-y-2">
+                                <div className="flex justify-between text-sm font-bold">
+                                  <span className="text-gray-600">Carbs</span>
+                                  <span className="text-amber-500">
+                                    {recipe.nutrition?.carbs_g}g
+                                  </span>
+                                </div>
+                                <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full bg-amber-400 rounded-full"
+                                    style={{
+                                      width: `${Math.min(recipe.nutrition?.carbs_g || 0, 100)}%`,
+                                    }}
+                                  />
+                                </div>
+                              </div>
+
+                              {/* Fat */}
+                              <div className="space-y-2">
+                                <div className="flex justify-between text-sm font-bold">
+                                  <span className="text-gray-600">Fat</span>
+                                  <span className="text-red-500">
+                                    {recipe.nutrition?.fat_g}g
+                                  </span>
+                                </div>
+                                <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full bg-red-400 rounded-full"
+                                    style={{
+                                      width: `${Math.min((recipe.nutrition?.fat_g || 0) * 2, 100)}%`,
+                                    }}
+                                  />
+                                </div>
+                              </div>
+
+                              <Button
+                                onClick={() => setViewMode("graph")}
+                                variant="outline"
+                                className="w-full mt-4 border-dashed border-gray-300 text-gray-500 hover:text-[#3d326d] hover:border-[#3d326d]"
+                              >
+                                View Full Analysis
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        {/* Health & Considerations */}
+                        {(recipe.healthConsiderations?.length || recipe.nutritionalHighlights?.length) && (
+                          <Card className="border-none shadow-md overflow-hidden bg-white">
+                            <div className="h-1.5 bg-gradient-to-r from-green-400 to-emerald-400" />
+                            <CardContent className="p-6 md:p-8">
+                              <h3 className="text-xl font-extrabold text-[#313131] mb-6 flex items-center gap-2">
+                                <Leaf className="w-5 h-5 text-green-500" />
+                                Health & Diet
+                              </h3>
+
+                              {recipe.healthConsiderations && recipe.healthConsiderations.length > 0 && (
+                                <div className="mb-6">
+                                  <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">Considerations</h4>
+                                  <div className="flex flex-wrap gap-2">
+                                    {recipe.healthConsiderations.map((item, idx) => (
+                                      <Badge key={idx} className="bg-green-100 text-green-700 hover:bg-green-200 border-none px-3 py-1">
+                                        {item}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {recipe.nutritionalHighlights && recipe.nutritionalHighlights.length > 0 && (
+                                <div>
+                                  <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">Highlights</h4>
+                                  <ul className="space-y-2">
+                                    {recipe.nutritionalHighlights.map((highlight, idx) => (
+                                      <li key={idx} className="flex items-start gap-2 text-gray-600 font-medium text-sm">
+                                        <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
+                                        {highlight}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                            </CardContent>
+                          </Card>
+                        )}
+
+                        {/* AI Reasoning & Sources */}
+                        {(recipe.aiReasoningNotes || recipe.webSourceInspirations?.length) && (
+                          <Card className="border-none shadow-md overflow-hidden bg-white">
+                            <div className="h-1.5 bg-gradient-to-r from-violet-400 to-purple-400" />
+                            <CardContent className="p-6 md:p-8">
+                              <div className="flex items-center gap-2 mb-4">
+                                <Sparkles className="w-5 h-5 text-violet-500" />
+                                <h3 className="text-lg font-bold text-[#313131]">AI Insights</h3>
+                              </div>
+
+                              {recipe.aiReasoningNotes && (
+                                <div className="bg-violet-50 p-4 rounded-xl border border-violet-100 text-violet-900 text-sm leading-relaxed mb-6">
+                                  {recipe.aiReasoningNotes}
+                                </div>
+                              )}
+
+                              {recipe.webSourceInspirations && recipe.webSourceInspirations.length > 0 && (
+                                <div>
+                                  <h4 className="flex items-center gap-2 text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">
+                                    <Globe className="w-4 h-4" />
+                                    Inspirations
+                                  </h4>
+                                  <ul className="space-y-2">
+                                    {recipe.webSourceInspirations.map((source, idx) => (
+                                      <li key={idx} className="text-sm text-gray-500 italic pl-6 relative">
+                                        <span className="absolute left-0 top-0 text-violet-400">•</span>
+                                        {source}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                            </CardContent>
+                          </Card>
+                        )}
                       </div>
                     </div>
                   ) : (
-                    <div className="p-8 bg-white rounded-2xl border border-gray-100 shadow-xl min-h-[500px]">
-                      <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-xl font-extrabold text-[#313131]">Nutritional Analysis</h3>
-                        <div className="flex bg-gray-100 p-1 rounded-lg">
-                          {(["bar", "line", "pie"] as const).map((t) => (
-                            <button
-                              key={t}
-                              onClick={() => setChartType(t)}
-                              className={`px-3 py-1 text-xs font-bold uppercase rounded-md transition-all ${chartType === t ? "bg-white shadow-sm text-[#3d326d]" : "text-gray-400 hover:text-gray-600"}`}
+                    <Card className="border-none shadow-xl bg-white overflow-hidden">
+                      <div className="h-1.5 bg-gradient-to-r from-[#3d326d] to-[#7661d3]" />
+                      <CardContent className="p-8">
+                        <div className="flex flex-col md:flex-row items-center justify-between mb-8">
+                          <h2 className="text-2xl font-extrabold text-[#313131] flex items-center gap-3">
+                            <BarChart3 className="w-8 h-8 text-[#3d326d]" />
+                            Nutritional Analysis
+                          </h2>
+
+                          <div className="flex bg-gray-100 p-1 rounded-xl mt-4 md:mt-0">
+                            {(["bar", "line", "pie"] as const).map((type) => (
+                              <button
+                                key={type}
+                                onClick={() => setChartType(type)}
+                                className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all ${chartType === type
+                                  ? "bg-white text-[#3d326d] shadow-sm scale-105"
+                                  : "text-gray-500 hover:text-[#313131]"
+                                  }`}
+                              >
+                                {type} Chart
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="h-[500px] w-full bg-[#FAFAFA] rounded-2xl p-6 border border-gray-100">
+                          <ResponsiveContainer width="100%" height="100%">
+                            {renderChart()}
+                          </ResponsiveContainer>
+                        </div>
+
+                        {/* Detailed Breakdowns Grid below chart */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8">
+                          {nutritionData.map((item, idx) => (
+                            <div
+                              key={idx}
+                              className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center gap-3"
                             >
-                              {t}
-                            </button>
+                              <div
+                                className="w-3 h-full rounded-full"
+                                style={{ backgroundColor: item.color }}
+                              />
+                              <div>
+                                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">
+                                  {item.name}
+                                </p>
+                                <p className="text-xl font-extrabold text-[#313131]">
+                                  {item.value}
+                                  <span className="text-sm font-medium text-gray-400 ml-1">
+                                    {item.unit}
+                                  </span>
+                                </p>
+                              </div>
+                            </div>
                           ))}
                         </div>
-                      </div>
-                      {/* Render Chart */}
-                      <div className="w-full flex justify-center">
-                        <ResponsiveContainer width="100%" height={400}>
-                          {renderChart()}
-                        </ResponsiveContainer>
-                      </div>
-                    </div>
+                      </CardContent>
+                    </Card>
                   )}
                 </div>
               </div>
             </div>
           </>
-        )}
+        ) : null}
       </DialogContent>
     </Dialog>
   );
