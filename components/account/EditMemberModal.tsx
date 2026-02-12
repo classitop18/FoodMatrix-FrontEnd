@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, User, Calendar, Loader2, Edit3 } from "lucide-react";
-import { useUpdateMember } from "@/services/member/member.mutation";
+import { X, User, Calendar, Loader2, Edit3, Camera } from "lucide-react";
+import { useUpdateMember, useUploadMemberAvatar } from "@/services/member/member.mutation";
+import { API_BASE_URL } from "@/lib/api/endpoints";
+import { toast } from "@/hooks/use-toast";
 
 interface EditMemberModalProps {
   isOpen: boolean;
@@ -24,6 +26,8 @@ export default function EditMemberModal({
     role: "member",
   });
 
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
   useEffect(() => {
     if (member) {
       setFormData({
@@ -32,10 +36,51 @@ export default function EditMemberModal({
         sex: member.sex || "male",
         role: member.role || "member",
       });
+      setAvatarUrl(member.avatar || null);
     }
   }, [member]);
 
   const updateMemberMutation = useUpdateMember();
+  const uploadAvatarMutation = useUploadMemberAvatar();
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        toast({
+          title: "Invalid File Type",
+          description: "Please upload an image file (PNG, JPG, JPEG, WebP).",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Please upload an image smaller than 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+      uploadAvatarMutation.mutate(
+        { memberId: member.id, file, accountId },
+        {
+          onSuccess: (data: any) => {
+            if (data?.data?.avatar) {
+              setAvatarUrl(data.data.avatar);
+            }
+          },
+        },
+      );
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,6 +144,46 @@ export default function EditMemberModal({
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          {/* Avatar Section */}
+          <div className="flex justify-center mb-2">
+            <div
+              className="relative group cursor-pointer"
+              onClick={handleAvatarClick}
+            >
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+                accept="image/*"
+              />
+              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#7661d3] to-[#3d326d] flex items-center justify-center text-white text-3xl font-bold shadow-lg overflow-hidden border-4 border-white relative">
+                {avatarUrl ? (
+                  <img
+                    src={
+                      avatarUrl.startsWith("http")
+                        ? avatarUrl
+                        : `${API_BASE_URL.replace("/api/v1", "")}${avatarUrl}`
+                    }
+                    alt={member.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  member.name?.charAt(0).toUpperCase()
+                )}
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <Camera size={24} className="text-white" />
+                </div>
+              </div>
+
+              {uploadAvatarMutation.isPending && (
+                <div className="absolute inset-0 flex items-center justify-center bg-white/60 rounded-full z-10">
+                  <Loader2 size={24} className="animate-spin text-[#7661d3]" />
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Name Field */}
           <div>
             <label className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 block">

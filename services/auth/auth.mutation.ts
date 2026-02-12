@@ -2,6 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import { AuthService } from "./auth.service";
 import { UserLoginPayload, UserRegisterPayload } from "./types/auth.types";
 import { queryClient } from "@/lib/react-query";
+import { toast } from "@/hooks/use-toast";
 
 const authService = new AuthService();
 
@@ -86,7 +87,7 @@ export const useCheckProperty = () => {
 export const useForgetPassword = () => {
   return useMutation({
     mutationFn: (email: string) => authService.forgetPassword(email),
-    onSuccess: () => {},
+    onSuccess: () => { },
     onError: (error: any) => {
       console.error("Logout error:", error);
     },
@@ -143,6 +144,32 @@ export const useChangePassword = () => {
         "Something went wrong";
 
       console.error("Change Password error:", errorMessage);
+    },
+  });
+};
+
+export const useUploadAvatar = () => {
+  return useMutation({
+    mutationFn: (file: File) => authService.uploadAvatar(file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["auth", "me"],
+      });
+      toast({
+        title: "Avatar Updated Successfully",
+        description: "Your profile picture has been updated.",
+        variant: "success",
+      });
+    },
+    onError: (error: any) => {
+      console.error("Upload Avatar error:", error);
+      toast({
+        title: "Failed to Update Avatar",
+        description:
+          error?.response?.data?.message ||
+          "Please try again with a valid image file.",
+        variant: "destructive",
+      });
     },
   });
 };

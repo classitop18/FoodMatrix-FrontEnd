@@ -2,6 +2,7 @@ export interface HealthProfilePayload {
   height?: number;
   weight?: number;
   activityLevel?: string;
+  sex?: string;
 
   conditions?: string[];
   allergies?: string[];

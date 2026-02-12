@@ -61,4 +61,22 @@ export class MemberService {
     );
     return response.data;
   }
+
+  async uploadAvatar(memberId: string, file: File, accountId?: string) {
+    const config = accountId ? { headers: { "x-account-id": accountId } } : {};
+    const formData = new FormData();
+    formData.append("avatar", file);
+
+    const response = await apiClient.post(
+      API_ENDPOINTS.MEMBER.UPLOAD_AVATAR.replace(":id", memberId),
+      formData,
+      {
+        ...config,
+        headers: {
+          ...config.headers,
+        },
+      },
+    );
+    return response.data;
+  }
 }

@@ -95,4 +95,20 @@ export class AuthService {
     );
     return response.data;
   }
+
+  async uploadAvatar(file: File) {
+    const formData = new FormData();
+    formData.append("avatar", file);
+
+    const response = await apiClient.post(
+      API_ENDPOINTS.AUTH.UPLOAD_AVATAR,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      },
+    );
+    return response.data;
+  }
 }

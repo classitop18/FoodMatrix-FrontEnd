@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,51 +9,51 @@ import { Switch } from "@/components/ui/switch";
 import {
   User,
   Mail,
-  Shield,
-  Users,
   Edit,
   Save,
   X,
   Check,
-  Lock,
   UserCircle,
   Phone,
-  MapPin,
   Crown,
   Calendar,
   Wallet,
   Settings,
-  Bell,
   CreditCard,
-  LogOut,
-  AlertCircle,
   Loader2,
   XCircle,
   CheckCircle2,
-  CloudCog,
+  MapPin,
+  Shield,
+  Lock,
+  LogOut,
 } from "lucide-react";
 
-import Image from "next/image";
-import pattern1 from "@/public/hero-pattern-1.svg";
-import pattern2 from "@/public/hero-pattern-2.svg";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store.redux";
 import { AddressAutocomplete } from "@/components/profile/address-autocomplete";
+import { ImageViewModal } from "@/components/profile/image-view-modal";
 import Loader from "@/components/common/Loader";
 import {
   useChangePassword,
   useCheckProperty,
+  useLogout,
   useUpdateUserProfile,
+  useUploadAvatar,
 } from "@/services/auth/auth.mutation";
 
 import ChangePasswordModal from "@/components/profile/change-password-modal";
 import { toast } from "@/hooks/use-toast";
+import { API_BASE_URL } from "@/lib/api/endpoints";
+import { useRouter } from "next/navigation";
+
 
 export const usernameRegex = /^[A-Za-z][A-Za-z0-9_]{2,19}$/;
 
 const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState("account");
   const [isEditing, setIsEditing] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [editData, setEditData] = useState<any>(null);
   const [isChangePasswordEnable, setIsChangePasswordEnable] = useState(false);
   const { user } = useSelector((state: RootState) => state.auth);
@@ -62,10 +62,18 @@ const ProfilePage = () => {
   );
 
   const [isMfaUpdating, setIsMfaUpdating] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const logoutMutation = useLogout();
+  const router = useRouter()
 
   const checkIsExistMutation = useCheckProperty();
   const profileUpdateMutation = useUpdateUserProfile();
   const changePasswordMutation = useChangePassword();
+  const uploadAvatarMutation = useUploadAvatar();
+
+  console.log('logoutMutation:', logoutMutation)
+
   // Validation states
   const [validation, setValidation] = useState({
     username: {
@@ -92,6 +100,7 @@ const ProfilePage = () => {
       username: user.username,
       email: user.email,
       phone: user.phone ?? "—",
+      avatar: user.avatar,
 
       isVerified: user.isVerified,
       isMfaEnabled: user.isMfaEnabled,
@@ -136,13 +145,53 @@ const ProfilePage = () => {
   const handleEdit = () => {
     setIsEditing(true);
     if (accountData) {
-      setEditData({ ...accountData });
+      // Create a clean copy for editing, removing display placeholders
+      const cleanData = { ...accountData };
+      if (cleanData.phone === "—") cleanData.phone = "";
+      setEditData(cleanData);
     }
     // Reset validation when starting edit
     setValidation({
       username: { checking: false, isValid: true, exists: false, message: "" },
       email: { checking: false, isValid: true, exists: false, message: "" },
     });
+  };
+
+  const handleAvatarClick = () => {
+    setIsImageModalOpen(true);
+  };
+
+  const triggerFileUpload = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        toast({
+          title: "Invalid File Type",
+          description: "Please upload an image file (PNG, JPG, JPEG, WebP).",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Validate file size (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File Too Large",
+          description: "Please upload an image smaller than 5MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+      uploadAvatarMutation.mutate(file);
+    }
   };
 
   const handleChangePassword = async (payload: any) => {
@@ -322,7 +371,16 @@ const ProfilePage = () => {
   };
 
   const handleSave = async () => {
-    if (!editData) return;
+    if (!editData || !accountData) return;
+
+    // Check if checks are still running
+    if (validation.username.checking || validation.email.checking) {
+      toast({
+        title: "Validation In Progress",
+        description: "Please wait while we check availability.",
+      });
+      return;
+    }
 
     // Check if all validations pass
     if (!validation.username.isValid || !validation.email.isValid) {
@@ -343,8 +401,49 @@ const ProfilePage = () => {
       return;
     }
 
+    // Calculate changed fields
+    const payload: any = {};
+    const editableKeys = [
+      "firstName",
+      "lastName",
+      "username",
+      "phone",
+      "addressLine1",
+      "addressLine2",
+      "city",
+      "state",
+      "country",
+      "zipCode",
+      "formattedAddress",
+      "latitude",
+      "longitude",
+      "placeId",
+    ];
+
+    let hasChanges = false;
+    editableKeys.forEach((key) => {
+      let originalValue = (accountData as any)[key];
+      // Normalize original value for comparison against sanitized editData
+      if (key === "phone" && originalValue === "—") originalValue = "";
+
+      // Use strict equality check
+      if (editData[key] !== originalValue) {
+        payload[key] = editData[key];
+        hasChanges = true;
+      }
+    });
+
+    if (!hasChanges) {
+      toast({
+        title: "No Changes Detected",
+        description: "Your profile is already up to date.",
+      });
+      setIsEditing(false);
+      return;
+    }
+
     try {
-      await profileUpdateMutation.mutateAsync(editData);
+      await profileUpdateMutation.mutateAsync(payload);
 
       toast({
         title: "Profile updated successfully",
@@ -379,7 +478,7 @@ const ProfilePage = () => {
     const val = validation[field];
 
     if (!isEditing) return null;
-    if (editData?.[field] === accountData?.[field]) return null;
+    if (editData?.[field] === (accountData as any)?.[field]) return null;
     if (!editData?.[field]) return null;
 
     if (val.checking) {
@@ -445,11 +544,10 @@ const ProfilePage = () => {
           <div className="flex gap-3 mb-6 overflow-x-auto pb-2 animate-fade-in">
             <button
               onClick={() => setActiveTab("account")}
-              className={`px-5 py-2 rounded-full font-bold text-sm transition-all duration-300 whitespace-nowrap ${
-                activeTab === "account"
-                  ? "bg-[var(--primary)] text-white"
-                  : "bg-white text-gray-600 hover:bg-gray-100"
-              }`}
+              className={`px-5 py-2 rounded-full font-bold text-sm transition-all duration-300 whitespace-nowrap ${activeTab === "account"
+                ? "bg-[var(--primary)] text-white"
+                : "bg-white text-gray-600 hover:bg-gray-100"
+                }`}
             >
               <div className="flex items-center gap-2">
                 <UserCircle className="w-4 h-4" />
@@ -459,11 +557,10 @@ const ProfilePage = () => {
 
             <button
               onClick={() => setActiveTab("settings")}
-              className={`px-5 py-2 rounded-full font-bold text-sm transition-all duration-300 whitespace-nowrap ${
-                activeTab === "settings"
-                  ? "bg-[var(--primary)] text-white"
-                  : "bg-white text-gray-600 hover:bg-gray-100"
-              }`}
+              className={`px-5 py-2 rounded-full font-bold text-sm transition-all duration-300 whitespace-nowrap ${activeTab === "settings"
+                ? "bg-[var(--primary)] text-white"
+                : "bg-white text-gray-600 hover:bg-gray-100"
+                }`}
             >
               <div className="flex items-center gap-2">
                 <Settings className="w-4 h-4" />
@@ -582,12 +679,50 @@ const ProfilePage = () => {
                 <CardContent className="p-6 space-y-6 bg-white">
                   {/* Profile Picture Section */}
                   <div className="flex flex-col md:flex-row items-center sm:items-start gap-4 pb-6 border-b-2 border-gray-200">
-                    <div className="relative">
-                      <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--primary-light)] flex items-center justify-center text-white text-4xl font-extrabold shadow-xl ring-4 ring-white">
-                        {accountData?.name.charAt(0).toUpperCase()}
-                      </div>
+                    <div
+                      className="relative group cursor-pointer"
+                      onClick={handleAvatarClick}
+                    >
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        className="hidden"
+                        accept="image/*"
+                      />
+
+                      {accountData?.avatar ? (
+                        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--primary-light)] overflow-hidden shadow-xl ring-4 ring-white relative">
+                          <img
+                            src={
+                              accountData.avatar.startsWith("http")
+                                ? accountData.avatar
+                                : `${API_BASE_URL.replace("/api/v1", "")}${accountData.avatar}`
+                            }
+                            alt={accountData.name}
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                            <Edit className="w-6 h-6" />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--primary-light)] flex items-center justify-center text-white text-4xl font-extrabold shadow-xl ring-4 ring-white group-hover:brightness-95 transition-all relative">
+                          {accountData?.name.charAt(0).toUpperCase()}
+                          <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white rounded-full">
+                            <Edit className="w-6 h-6" />
+                          </div>
+                        </div>
+                      )}
+
+                      {uploadAvatarMutation.isPending && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-white/50 rounded-full z-20">
+                          <Loader2 className="w-8 h-8 animate-spin text-[var(--primary)]" />
+                        </div>
+                      )}
+
                       {accountData?.isVerified && (
-                        <div className="absolute -bottom-1 -right-1 bg-[var(--green)] rounded-full p-1.5 border-4 border-white shadow-lg">
+                        <div className="absolute -bottom-1 -right-1 bg-[var(--green)] rounded-full p-1.5 border-4 border-white shadow-lg z-30">
                           <Check className="w-5 h-5 text-white" />
                         </div>
                       )}
@@ -614,9 +749,6 @@ const ProfilePage = () => {
                           "en-GB",
                         )}
                       </p>
-                      <button className="mt-3 bg-[var(--primary-bg)] text-[var(--primary)] px-5 py-2 rounded-full font-bold text-sm hover:bg-[var(--primary)] hover:text-white transition-all duration-300">
-                        Change Photo
-                      </button>
                     </div>
                   </div>
 
@@ -695,18 +827,17 @@ const ProfilePage = () => {
                             })
                           }
                           disabled={!isEditing}
-                          className={`h-11 rounded-lg border text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none pr-10 ${
-                            isEditing &&
+                          className={`h-11 rounded-lg border text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none pr-10 ${isEditing &&
                             editData?.username !== accountData.username
-                              ? validation.username.exists ||
-                                !validation.username.isValid
-                                ? "border-red-500 focus:border-red-500"
-                                : validation.username.isValid &&
-                                    validation.username.message
-                                  ? "border-green-500 focus:border-green-500"
-                                  : "border-[#BCBCBC]"
-                              : "border-[#BCBCBC]"
-                          }`}
+                            ? validation.username.exists ||
+                              !validation.username.isValid
+                              ? "border-red-500 focus:border-red-500"
+                              : validation.username.isValid &&
+                                validation.username.message
+                                ? "border-green-500 focus:border-green-500"
+                                : "border-[#BCBCBC]"
+                            : "border-[#BCBCBC]"
+                            }`}
                         />
                         {isEditing &&
                           editData?.username !== accountData.username &&
@@ -803,101 +934,26 @@ const ProfilePage = () => {
                           className="flex items-center gap-2 font-bold text-gray-700 text-sm"
                         >
                           <MapPin className="w-4 h-4 text-[var(--primary)]" />
-                          Full Address
+                          Address
                         </Label>
                         <Input
                           id="address"
-                          value={
-                            accountData?.formattedAddress || "No address set"
-                          }
+                          value={accountData.formattedAddress || "—"}
                           disabled
                           className="h-11 rounded-lg border border-[#BCBCBC] text-black bg-gray-50 focus:ring-0 transition-all text-base font-medium shadow-none cursor-not-allowed"
                         />
                       </div>
                     )}
-
-                    {/* City, State, Zip, Country */}
-                    <div className="space-y-1.5">
-                      <Label
-                        htmlFor="city"
-                        className="font-bold text-gray-700 text-sm"
-                      >
-                        City
-                      </Label>
-                      <Input
-                        id="city"
-                        value={isEditing ? editData?.city : accountData.city}
-                        onChange={(e) =>
-                          setEditData({ ...editData, city: e.target.value })
-                        }
-                        disabled={!isEditing}
-                        className="h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label
-                        htmlFor="state"
-                        className="font-bold text-gray-700 text-sm"
-                      >
-                        State
-                      </Label>
-                      <Input
-                        id="state"
-                        value={isEditing ? editData?.state : accountData.state}
-                        onChange={(e) =>
-                          setEditData({ ...editData, state: e.target.value })
-                        }
-                        disabled={!isEditing}
-                        className="h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label
-                        htmlFor="zipCode"
-                        className="font-bold text-gray-700 text-sm"
-                      >
-                        ZIP Code
-                      </Label>
-                      <Input
-                        id="zipCode"
-                        value={
-                          isEditing ? editData?.zipCode : accountData.zipCode
-                        }
-                        onChange={(e) =>
-                          setEditData({ ...editData, zipCode: e.target.value })
-                        }
-                        disabled={!isEditing}
-                        className="h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label
-                        htmlFor="country"
-                        className="font-bold text-gray-700 text-sm"
-                      >
-                        Country
-                      </Label>
-                      <Input
-                        id="country"
-                        value={
-                          isEditing ? editData?.country : accountData.country
-                        }
-                        onChange={(e) =>
-                          setEditData({ ...editData, country: e.target.value })
-                        }
-                        disabled={!isEditing}
-                        className="h-11 rounded-lg border border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-base font-medium shadow-none"
-                      />
-                    </div>
                   </div>
                 </CardContent>
               </Card>
+
+
+
             </div>
           )}
 
+          {/* Settings Tab - Placeholder */}
           {/* Settings Tab */}
           {activeTab === "settings" && (
             <div className="space-y-6 animate-scale-in">
@@ -995,8 +1051,23 @@ const ProfilePage = () => {
                       className="
         bg-red-600 text-white px-5 py-2 rounded-full font-bold text-sm 
         hover:bg-red-700 transition-all duration-300 hover:scale-105"
+                      onClick={async () => {
+                        await logoutMutation.mutateAsync();
+                        toast({
+                          title: "Logged out",
+                          description: "You have been logged out successfully."
+                        });
+                        router.push("/login");
+                      }}
+                      disabled={logoutMutation?.isPending}
                     >
-                      Logout
+                      {logoutMutation?.isPending ? (
+                        <Loader2 className="w-4 h-4 text-white animate-spin ml-2" />
+                      ) :
+                        <>
+                          Logout
+                        </>
+                      }
                     </button>
                   </div>
                 </CardContent>
@@ -1005,6 +1076,23 @@ const ProfilePage = () => {
           )}
         </div>
       </div>
+
+      <ChangePasswordModal
+        isOpen={isChangePasswordEnable}
+        onClose={() => setIsChangePasswordEnable(false)}
+        onSubmit={handleChangePassword}
+        isLoading={changePasswordMutation.isPending}
+      />
+
+      {/* ImageViewModal */}
+      <ImageViewModal
+        isOpen={isImageModalOpen}
+        onClose={() => setIsImageModalOpen(false)}
+        imageUrl={accountData?.avatar || null}
+        altText={accountData?.name || "Profile Picture"}
+        onUploadClick={triggerFileUpload}
+        isUploading={uploadAvatarMutation.isPending}
+      />
     </div>
   );
 };

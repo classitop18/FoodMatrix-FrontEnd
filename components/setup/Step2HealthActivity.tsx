@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Activity, Stethoscope, Heart } from "lucide-react";
+import { Activity, Stethoscope, Heart, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -80,7 +80,7 @@ export default function Step2HealthActivity({
           </div>
           Physical Profile & Activity
         </h3>
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div>
             <Label
               htmlFor="height"
@@ -126,6 +126,35 @@ export default function Step2HealthActivity({
             {form.formState.errors.weight && (
               <p className="text-sm text-red-500 mt-1">
                 {String(form.formState.errors.weight.message)}
+              </p>
+            )}
+          </div>
+          <div>
+            <Label className="text-[#3d326d] font-semibold mb-2 block">
+              <span className="flex items-center gap-2">
+                <User size={16} className="text-[#7661d3]" />
+                Sex <span className="text-[#7dab4f]">*</span>
+              </span>
+            </Label>
+            <Select
+              onValueChange={(value) => form.setValue("sex", value as any)}
+              defaultValue={form.watch("sex")}
+            >
+              <SelectTrigger
+                data-testid="select-sex"
+                className="h-11 rounded-lg !border !border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all text-sm font-medium shadow-none"
+              >
+                <SelectValue placeholder="Select sex" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="male">Male</SelectItem>
+                <SelectItem value="female">Female</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+            {form.formState.errors.sex && (
+              <p className="text-sm text-red-500 mt-1">
+                {String(form.formState.errors.sex.message)}
               </p>
             )}
           </div>

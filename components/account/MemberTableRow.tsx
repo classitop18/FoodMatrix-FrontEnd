@@ -2,6 +2,7 @@ import React from "react";
 import { Crown, User, Edit, X } from "lucide-react";
 import { ProtectedAction } from "@/components/common/protected-action";
 import { PERMISSIONS } from "@/lib/permissions";
+import { API_BASE_URL } from "@/lib/api/endpoints";
 
 interface MemberTableRowProps {
   member: any;
@@ -21,7 +22,17 @@ export const MemberTableRow: React.FC<MemberTableRowProps> = ({
   <div className="group bg-white rounded-xl p-4 md:py-3 md:px-5 border border-gray-200 shadow-sm hover:shadow-md hover:border-[#7661d3]/30 transition-all grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
     <div className="col-span-12 md:col-span-3 flex items-center gap-3">
       <div className="relative shrink-0">
-        {member.userId && member.user?.avatar ? (
+        {member.avatar ? (
+          <img
+            src={
+              member.avatar.startsWith("http")
+                ? member.avatar
+                : `${API_BASE_URL.replace("/api/v1", "")}${member.avatar}`
+            }
+            alt={member.name}
+            className="h-10 w-10 rounded-xl object-cover ring-2 ring-[#F3F0FD]"
+          />
+        ) : member.userId && member.user?.avatar ? (
           <img
             src={member.user.avatar}
             alt={member.user.firstName}
@@ -42,9 +53,9 @@ export const MemberTableRow: React.FC<MemberTableRowProps> = ({
       </div>
       <div className="min-w-0">
         <p className="font-bold text-[#313131] text-sm truncate">
-          {member.userId
+          {member.name || (member.userId
             ? `${member.user?.firstName || ""} ${member.user?.lastName || ""}`.trim()
-            : member.name || "Unnamed Member"}
+            : "Unnamed Member")}
         </p>
         {member.userId && member.user?.username && (
           <p className="text-xs text-gray-500 truncate">
@@ -84,13 +95,12 @@ export const MemberTableRow: React.FC<MemberTableRowProps> = ({
         Role
       </div>
       <div
-        className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border ${
-          member.role === "super_admin"
-            ? "bg-amber-50 text-amber-600 border-amber-100"
-            : member.role === "admin"
-              ? "bg-blue-50 text-blue-600 border-blue-100"
-              : "bg-purple-50 text-purple-600 border-purple-100"
-        }`}
+        className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border ${member.role === "super_admin"
+          ? "bg-amber-50 text-amber-600 border-amber-100"
+          : member.role === "admin"
+            ? "bg-blue-50 text-blue-600 border-blue-100"
+            : "bg-purple-50 text-purple-600 border-purple-100"
+          }`}
       >
         {member.role === "super_admin" ? "Super Admin" : member.role}
       </div>

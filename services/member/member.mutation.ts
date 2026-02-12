@@ -76,3 +76,29 @@ export const useDeleteMember = () => {
     },
   });
 };
+
+export const useUploadMemberAvatar = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { memberId: string; file: File; accountId?: string }) =>
+      memberService.uploadAvatar(data.memberId, data.file, data.accountId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+      queryClient.invalidateQueries({ queryKey: ["member"] });
+      toast({
+        variant: "success",
+        title: "Avatar Updated",
+        description: "Member avatar updated successfully!",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: "destructive",
+        title: "Update Failed",
+        description:
+          error?.response?.data?.message ||
+          "Failed to update avatar. Please try again.",
+      });
+    },
+  });
+};

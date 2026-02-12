@@ -57,6 +57,7 @@ export default function HealthProfilePage() {
     height: "",
     weight: "",
     activityLevel: "",
+    sex: "",
     conditions: [],
     allergies: [],
     dietaryRestrictions: [],
@@ -111,7 +112,7 @@ export default function HealthProfilePage() {
   const handleEditProfile = () => {
     if (isEditDisabled) {
       toast({
-        
+
         title: "Edit not allowed",
         description: "Invited user's health profile cannot be edited.",
       });
@@ -128,6 +129,7 @@ export default function HealthProfilePage() {
         height: data.height ?? "",
         weight: data.weight ?? "",
         activityLevel: data.activityLevel ?? "",
+        sex: data.sex ?? "",
         conditions: data.conditions ?? [],
         allergies: data.allergies ?? [],
         dietaryRestrictions: data.dietaryRestrictions ?? [],
@@ -185,6 +187,7 @@ export default function HealthProfilePage() {
           : undefined,
         // Remove empty strings for enum fields
         activityLevel: formData.activityLevel || undefined,
+        sex: formData.sex || undefined,
         cookingSkill: formData.cookingSkill || undefined,
         cookingFrequency: formData.cookingFrequency || undefined,
         budgetFlexibility: formData.budgetFlexibility || undefined,
@@ -336,9 +339,8 @@ export default function HealthProfilePage() {
             ) : (
               <button
                 onClick={handleEditProfile}
-                className={`bg-[#7661d3] hover:bg-[#6952c2] text-white font-bold py-2.5 px-4 rounded-xl shadow-lg transition-all flex items-center gap-2 text-sm ${
-                  isEditDisabled ? "opacity-50 cursor-not-allowed" : ""
-                }`}
+                className={`bg-[#7661d3] hover:bg-[#6952c2] text-white font-bold py-2.5 px-4 rounded-xl shadow-lg transition-all flex items-center gap-2 text-sm ${isEditDisabled ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
               >
                 <Edit2 size={18} />
                 Edit Profile
@@ -454,11 +456,10 @@ export default function HealthProfilePage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl font-bold text-sm transition-all whitespace-nowrap ${
-                    activeTab === tab.id
-                      ? "bg-white text-[#7661d3] shadow-lg"
-                      : "text-white/80 hover:text-white hover:bg-white/10"
-                  }`}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl font-bold text-sm transition-all whitespace-nowrap ${activeTab === tab.id
+                    ? "bg-white text-[#7661d3] shadow-lg"
+                    : "text-white/80 hover:text-white hover:bg-white/10"
+                    }`}
                 >
                   <tab.icon size={16} />
                   {tab.label}
@@ -516,8 +517,32 @@ export default function HealthProfilePage() {
                     />
                   </div>
 
+                  {/* Sex */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                      <User size={16} className="text-[#7661d3]" />
+                      Sex
+                    </label>
+                    <select
+                      value={formData.sex}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          sex: e.target.value,
+                        })
+                      }
+                      disabled={!isEditing}
+                      className="h-11 rounded-lg !border !border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all font-medium shadow-none text-sm w-full"
+                    >
+                      <option value="">Select sex</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+
                   {/* Activity Level */}
-                  <div className="md:col-span-2">
+                  <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
                       <Zap size={16} className="text-[#7661d3]" />
                       Activity Level
@@ -531,7 +556,7 @@ export default function HealthProfilePage() {
                         })
                       }
                       disabled={!isEditing}
-                      className="h-11 rounded-lg !border !border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all font-medium shadow-none text-sm"
+                      className="h-11 rounded-lg !border !border-[#BCBCBC] text-black bg-white focus:ring-0 transition-all font-medium shadow-none text-sm w-full"
                     >
                       <option value="">Select activity level</option>
                       <option value="sedentary">
@@ -620,18 +645,16 @@ export default function HealthProfilePage() {
                         onClick={() =>
                           isEditing && toggleArrayItem("conditions", condition)
                         }
-                        className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${
-                          formData.conditions.includes(condition)
-                            ? "bg-[#7661d3]/10 border-[#7661d3]"
-                            : "bg-gray-50 border-transparent hover:border-gray-200"
-                        } ${isEditing ? "cursor-pointer" : "cursor-default"}`}
+                        className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${formData.conditions.includes(condition)
+                          ? "bg-[#7661d3]/10 border-[#7661d3]"
+                          : "bg-gray-50 border-transparent hover:border-gray-200"
+                          } ${isEditing ? "cursor-pointer" : "cursor-default"}`}
                       >
                         <div
-                          className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                            formData.conditions.includes(condition)
-                              ? "bg-[#7661d3] border-[#7661d3]"
-                              : "border-gray-300 bg-white"
-                          }`}
+                          className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${formData.conditions.includes(condition)
+                            ? "bg-[#7661d3] border-[#7661d3]"
+                            : "border-gray-300 bg-white"
+                            }`}
                         >
                           {formData.conditions.includes(condition) && (
                             <Check className="w-3 h-3 text-white" />
@@ -665,18 +688,16 @@ export default function HealthProfilePage() {
                         onClick={() =>
                           isEditing && toggleArrayItem("allergies", allergy)
                         }
-                        className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${
-                          formData.allergies.includes(allergy)
-                            ? "bg-red-50 border-red-500"
-                            : "bg-gray-50 border-transparent hover:border-gray-200"
-                        } ${isEditing ? "cursor-pointer" : "cursor-default"}`}
+                        className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${formData.allergies.includes(allergy)
+                          ? "bg-red-50 border-red-500"
+                          : "bg-gray-50 border-transparent hover:border-gray-200"
+                          } ${isEditing ? "cursor-pointer" : "cursor-default"}`}
                       >
                         <div
-                          className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                            formData.allergies.includes(allergy)
-                              ? "bg-red-500 border-red-500"
-                              : "border-gray-300 bg-white"
-                          }`}
+                          className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${formData.allergies.includes(allergy)
+                            ? "bg-red-500 border-red-500"
+                            : "border-gray-300 bg-white"
+                            }`}
                         >
                           {formData.allergies.includes(allergy) && (
                             <Check className="w-3 h-3 text-white" />
@@ -725,18 +746,16 @@ export default function HealthProfilePage() {
                           isEditing &&
                           toggleArrayItem("dietaryRestrictions", diet)
                         }
-                        className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${
-                          formData.dietaryRestrictions.includes(diet)
-                            ? "bg-[#7dab4f]/10 border-[#7dab4f]"
-                            : "bg-gray-50 border-transparent hover:border-gray-200"
-                        } ${isEditing ? "cursor-pointer" : "cursor-default"}`}
+                        className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${formData.dietaryRestrictions.includes(diet)
+                          ? "bg-[#7dab4f]/10 border-[#7dab4f]"
+                          : "bg-gray-50 border-transparent hover:border-gray-200"
+                          } ${isEditing ? "cursor-pointer" : "cursor-default"}`}
                       >
                         <div
-                          className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                            formData.dietaryRestrictions.includes(diet)
-                              ? "bg-[#7dab4f] border-[#7dab4f]"
-                              : "border-gray-300 bg-white"
-                          }`}
+                          className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${formData.dietaryRestrictions.includes(diet)
+                            ? "bg-[#7dab4f] border-[#7dab4f]"
+                            : "border-gray-300 bg-white"
+                            }`}
                         >
                           {formData.dietaryRestrictions.includes(diet) && (
                             <Check className="w-3 h-3 text-white" />
@@ -783,18 +802,16 @@ export default function HealthProfilePage() {
                             organicPreference: option.value,
                           })
                         }
-                        className={`flex items-center gap-3 border-2 p-4 rounded-xl transition-all ${
-                          formData.organicPreference === option.value
-                            ? "border-[#7661d3] bg-[#7661d3]/5"
-                            : "border-gray-200 hover:border-gray-300"
-                        } ${isEditing ? "cursor-pointer" : "cursor-default"}`}
+                        className={`flex items-center gap-3 border-2 p-4 rounded-xl transition-all ${formData.organicPreference === option.value
+                          ? "border-[#7661d3] bg-[#7661d3]/5"
+                          : "border-gray-200 hover:border-gray-300"
+                          } ${isEditing ? "cursor-pointer" : "cursor-default"}`}
                       >
                         <div
-                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                            formData.organicPreference === option.value
-                              ? "border-[#7661d3]"
-                              : "border-gray-300"
-                          }`}
+                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${formData.organicPreference === option.value
+                            ? "border-[#7661d3]"
+                            : "border-gray-300"
+                            }`}
                         >
                           {formData.organicPreference === option.value && (
                             <div className="w-3 h-3 rounded-full bg-[#7661d3]" />
@@ -847,18 +864,16 @@ export default function HealthProfilePage() {
                         onClick={() =>
                           isEditing && toggleArrayItem("goals", goal)
                         }
-                        className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${
-                          formData.goals.includes(goal)
-                            ? "bg-[#7661d3]/10 border-[#7661d3]"
-                            : "bg-gray-50 border-transparent hover:border-gray-200"
-                        } ${isEditing ? "cursor-pointer" : "cursor-default"}`}
+                        className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${formData.goals.includes(goal)
+                          ? "bg-[#7661d3]/10 border-[#7661d3]"
+                          : "bg-gray-50 border-transparent hover:border-gray-200"
+                          } ${isEditing ? "cursor-pointer" : "cursor-default"}`}
                       >
                         <div
-                          className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                            formData.goals.includes(goal)
-                              ? "bg-[#7661d3] border-[#7661d3]"
-                              : "border-gray-300 bg-white"
-                          }`}
+                          className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${formData.goals.includes(goal)
+                            ? "bg-[#7661d3] border-[#7661d3]"
+                            : "border-gray-300 bg-white"
+                            }`}
                         >
                           {formData.goals.includes(goal) && (
                             <Check className="w-3 h-3 text-white" />
@@ -1078,11 +1093,10 @@ export default function HealthProfilePage() {
                           hasDeepFreezer: !formData.hasDeepFreezer,
                         })
                       }
-                      className={`flex items-center justify-between border-2 p-4 rounded-xl transition-all ${
-                        isEditing
-                          ? "cursor-pointer hover:border-[#7661d3]"
-                          : "cursor-default"
-                      } ${formData.hasDeepFreezer ? "border-[#7661d3] bg-[#7661d3]/5" : "border-gray-200"}`}
+                      className={`flex items-center justify-between border-2 p-4 rounded-xl transition-all ${isEditing
+                        ? "cursor-pointer hover:border-[#7661d3]"
+                        : "cursor-default"
+                        } ${formData.hasDeepFreezer ? "border-[#7661d3] bg-[#7661d3]/5" : "border-gray-200"}`}
                     >
                       <div>
                         <div className="font-bold text-gray-900">
@@ -1093,16 +1107,14 @@ export default function HealthProfilePage() {
                         </p>
                       </div>
                       <div
-                        className={`w-12 h-7 rounded-full relative transition-colors ${
-                          formData.hasDeepFreezer
-                            ? "bg-[#7dab4f]"
-                            : "bg-gray-200"
-                        }`}
+                        className={`w-12 h-7 rounded-full relative transition-colors ${formData.hasDeepFreezer
+                          ? "bg-[#7dab4f]"
+                          : "bg-gray-200"
+                          }`}
                       >
                         <div
-                          className={`absolute top-1 w-5 h-5 rounded-full bg-white transition-all shadow-sm ${
-                            formData.hasDeepFreezer ? "left-6" : "left-1"
-                          }`}
+                          className={`absolute top-1 w-5 h-5 rounded-full bg-white transition-all shadow-sm ${formData.hasDeepFreezer ? "left-6" : "left-1"
+                            }`}
                         />
                       </div>
                     </div>
@@ -1115,11 +1127,10 @@ export default function HealthProfilePage() {
                           shopsDaily: !formData.shopsDaily,
                         })
                       }
-                      className={`flex items-center justify-between border-2 p-4 rounded-xl transition-all ${
-                        isEditing
-                          ? "cursor-pointer hover:border-[#7661d3]"
-                          : "cursor-default"
-                      } ${formData.shopsDaily ? "border-[#7661d3] bg-[#7661d3]/5" : "border-gray-200"}`}
+                      className={`flex items-center justify-between border-2 p-4 rounded-xl transition-all ${isEditing
+                        ? "cursor-pointer hover:border-[#7661d3]"
+                        : "cursor-default"
+                        } ${formData.shopsDaily ? "border-[#7661d3] bg-[#7661d3]/5" : "border-gray-200"}`}
                     >
                       <div>
                         <div className="font-bold text-gray-900">
@@ -1130,14 +1141,12 @@ export default function HealthProfilePage() {
                         </p>
                       </div>
                       <div
-                        className={`w-12 h-7 rounded-full relative transition-colors ${
-                          formData.shopsDaily ? "bg-[#7dab4f]" : "bg-gray-200"
-                        }`}
+                        className={`w-12 h-7 rounded-full relative transition-colors ${formData.shopsDaily ? "bg-[#7dab4f]" : "bg-gray-200"
+                          }`}
                       >
                         <div
-                          className={`absolute top-1 w-5 h-5 rounded-full bg-white transition-all shadow-sm ${
-                            formData.shopsDaily ? "left-6" : "left-1"
-                          }`}
+                          className={`absolute top-1 w-5 h-5 rounded-full bg-white transition-all shadow-sm ${formData.shopsDaily ? "left-6" : "left-1"
+                            }`}
                         />
                       </div>
                     </div>
@@ -1170,11 +1179,10 @@ export default function HealthProfilePage() {
                           autoLearn: !formData.autoLearn,
                         })
                       }
-                      className={`flex items-center justify-between border-2 p-4 rounded-xl transition-all ${
-                        isEditing
-                          ? "cursor-pointer hover:border-[#7661d3]"
-                          : "cursor-default"
-                      } ${formData.autoLearn ? "border-[#7661d3] bg-[#7661d3]/5" : "border-gray-200"}`}
+                      className={`flex items-center justify-between border-2 p-4 rounded-xl transition-all ${isEditing
+                        ? "cursor-pointer hover:border-[#7661d3]"
+                        : "cursor-default"
+                        } ${formData.autoLearn ? "border-[#7661d3] bg-[#7661d3]/5" : "border-gray-200"}`}
                     >
                       <div>
                         <div className="font-bold text-gray-900">
@@ -1185,14 +1193,12 @@ export default function HealthProfilePage() {
                         </p>
                       </div>
                       <div
-                        className={`w-12 h-7 rounded-full relative transition-colors ${
-                          formData.autoLearn ? "bg-[#7dab4f]" : "bg-gray-200"
-                        }`}
+                        className={`w-12 h-7 rounded-full relative transition-colors ${formData.autoLearn ? "bg-[#7dab4f]" : "bg-gray-200"
+                          }`}
                       >
                         <div
-                          className={`absolute top-1 w-5 h-5 rounded-full bg-white transition-all shadow-sm ${
-                            formData.autoLearn ? "left-6" : "left-1"
-                          }`}
+                          className={`absolute top-1 w-5 h-5 rounded-full bg-white transition-all shadow-sm ${formData.autoLearn ? "left-6" : "left-1"
+                            }`}
                         />
                       </div>
                     </div>
@@ -1205,11 +1211,10 @@ export default function HealthProfilePage() {
                           autoSwap: !formData.autoSwap,
                         })
                       }
-                      className={`flex items-center justify-between border-2 p-4 rounded-xl transition-all ${
-                        isEditing
-                          ? "cursor-pointer hover:border-[#7661d3]"
-                          : "cursor-default"
-                      } ${formData.autoSwap ? "border-[#7661d3] bg-[#7661d3]/5" : "border-gray-200"}`}
+                      className={`flex items-center justify-between border-2 p-4 rounded-xl transition-all ${isEditing
+                        ? "cursor-pointer hover:border-[#7661d3]"
+                        : "cursor-default"
+                        } ${formData.autoSwap ? "border-[#7661d3] bg-[#7661d3]/5" : "border-gray-200"}`}
                     >
                       <div>
                         <div className="font-bold text-gray-900">
@@ -1220,14 +1225,12 @@ export default function HealthProfilePage() {
                         </p>
                       </div>
                       <div
-                        className={`w-12 h-7 rounded-full relative transition-colors ${
-                          formData.autoSwap ? "bg-[#7dab4f]" : "bg-gray-200"
-                        }`}
+                        className={`w-12 h-7 rounded-full relative transition-colors ${formData.autoSwap ? "bg-[#7dab4f]" : "bg-gray-200"
+                          }`}
                       >
                         <div
-                          className={`absolute top-1 w-5 h-5 rounded-full bg-white transition-all shadow-sm ${
-                            formData.autoSwap ? "left-6" : "left-1"
-                          }`}
+                          className={`absolute top-1 w-5 h-5 rounded-full bg-white transition-all shadow-sm ${formData.autoSwap ? "left-6" : "left-1"
+                            }`}
                         />
                       </div>
                     </div>
@@ -1395,8 +1398,8 @@ export default function HealthProfilePage() {
                       <p className="text-sm font-bold text-gray-700">
                         {memberHealth?.data?.updatedAt
                           ? new Date(
-                              memberHealth.data.updatedAt,
-                            ).toLocaleDateString()
+                            memberHealth.data.updatedAt,
+                          ).toLocaleDateString()
                           : "Never"}
                       </p>
                     </div>

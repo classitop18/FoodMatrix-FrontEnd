@@ -6,6 +6,7 @@ export interface Member {
   role?: string;
   userId?: string | null;
   accountId: string;
+  avatar?: string;
   createdAt?: string;
   updatedAt?: string;
 }

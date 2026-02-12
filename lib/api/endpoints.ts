@@ -16,6 +16,7 @@ export const API_ENDPOINTS = {
     OTP_VERIFICATION: "/auth/verify-mfa",
     UPDATE_PROFILE: "/auth/",
     CHECK_PROPERTY: "/auth/exist",
+    UPLOAD_AVATAR: "/auth/upload-avatar",
   },
   ACCOUNT: {
     CREATE_ACCOUNT: "/account",
@@ -31,6 +32,7 @@ export const API_ENDPOINTS = {
     GET_MEMBER_BY_ID: "member/:id",
     UPDATE_MEMBER: "member/:id",
     DELETE_MEMBER: "member/:id",
+    UPLOAD_AVATAR: "member/:id/avatar",
   },
   HEALTH_PROFILE: {
     GET_MEMBER_HEALTH_PROFILE: (id: string) => `/health-profile/${id}`,

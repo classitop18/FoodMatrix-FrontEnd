@@ -33,6 +33,7 @@ export default function SetupPage() {
   >("family");
   const [isPreparing, setIsPreparing] = useState(false);
   const [addressData, setAddressData] = useState<any>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const router = useRouter();
 
@@ -47,6 +48,7 @@ export default function SetupPage() {
       groceriesPercentage: 70,
       diningPercentage: 20,
       emergencyPercentage: 10,
+      sex: undefined,
       conditions: [],
       allergies: [],
       dietaryRestrictions: [],
@@ -96,6 +98,8 @@ export default function SetupPage() {
   const isPercentageValid = Math.abs(totalPercentage - 100) <= 1;
   const correctedIsPercentageValid = Math.abs(totalPercentage - 100) <= 2;
 
+  const STORAGE_KEY = "foodmatrix_account_setup_state";
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const type = params.get("type") as "individual" | "family" | "group";
@@ -104,6 +108,50 @@ export default function SetupPage() {
       form.setValue("accountType", type);
     }
   }, [form]);
+
+  // Load saved state on mount
+  useEffect(() => {
+    const savedState = localStorage.getItem(STORAGE_KEY);
+    if (savedState) {
+      try {
+        const parsed = JSON.parse(savedState);
+        if (parsed.step) setCurrentStep(parsed.step);
+        if (parsed.data) {
+          // Merge saved data with default values to ensure all fields exist
+          const mergedData = { ...form.getValues(), ...parsed.data };
+          form.reset(mergedData);
+        }
+      } catch (e) {
+        console.error("Failed to load setup state", e);
+      }
+    }
+    setIsInitialized(true);
+  }, []); // Run once on mount
+
+  // Save state on change
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    const subscription = form.watch((value) => {
+      const stateToSave = {
+        step: currentStep,
+        data: value,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
+    });
+
+    // Also save current step when it changes
+    const currentState = localStorage.getItem(STORAGE_KEY);
+    const parsedState = currentState ? JSON.parse(currentState) : {};
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      ...parsedState,
+      step: currentStep,
+      // Ensure data is preserved if form hasn't changed yet
+      data: parsedState.data || form.getValues()
+    }));
+
+    return () => subscription.unsubscribe();
+  }, [form, currentStep, isInitialized]);
 
   const createAccountMutation = useCreateAccount();
 
@@ -194,6 +242,7 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
         healthProfile: {
           height: data.height,
           weight: data.weight,
+          sex: data.sex,
           activityLevel: data.activityLevel,
           conditions: data.conditions,
           allergies: data.allergies,
@@ -213,6 +262,10 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
       };
 
       await createAccountMutation.mutateAsync(accountData);
+
+      // Clear saved state on success
+      localStorage.removeItem(STORAGE_KEY);
+
       setIsPreparing(true);
 
       router.push("/dashboard");
@@ -267,13 +320,11 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
       }
 
       if (!budgetVal || budgetVal < minBudget) {
-        errors[budgetField] = `${
-          allocation.charAt(0).toUpperCase() + allocation.slice(1)
-        } budget must be at least $${minBudget}`;
+        errors[budgetField] = `${allocation.charAt(0).toUpperCase() + allocation.slice(1)
+          } budget must be at least $${minBudget}`;
       } else if (budgetVal > 10000000) {
-        errors[budgetField] = `${
-          allocation.charAt(0).toUpperCase() + allocation.slice(1)
-        } budget must be less than $10,000,000`;
+        errors[budgetField] = `${allocation.charAt(0).toUpperCase() + allocation.slice(1)
+          } budget must be less than $10,000,000`;
       }
 
       const totalPercent =
@@ -301,6 +352,9 @@ We'll proceed, but consider adjusting it closer to 100% for better accuracy.`,
 
       if (!values.activityLevel)
         errors.activityLevel = "Activity level is required";
+
+      if (!values.sex)
+        errors.sex = "Sex is required";
     }
 
     if (step === 3) {

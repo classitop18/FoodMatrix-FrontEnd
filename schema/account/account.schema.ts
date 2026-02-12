@@ -42,6 +42,7 @@ export const setupSchema = z.object({
   activityLevel: z
     .enum(["sedentary", "moderate", "active", "very_active"])
     .optional(),
+  sex: z.enum(["male", "female", "other"]).optional(),
   conditions: z.array(z.string()).default([]),
   allergies: z.array(z.string()).default([]),
   dietaryRestrictions: z.array(z.string()).default([]),

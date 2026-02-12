@@ -2,6 +2,7 @@ import React from "react";
 import { Crown, Mail, Edit, X } from "lucide-react";
 import { ProtectedAction } from "@/components/common/protected-action";
 import { PERMISSIONS } from "@/lib/permissions";
+import { API_BASE_URL } from "@/lib/api/endpoints";
 
 interface MemberCardProps {
   member: any;
@@ -30,7 +31,17 @@ export const MemberCard: React.FC<MemberCardProps> = ({
         <div className="flex items-start justify-between mb-2">
           <div className="flex items-center gap-2">
             <div className="relative shrink-0">
-              {member.userId && member.user?.avatar ? (
+              {member.avatar ? (
+                <img
+                  src={
+                    member.avatar.startsWith("http")
+                      ? member.avatar
+                      : `${API_BASE_URL.replace("/api/v1", "")}${member.avatar}`
+                  }
+                  alt={member.name}
+                  className="h-9 w-9 rounded-lg object-cover ring-2 ring-[#F3F0FD] shadow-sm"
+                />
+              ) : member.userId && member.user?.avatar ? (
                 <img
                   src={member.user.avatar}
                   alt={member.user.firstName}
@@ -40,7 +51,7 @@ export const MemberCard: React.FC<MemberCardProps> = ({
                 <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-[#7661d3] to-[#3d326d] flex items-center justify-center text-white text-xs font-bold ring-2 ring-[#F3F0FD] shadow-sm">
                   {member.userId
                     ? `${member.user?.firstName?.[0] || ""}${member.user?.lastName?.[0] || ""}`
-                    : member.name?.toUpperCase() || "M"}
+                    : member.name?.toUpperCase().slice(0, 1) || "M"}
                 </div>
               )}
               {member.role === "super_admin" && (
@@ -53,20 +64,21 @@ export const MemberCard: React.FC<MemberCardProps> = ({
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
                 <h4 className="font-bold text-gray-800 text-sm truncate leading-tight">
-                  {member.userId
-                    ? `${member.user?.firstName || ""} ${member.user?.lastName || ""}`.trim()
-                    : member.name || "Unnamed"}
+                  {member.name ||
+                    (member.userId
+                      ? `${member.user?.firstName || ""} ${member.user?.lastName || ""}`.trim()
+                      : "Unnamed")}
                 </h4>
               </div>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <div
                   className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide leading-none ${member.role === "super_admin"
-                      ? "bg-amber-50 text-amber-700"
-                      : member.role === "admin"
-                        ? "bg-blue-50 text-blue-700"
-                        : member.role === "member"
-                          ? "bg-purple-50 text-purple-700"
-                          : "bg-gray-50 text-gray-600"
+                    ? "bg-amber-50 text-amber-700"
+                    : member.role === "admin"
+                      ? "bg-blue-50 text-blue-700"
+                      : member.role === "member"
+                        ? "bg-purple-50 text-purple-700"
+                        : "bg-gray-50 text-gray-600"
                     }`}
                 >
                   {member.role === "super_admin" ? "Super" : member.role}

@@ -31,7 +31,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <TooltipProvider>
           {hideLayout && <Navbar />}
 
-          <Toaster />
+          <Toaster position="top-right" closeButton />
           {children}
           {hideLayout && <Footer />}
         </TooltipProvider>
