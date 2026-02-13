@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuthMe } from "@/services/auth/auth.query";
 import { useMyAccounts } from "@/services/account/account.query";
@@ -26,6 +26,7 @@ export default function AuthProvider({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const dispatch = useDispatch();
 
   const [isRestoringSession, setIsRestoringSession] = useState(true);
@@ -104,10 +105,16 @@ export default function AuthProvider({
     const protectedPaths = ["/dashboard", "/account", "/profile", "/setup"]; // Add other protected roots
     const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path));
 
+    const returnUrl = searchParams.get("returnUrl");
+
     // Case 1: Authenticated User on Public Page -> Redirect to Dashboard
     if (user && isPublicPath) {
-      console.log("AuthProvider: Authenticated user on public path, redirecting to dashboard");
-      router.replace("/dashboard");
+      console.log("AuthProvider: Authenticated user on public path");
+      if (returnUrl) {
+        router.replace(returnUrl);
+      } else {
+        router.replace("/dashboard");
+      }
     }
 
     // Case 2: Unauthenticated User on Protected Page -> Redirect to Login
