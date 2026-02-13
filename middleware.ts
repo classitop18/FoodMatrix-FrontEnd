@@ -8,7 +8,7 @@ const publicPaths = [
     "/reset-password",
     "/verify-email",
     "/otp-verification",
-    "/accept-invitation",
+    "/otp-verification",
     "/subscription-plan"
 ];
 const protectedPaths = ["/dashboard", "/account", "/profile", "/setup"];

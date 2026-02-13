@@ -11,6 +11,8 @@ import { usePathname } from "next/navigation";
 import Navbar from "@/components/common/Navbar";
 import Footer from "@/components/common/Footer";
 
+import AuthProvider from "@/providers/auth.provider";
+
 export function Providers({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
@@ -29,11 +31,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          {hideLayout && <Navbar />}
+          <AuthProvider>
+            {hideLayout && <Navbar />}
 
-          <Toaster position="top-right" closeButton />
-          {children}
-          {hideLayout && <Footer />}
+            <Toaster position="top-right" closeButton />
+            {children}
+            {hideLayout && <Footer />}
+          </AuthProvider>
         </TooltipProvider>
       </QueryClientProvider>
     </Provider>

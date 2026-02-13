@@ -33,7 +33,7 @@ function AuthNavigationLogic() {
       "/reset-password",
       "/verify-email",
       "/otp-verification",
-      "/accept-invitation",
+      "/otp-verification",
       "/subscription-plan"
     ];
     const isPublicPath = publicPaths.some(path => pathname.startsWith(path)) || pathname === "/";
