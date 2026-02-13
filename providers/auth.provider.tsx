@@ -17,6 +17,7 @@ import Loader from "@/components/common/Loader";
 import { AccountSetupRequiredDialog } from "@/components/account/account-setup-required-dialog";
 import { RootState } from "@/redux/store.redux";
 import { PermissionProvider } from "@/providers/permission.provider";
+import { AuthService } from "@/services/auth/auth.service";
 
 export default function AuthProvider({
   children,
@@ -27,37 +28,99 @@ export default function AuthProvider({
   const pathname = usePathname();
   const dispatch = useDispatch();
 
+  const [isRestoringSession, setIsRestoringSession] = useState(true);
+
+  useEffect(() => {
+    const restoreSession = async () => {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        try {
+          const authService = new AuthService();
+          await authService.refreshToken(true);
+        } catch (error) {
+          // Silent fail - user will be redirected to login by useAuthMe error
+        }
+      }
+      setIsRestoringSession(false);
+    };
+    restoreSession();
+  }, []);
+
   const {
     data: authData,
-    isLoading: isAuthLoading,
+    isLoading: isAuthLoadingProp,
     isError: isAuthError,
-  } = useAuthMe();
+  } = useAuthMe({ enabled: !isRestoringSession });
+
+  const isAuthLoading = isRestoringSession || isAuthLoadingProp;
+
   const { data: accountsData, isLoading: isAccountsLoading } = useMyAccounts();
 
   const [showSetupDialog, setShowSetupDialog] = useState(false);
+  const [pendingInvitation, setPendingInvitation] = useState<any>(null);
 
   // Get current active account and user from Redux
   const { activeAccountId } = useSelector((state: RootState) => state.account);
   const { user } = useSelector((state: RootState) => state.auth);
 
-  /* ---------- AUTH ---------- */
+  /* ---------- AUTH STATE SYNC ---------- */
   useEffect(() => {
     if (isAuthLoading) return;
 
     if (isAuthError || !authData?.data) {
       dispatch(logout());
       dispatch(clearAccount()); // Clear account data on logout
-      router.replace("/login");
+      // Don't redirect here, let the Routing effect handle it if needed
+      // Actually, if we are on a protected page, we DO want to redirect to login.
+      // But let's handle that in Routing effect too?
+      // Current logic: router.replace("/login") is okay.
       return;
     }
 
+    // Update Redux state
     dispatch(
       loginSuccess({
         user: authData.data,
         accessToken: authData.accessToken,
       }),
     );
-  }, [isAuthLoading, isAuthError, authData, dispatch, router]);
+  }, [isAuthLoading, isAuthError, authData, dispatch]);
+
+  /* ---------- ROUTING / REDIRECTS ---------- */
+  useEffect(() => {
+    if (isAuthLoading) return;
+
+    const publicPaths = [
+      "/login",
+      "/register",
+      "/forgot-password",
+      "/reset-password",
+      "/verify-email",
+      "/otp-verification",
+      "/accept-invitation",
+      "/subscription-plan"
+    ];
+    const isPublicPath = publicPaths.some(path => pathname.startsWith(path)) || pathname === "/";
+    const protectedPaths = ["/dashboard", "/account", "/profile", "/setup"]; // Add other protected roots
+    const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path));
+
+    // Case 1: Authenticated User on Public Page -> Redirect to Dashboard
+    if (user && isPublicPath) {
+      console.log("AuthProvider: Authenticated user on public path, redirecting to dashboard");
+      router.replace("/dashboard");
+    }
+
+    // Case 2: Unauthenticated User on Protected Page -> Redirect to Login
+    // (Note: The first useEffect handles logout, but this ensures redirect happens if user state is null)
+    if (!user && isProtectedPath) {
+      console.log("AuthProvider: Unauthenticated user on protected path, redirecting to login");
+      // We let the first useEffect handle the logout/clear, but here we enforce navigation
+      // router.replace(`/login?returnUrl=${encodeURIComponent(pathname)}`);
+      // Actually, the first useEffect replaces with "/login". Let's stick to that for now to avoid double redirects.
+      router.replace("/login");
+    }
+
+  }, [user, pathname, isAuthLoading, router]);
 
   /* ---------- ACCOUNTS ---------- */
   useEffect(() => {
@@ -86,6 +149,26 @@ export default function AuthProvider({
     // No accounts
     if (!pathname.includes("/account/create")) {
       setShowSetupDialog(true);
+
+      // Check for pending invitation context
+      if (typeof window !== "undefined") {
+        const storedContext = sessionStorage.getItem("pending_invitation_context");
+        if (storedContext) {
+          try {
+            const parsedContext = JSON.parse(storedContext);
+            // Verify timestamp is recent (e.g., within 1 hour) to avoid stale popups
+            const oneHour = 60 * 60 * 1000;
+            if (Date.now() - parsedContext.timestamp < oneHour) {
+              setPendingInvitation(parsedContext);
+            } else {
+              sessionStorage.removeItem("pending_invitation_context");
+            }
+          } catch (e) {
+            console.error("Failed to parse pending invitation context", e);
+            sessionStorage.removeItem("pending_invitation_context");
+          }
+        }
+      }
     } else {
       setShowSetupDialog(false);
     }
@@ -121,7 +204,7 @@ export default function AuthProvider({
     !isAccountsLoading;
 
   if (shouldBlockUI) {
-    return <AccountSetupRequiredDialog isOpen />;
+    return <AccountSetupRequiredDialog isOpen pendingInvitation={pendingInvitation} />;
   }
 
   return <PermissionProvider>{children}</PermissionProvider>;

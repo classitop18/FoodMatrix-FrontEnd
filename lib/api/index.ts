@@ -295,14 +295,16 @@ class ApiClient {
   }
 
   // Manual refresh token method (can be called explicitly)
-  public async manualRefreshToken(): Promise<string> {
+  public async manualRefreshToken(silent: boolean = false): Promise<string> {
     try {
       const newToken = await this.refreshAccessToken();
-      toast({
-        variant: "success",
-        title: "Session Refreshed",
-        description: "Session refreshed successfully",
-      });
+      if (!silent) {
+        toast({
+          variant: "success",
+          title: "Session Refreshed",
+          description: "Session refreshed successfully",
+        });
+      }
       return newToken;
     } catch (error) {
       throw error;

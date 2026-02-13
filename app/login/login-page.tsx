@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Mail, Lock, Eye, EyeOff, LogIn, UserCheck } from "lucide-react";
 import { useLogin } from "@/services/auth/auth.mutation";
 import { useToast } from "@/hooks/use-toast";
+import { getErrorMessage } from "@/lib/error-utils";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "@/redux/features/auth/auth.slice";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -120,10 +121,7 @@ export default function LoginPage() {
       console.error("Login error:", error);
 
       // Extract server message if exists
-      const errorMessage =
-        error?.response?.data?.message ||
-        error?.message ||
-        "Something went wrong. Please try again.";
+      const errorMessage = getErrorMessage(error);
       toast({
         title: "Login Failed",
         description: errorMessage,

@@ -3,6 +3,7 @@ import { AuthService } from "./auth.service";
 import { UserLoginPayload, UserRegisterPayload } from "./types/auth.types";
 import { queryClient } from "@/lib/react-query";
 import { toast } from "@/hooks/use-toast";
+import { getErrorMessage } from "@/lib/error-utils";
 
 const authService = new AuthService();
 
@@ -19,7 +20,7 @@ export const useLogin = () => {
     },
 
     onError: (error: any) => {
-      console.error("Login error:", error);
+      console.error("Login error:", getErrorMessage(error));
     },
   });
 };
@@ -35,7 +36,7 @@ export const useRegister = () => {
     },
 
     onError: (error: any) => {
-      console.error("Registration error:", error);
+      console.error("Registration error:", getErrorMessage(error));
     },
   });
 };
@@ -46,16 +47,22 @@ export const useLogout = () => {
     mutationFn: () => authService.logout(),
 
     onSuccess: () => {
-      localStorage.removeItem("token");
+      localStorage.removeItem("accessToken");
       localStorage.removeItem("user");
+      queryClient.removeQueries({ queryKey: ["auth", "me"] });
       queryClient.clear();
+      toast({
+        title: "Logged out successfully",
+        variant: "success",
+      });
     },
 
     onError: (error: any) => {
-      localStorage.removeItem("token");
+      localStorage.removeItem("accessToken");
       localStorage.removeItem("user");
+      queryClient.removeQueries({ queryKey: ["auth", "me"] });
       queryClient.clear();
-      console.error("Logout error:", error);
+      console.error("Logout error:", getErrorMessage(error));
     },
   });
 };
@@ -67,7 +74,7 @@ export const useCheckEmailUsernameExist = () => {
       return data;
     },
     onError: (error) => {
-      console.error("Check email/username error:", error);
+      console.error("Check email/username error:", getErrorMessage(error));
     },
   });
 };
@@ -79,7 +86,7 @@ export const useCheckProperty = () => {
       return data;
     },
     onError: (error) => {
-      console.error("Check email/username error:", error);
+      console.error("Check property error:", getErrorMessage(error));
     },
   });
 };
@@ -89,7 +96,13 @@ export const useForgetPassword = () => {
     mutationFn: (email: string) => authService.forgetPassword(email),
     onSuccess: () => { },
     onError: (error: any) => {
-      console.error("Logout error:", error);
+      const msg = getErrorMessage(error);
+      toast({
+        title: "Request Failed",
+        description: msg,
+        variant: "destructive"
+      });
+      console.error("Forget Password error:", msg);
     },
   });
 };
@@ -98,6 +111,15 @@ export const useResetPassword = () => {
   return useMutation({
     mutationFn: (payload: { newPassword: string }) =>
       authService.resetPassword(payload),
+    onError: (error: any) => {
+      const msg = getErrorMessage(error);
+      toast({
+        title: "Reset Password Failed",
+        description: msg,
+        variant: "destructive"
+      });
+      console.error("Reset Password error:", msg);
+    }
   });
 };
 
@@ -111,7 +133,7 @@ export const useMFAVerify = () => {
     },
 
     onError: (error: any) => {
-      console.error("Login error:", error);
+      console.error("MFA Verify error:", getErrorMessage(error));
     },
   });
 };
@@ -123,10 +145,21 @@ export const useUpdateUserProfile = () => {
       queryClient.invalidateQueries({
         queryKey: ["auth", "me"],
       });
+      toast({
+        title: "Profile Updated",
+        description: "Your profile has been updated successfully.",
+        variant: "success",
+      });
     },
 
     onError: (error: any) => {
-      console.error("Login error:", error);
+      const msg = getErrorMessage(error);
+      toast({
+        title: "Update Failed",
+        description: msg,
+        variant: "destructive",
+      });
+      console.error("Update Profile error:", msg);
     },
   });
 };
@@ -136,13 +169,20 @@ export const useChangePassword = () => {
     mutationFn: async (payload: any) => {
       return await authService.changePassword(payload);
     },
+    onSuccess: () => {
+      toast({
+        title: "Password Changed",
+        description: "Your password has been changed successfully.",
+        variant: "success",
+      });
+    },
     onError: (error: any) => {
-      // Extract the message safely
-      const errorMessage =
-        error?.response?.data?.message ||
-        error?.message ||
-        "Something went wrong";
-
+      const errorMessage = getErrorMessage(error);
+      toast({
+        title: "Change Password Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
       console.error("Change Password error:", errorMessage);
     },
   });
@@ -165,9 +205,7 @@ export const useUploadAvatar = () => {
       console.error("Upload Avatar error:", error);
       toast({
         title: "Failed to Update Avatar",
-        description:
-          error?.response?.data?.message ||
-          "Please try again with a valid image file.",
+        description: getErrorMessage(error, "Please try again with a valid image file."),
         variant: "destructive",
       });
     },

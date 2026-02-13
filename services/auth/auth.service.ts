@@ -111,4 +111,8 @@ export class AuthService {
     );
     return response.data;
   }
+
+  async refreshToken(silent: boolean = false) {
+    return apiClient.manualRefreshToken(silent);
+  }
 }

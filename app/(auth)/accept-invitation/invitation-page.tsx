@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { InvitationService } from "@/services/invitation/invitation.service";
 import { toast } from "@/hooks/use-toast";
+import { getErrorMessage } from "@/lib/error-utils";
 import { Loader2, CheckCircle2, XCircle, Mail, ArrowRight } from "lucide-react";
 import ThemeButton from "@/components/common/buttons/theme-button";
 import { useSelector } from "react-redux";
@@ -52,6 +53,13 @@ export default function InvitationPage() {
               title: "Invitation accepted",
               description: "Invitation accepted successfully!",
             });
+
+            // Store invitation context for the setup dialog
+            sessionStorage.setItem("pending_invitation_context", JSON.stringify({
+              email: details.email,
+              type: "invitation",
+              timestamp: Date.now()
+            }));
           } else {
             setStatus("error");
             setErrorMessage(
@@ -63,11 +71,26 @@ export default function InvitationPage() {
           setStatus("loading");
         }
       } catch (error: any) {
+        // Use utility to get clean error message
+        const errorMessage = getErrorMessage(error);
+
+        // Handle case where invitation was just accepted during registration
+        if (
+          errorMessage.includes("user_accepted") ||
+          errorMessage.includes("user_approved") ||
+          errorMessage === "Invitation has already been user_accepted"
+        ) {
+          setStatus("success");
+          return;
+        }
+
         setStatus("error");
-        setErrorMessage(
-          error.response?.data?.message ||
-            "Failed to process invitation. It might be expired or already used.",
-        );
+        setErrorMessage(errorMessage);
+        toast({
+          variant: "destructive",
+          title: "Invitation failed",
+          description: errorMessage,
+        });
       }
     };
 
@@ -115,7 +138,7 @@ export default function InvitationPage() {
                     className="w-full h-12 font-bold text-base"
                     onClick={() =>
                       router.push(
-                        `/register?email=${encodeURIComponent(invitationDetails.email)}&readonlyEmail=true&returnUrl=${encodeURIComponent(`/accept-invitation?token=${token}`)}`,
+                        `/register?email=${encodeURIComponent(invitationDetails.email)}&readonlyEmail=true&invitationToken=${token}&returnUrl=${encodeURIComponent(`/accept-invitation?token=${token}`)}`,
                       )
                     }
                     label="Create Account & Accept"

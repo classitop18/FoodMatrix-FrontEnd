@@ -17,6 +17,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { getErrorMessage } from "@/lib/error-utils";
 
 import Link from "next/link";
 import {
@@ -54,6 +55,8 @@ export default function Register() {
   const returnUrl = searchParams.get("returnUrl");
   const prefilledEmail = searchParams.get("email");
   const isEmailReadonly = searchParams.get("readonlyEmail") === "true";
+
+  const invitationToken = searchParams.get("invitationToken");
 
   const checkIsExistMutation = useCheckEmailUsernameExist();
   const registerMutation = useRegister();
@@ -187,21 +190,46 @@ export default function Register() {
         username: data.username,
         email: data.email,
         password: data.password,
+        invitationToken: invitationToken || undefined,
       });
-      toast({
-        title: "Registration Successful",
-        description:
-          response.message || "Your account has been created successfully.",
-      });
-      setRegisteredUser(response.user);
-      router.push(
-        `/login${returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ""}`,
-      );
+
+      if (response?.data?.accessToken) {
+        // Auto-login flow
+        localStorage.setItem("accessToken", response.data.accessToken);
+
+        // If registered with invitation token, store context for popup
+        if (invitationToken) {
+          sessionStorage.setItem("pending_invitation_context", JSON.stringify({
+            email: data.email,
+            type: "invitation",
+            timestamp: Date.now()
+          }));
+        }
+
+        toast({
+          title: "Registration Successful",
+          description: "Welcome to FoodMatrix!",
+        });
+
+        // Force a reload to ensure all auth states are updated correctly
+        window.location.href = returnUrl || "/dashboard";
+      } else {
+        // Standard flow
+        toast({
+          title: "Registration Successful",
+          description:
+            response.message || "Your account has been created successfully.",
+        });
+        setRegisteredUser(response.data || response.user);
+        router.push(
+          `/login${returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ""}`,
+        );
+      }
     } catch (error: any) {
       console.error("Registration error:", error);
       toast({
-        title: "Something went wrong",
-        description: error?.message ?? "Unable to register right now.",
+        title: "Registration Failed",
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     }

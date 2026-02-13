@@ -5,11 +5,12 @@ import { AuthService } from "./auth.service";
 
 const authService = new AuthService();
 
-export const useAuthMe = () => {
+export const useAuthMe = (options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: ["auth", "me"],
     queryFn: () => authService.getCurrentSession(),
     retry: false,
     refetchOnWindowFocus: false,
+    enabled: options?.enabled,
   });
 };
