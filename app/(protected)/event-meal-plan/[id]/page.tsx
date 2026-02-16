@@ -2,6 +2,8 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store.redux";
 import Link from "next/link";
 import {
     ArrowLeft,
@@ -146,6 +148,9 @@ export default function EventDetailPage() {
 
     const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
     const [selectedRecipeId, setSelectedRecipeId] = useState<string | null>(null);
+
+    // Get members from global state
+    const { members } = useSelector((state: RootState) => state.account);
 
     // Fetch full recipe details when selected
     const { data: fullRecipe, isLoading: isRecipeLoading } = useRecipe(selectedRecipeId);
@@ -581,16 +586,21 @@ export default function EventDetailPage() {
                                         <div className="mt-4 pt-4 border-t border-gray-100">
                                             <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Family Members</h4>
                                             <div className="space-y-3">
-                                                {event.participants.map((participant: any) => (
-                                                    <div key={participant.id} className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs border border-indigo-200">
-                                                            {participant.member?.name?.charAt(0)?.toUpperCase()}
+                                                {event.participants.map((participant: any) => {
+                                                    // Find member in global state
+                                                    const member = members?.find((m: any) => m.id === participant.member?.id) || participant.member;
+                                                    const name = member?.name || (member?.user?.firstName ? `${member.user.firstName} ${member.user.lastName}` : "Unknown");
+                                                    return (
+                                                        <div key={participant.id} className="flex items-center gap-3">
+                                                            <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs border border-indigo-200">
+                                                                {name.charAt(0)?.toUpperCase()}
+                                                            </div>
+                                                            <span className="text-sm font-medium text-gray-700">
+                                                                {name}
+                                                            </span>
                                                         </div>
-                                                        <span className="text-sm font-medium text-gray-700">
-                                                            {participant.member?.name || (participant?.member?.user?.firstName + " " + participant?.member?.user?.lastName)}
-                                                        </span>
-                                                    </div>
-                                                ))}
+                                                    );
+                                                })}
                                             </div>
                                         </div>
                                     )}

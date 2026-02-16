@@ -154,6 +154,7 @@ export const INITIAL_FORM_DATA: EventFormData = {
     guestNotes: "",
     selectedMealTypes: [],
     selectedRecipes: [],
+    budgetAllocations: {},
 };
 
 // Serving multipliers for calculating total servings

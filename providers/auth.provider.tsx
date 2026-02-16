@@ -11,6 +11,7 @@ import {
   setActiveAccountId,
   clearAccount,
   fetchAccountDetail,
+  fetchAccountMembers,
   fetchMyMembership,
 } from "@/redux/features/account/account.slice";
 import Loader from "@/components/common/Loader";
@@ -177,6 +178,7 @@ export default function AuthProvider({
   useEffect(() => {
     if (activeAccountId) {
       dispatch(fetchAccountDetail(activeAccountId) as any);
+      dispatch(fetchAccountMembers(activeAccountId) as any);
 
       if (user?.id) {
         dispatch(

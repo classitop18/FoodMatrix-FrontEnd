@@ -1,6 +1,7 @@
 import { createListenerMiddleware } from "@reduxjs/toolkit";
 import {
   fetchAccountDetail,
+  fetchAccountMembers,
   setActiveAccountId,
 } from "../features/account/account.slice";
 import { RootState } from "../store.redux";
@@ -18,5 +19,6 @@ accountListener.startListening({
     console.log({ currentAccountId, newAccountId });
 
     listenerApi.dispatch(fetchAccountDetail(newAccountId));
+    listenerApi.dispatch(fetchAccountMembers(newAccountId));
   },
 });

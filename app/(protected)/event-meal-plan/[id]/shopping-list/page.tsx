@@ -20,8 +20,10 @@ import {
     Download,
     Sparkles,
     RefreshCw,
-    AlertCircle
+    AlertCircle,
+    Info
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
@@ -401,7 +403,8 @@ export default function EventShoppingListPage() {
                 name: item.ingredientName,
                 quantity: item.quantity || 0,
                 unit: item.unit || "",
-                // estimatedPrice: item.estimatedPrice || 0, // We overwrite with AI cost later
+                // We preserve the backend estimated cost (which now includes AI estimates)
+                estimatedPrice: item.estimatedPrice || 0,
                 source: "Recipe", // We assume, or check
                 category: item.category || "others",
                 isRecipe: true, // simplified assumption for flow
@@ -433,53 +436,27 @@ export default function EventShoppingListPage() {
     // Simplest approach: Items from DB that are NOT snacks/beverages/drinks/desserts are "Recipe Items" 
     // AND all pending items are "Manual Items".
 
-    const [recipeRawItems, manualRawItems] = useMemo(() => {
-        const MANUAL_CATEGORIES = new Set(['snacks', 'beverages', 'drinks', 'desserts']);
-
-        const recipe: any[] = [];
-        const manual: any[] = [];
-
-        rawIngredients.forEach(item => {
-            const cat = (item.category || '').toLowerCase();
-            // If it's pending, it's definitely manual
-            if (item.isPending) {
-                manual.push(item);
-                return;
-            }
-
-            // If it's saved, check category to decide if it's likely a recipe ingredient or an "item"
-            // Or rely on how we saved it. 
-            // Better heuristic: Recipe items usually come from generate-shopping-list which merges recipes.
-            // Items added via "Add Item" API are extra.
-            // For now, let's process anything not in MANUAL_CATEGORIES as a recipe candidate for AI merge.
-
-            if (MANUAL_CATEGORIES.has(cat)) {
-                manual.push(item);
-            } else {
-                recipe.push(item);
-            }
-        });
-
-        return [recipe, manual];
+    // Combine all items for AI Merge
+    const itemsToMerge = useMemo(() => {
+        return rawIngredients;
     }, [rawIngredients]);
 
-    // Auto-Run AI Merge on Recipe Ingredients
+    // Auto-Run AI Merge on ALL Ingredients
     useEffect(() => {
-        if (recipeRawItems.length > 0 && !hasAttemptedMerge.current) {
+        if (itemsToMerge.length > 0 && !hasAttemptedMerge.current) {
             hasAttemptedMerge.current = true;
-            runAIMerge(recipeRawItems).then(res => {
+            runAIMerge(itemsToMerge).then(res => {
                 setAiMergedRecipeIngredients(res);
             });
         }
-    }, [recipeRawItems]);
+    }, [itemsToMerge]);
 
-    // Prepare Display Lists
-    const recipeIngredients = useMemo(() => {
+    // Prepare Display List
+    const smartShoppingList = useMemo(() => {
         let items = aiMergedRecipeIngredients || [];
-        // If loading or failed, show manual merge of raw items temporarily?
-        if (!items.length && !isMerging && recipeRawItems.length > 0) {
-            // Fallback if AI hasn't run or returned empty
-            items = mergeIngredientsManually(recipeRawItems);
+        // If loading or failed, show manual merge of raw items temporarily
+        if (!items.length && !isMerging && itemsToMerge.length > 0) {
+            items = mergeIngredientsManually(itemsToMerge);
         }
 
         // Map images
@@ -494,49 +471,23 @@ export default function EventShoppingListPage() {
                 displayUnit: formatted.unit
             };
         });
-    }, [aiMergedRecipeIngredients, recipeRawItems, dynamicImages, isMerging]);
-
-    const manualIngredients = useMemo(() => {
-        // Just local merge for manual items to avoid duplicates
-        const merged = mergeIngredientsManually(manualRawItems);
-        return merged.map((item: any) => {
-            const staticData = getStaticData(item.name);
-            const image = staticData?.image || dynamicImages[item.name] || FALLBACK_IMAGE;
-            const formatted = formatSmartQuantity(item.quantity, item.unit);
-            return {
-                ...item,
-                image,
-                displayQuantity: formatted.value,
-                displayUnit: formatted.unit
-            };
-        });
-    }, [manualRawItems, dynamicImages]);
+    }, [aiMergedRecipeIngredients, itemsToMerge, dynamicImages, isMerging]);
 
     // Combine for image fetching and PDF
-    const allIngredients = useMemo(() => [...recipeIngredients, ...manualIngredients], [recipeIngredients, manualIngredients]);
+    const allIngredients = useMemo(() => smartShoppingList, [smartShoppingList]);
 
     // Calculate Costs
     const estimatedTotalCost = useMemo(() => {
-        const recipeCost = recipeIngredients.reduce((sum, item) => sum + (item.estimatedPrice || 0), 0);
-        // Manual items might not have price unless we set it. For now assume 0 or keep user input if we had it.
-        const manualCost = manualIngredients.reduce((sum, item) => sum + (item.estimatedPrice || 0), 0);
-        return recipeCost + manualCost;
-    }, [recipeIngredients, manualIngredients]);
+        return smartShoppingList.reduce((sum, item) => sum + (item.estimatedPrice || 0), 0);
+    }, [smartShoppingList]);
 
     // Grouping for UI
-    const groupedRecipeIngredients = recipeIngredients.reduce((acc, item) => {
+    const groupedIngredients = smartShoppingList.reduce((acc, item) => {
         const cat = (item.category || "others").toLowerCase();
         if (!acc[cat]) acc[cat] = [];
         acc[cat].push(item);
         return acc;
-    }, {} as Record<string, typeof recipeIngredients>);
-
-    const groupedManualIngredients = manualIngredients.reduce((acc, item) => {
-        const cat = (item.category || "others").toLowerCase();
-        if (!acc[cat]) acc[cat] = [];
-        acc[cat].push(item);
-        return acc;
-    }, {} as Record<string, typeof manualIngredients>);
+    }, {} as Record<string, typeof smartShoppingList>);
 
     const categoryOrder = ["vegetables", "fruits", "meat", "dairy", "pantry", "spices", "bakery", "snacks", "drinks", "beverages", "desserts", "others"];
 
@@ -795,11 +746,47 @@ export default function EventShoppingListPage() {
                         </p>
                     </div>
 
-                    <div className="absolute right-0 top-0">
-                        <div className="bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-100 flex flex-col items-end">
-                            <span className="text-[10px] uppercase font-bold text-gray-400">Event Budget</span>
-                            <span className="text-xl font-extrabold text-[#7dab4f]">
+                    {/* Budget Summary Card */}
+                    <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto mt-4 md:mt-0">
+                        <div className="bg-white px-5 py-3 rounded-xl shadow-sm border border-gray-100 flex flex-col items-end min-w-[140px]">
+                            <span className="text-[10px] uppercase font-bold text-gray-400">Total Budget</span>
+                            <span className="text-xl font-extrabold text-[#313131]">
                                 ${totalEventBudget.toFixed(2)}
+                            </span>
+                        </div>
+
+                        <div className="bg-white px-5 py-3 rounded-xl shadow-sm border border-gray-100 flex flex-col items-end min-w-[140px]">
+                            <span className="text-[10px] uppercase font-bold text-gray-400 flex items-center gap-1">
+                                Est. Shopping Cost
+                                <div className="group relative">
+                                    <Info className="w-3 h-3 text-gray-300 cursor-help" />
+                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-48 p-2 bg-gray-800 text-white text-[10px] rounded shadow-lg z-20 font-normal text-left">
+                                        Estimated cost of ingredients based on market averages. Actual store prices may vary.
+                                    </div>
+                                </div>
+                            </span>
+                            <span className="text-xl font-extrabold text-[var(--primary)]">
+                                ${estimatedTotalCost.toFixed(2)}
+                            </span>
+                        </div>
+
+                        <div className={cn(
+                            "px-5 py-3 rounded-xl shadow-sm border flex flex-col items-end min-w-[140px]",
+                            totalEventBudget - estimatedTotalCost >= 0
+                                ? "bg-green-50 border-green-100"
+                                : "bg-red-50 border-red-100"
+                        )}>
+                            <span className={cn(
+                                "text-[10px] uppercase font-bold",
+                                totalEventBudget - estimatedTotalCost >= 0 ? "text-green-600" : "text-red-600"
+                            )}>
+                                {totalEventBudget - estimatedTotalCost >= 0 ? "Remaining" : "Over Budget"}
+                            </span>
+                            <span className={cn(
+                                "text-xl font-extrabold",
+                                totalEventBudget - estimatedTotalCost >= 0 ? "text-green-700" : "text-red-700"
+                            )}>
+                                ${Math.abs(totalEventBudget - estimatedTotalCost).toFixed(2)}
                             </span>
                         </div>
                     </div>
@@ -1014,7 +1001,7 @@ export default function EventShoppingListPage() {
 
                         {/* List Content */}
                         <div className="divide-y divide-gray-100">
-                            {recipeIngredients.length === 0 && !isMerging ? (
+                            {smartShoppingList.length === 0 && !isMerging ? (
                                 <div className="p-10 text-center text-gray-500 flex flex-col items-center">
                                     <ShoppingCart className="w-12 h-12 mb-3 text-gray-200" />
                                     <p>No recipe ingredients yet. Generate a menu for your event first.</p>
@@ -1029,7 +1016,7 @@ export default function EventShoppingListPage() {
                             ) : (
                                 <>
                                     {categoryOrder.map((cat) => {
-                                        const items = groupedRecipeIngredients[cat];
+                                        const items = groupedIngredients[cat];
                                         if (!items || items.length === 0) return null;
                                         return (
                                             <div key={cat}>
@@ -1076,105 +1063,37 @@ export default function EventShoppingListPage() {
                         </div>
                     </div>
 
-                    {/* 2. Extra / Manual Items Section */}
-                    {(manualIngredients.length > 0) && (
-                        <div className=" mt-5 max-w-7xl m-auto bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden animate-fade-in delay-200">
-                            <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-amber-50/30">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-amber-100 rounded-lg">
-                                        <ShoppingCart className="w-5 h-5 text-amber-700" />
-                                    </div>
-                                    <div>
-                                        <h2 className="font-bold text-lg text-gray-900">Extra / Manual Items</h2>
-                                        <p className="text-xs text-gray-500">Items added manually (Fruits, Snacks, etc.)</p>
-                                    </div>
-                                </div>
-                                <span className="bg-amber-100 text-amber-700 text-xs font-bold px-2 py-1 rounded-full">
-                                    {manualIngredients.length} Items
-                                </span>
-                            </div>
-
-                            <div className="divide-y divide-gray-100">
-                                {categoryOrder.map((cat) => {
-                                    const items = groupedManualIngredients[cat];
-                                    if (!items || items.length === 0) return null;
-                                    return (
-                                        <div key={cat}>
-                                            <div className="bg-gray-50/50 px-6 py-2 text-xs font-bold uppercase tracking-wider text-gray-500 sticky top-0 border-y border-gray-100">
-                                                {cat}
-                                            </div>
-                                            {items.map((item: any, idx: number) => (
-                                                <div key={item.id || idx} className={`px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors group ${item.isPending ? 'bg-amber-50/30' : ''}`}>
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200 shrink-0">
-                                                            <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                                                        </div>
-                                                        <div>
-                                                            <div className="flex items-center gap-2">
-                                                                <h3 className="font-medium text-gray-900">{item.name}</h3>
-                                                                {item.isPending && (
-                                                                    <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wide">
-                                                                        Pending
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                            <p className="text-sm text-gray-500 capitalize">{item.source}</p>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="bg-white rounded-lg px-3 py-1 text-sm font-bold text-gray-700 min-w-[80px] text-center border border-gray-200 shadow-sm">
-                                                            {item.displayQuantity} {item.displayUnit}
-                                                        </div>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                            onClick={() => handleRemoveItem(item)}
-                                                        >
-                                                            <Trash2 className="w-4 h-4" />
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {/* Actions Footer */}
-                <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 flex justify-center z-20 gap-4">
-                    <Button
-                        size="lg"
-                        onClick={handleSaveAllItems}
-                        disabled={isSavingAll || pendingItems.length === 0}
-                        className="bg-[#1a1a1a] text-white hover:bg-black rounded-lg px-8 shadow-lg"
-                    >
-                        {isSavingAll ? (
-                            <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Saving...
-                            </>
-                        ) : (
-                            <>Save All Items ({pendingItems.length})</>
-                        )}
-                    </Button>
-
-                    {pendingItems.length === 0 && (
+                    {/* Actions Footer */}
+                    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 flex justify-center z-20 gap-4">
                         <Button
-                            variant="outline"
                             size="lg"
-                            onClick={handleDownloadPDF}
-                            disabled={isDownloading || allIngredients.length === 0}
-                            className="rounded-lg px-6"
+                            onClick={handleSaveAllItems}
+                            disabled={isSavingAll || pendingItems.length === 0}
+                            className="bg-[#1a1a1a] text-white hover:bg-black rounded-lg px-8 shadow-lg"
                         >
-                            {isDownloading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
-                            Download PDF
+                            {isSavingAll ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    Saving...
+                                </>
+                            ) : (
+                                <>Save All Items ({pendingItems.length})</>
+                            )}
                         </Button>
-                    )}
+
+                        {pendingItems.length === 0 && (
+                            <Button
+                                variant="outline"
+                                size="lg"
+                                onClick={handleDownloadPDF}
+                                disabled={isDownloading || allIngredients.length === 0}
+                                className="rounded-lg px-6"
+                            >
+                                {isDownloading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
+                                Download PDF
+                            </Button>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

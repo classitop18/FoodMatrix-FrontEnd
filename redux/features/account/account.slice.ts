@@ -19,10 +19,29 @@ export interface MyMembership {
   accountId: string;
 }
 
+export interface Member {
+  id: string;
+  accountId: string;
+  userId?: string;
+  role: string;
+  status: string;
+  name?: string;
+  email?: string;
+  avatar?: string;
+  user?: {
+    id: string;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    avatar?: string;
+  };
+}
+
 interface AccountState {
   accountsList: any[];
   activeAccountId: string | null;
   account: any | null;
+  members: Member[]; // List of all members in active account
   myMembership: MyMembership | null; // Current user's membership in active account
   activeBudget: ActiveBudget | null;
   spent: number;
@@ -65,6 +84,7 @@ const initialState: AccountState = {
   accountsList: [],
   activeAccountId: getPersistedAccountId(), // Load from localStorage on init
   account: null,
+  members: [],
   myMembership: null, // Current user's membership info
   activeBudget: null,
   spent: 0,
@@ -223,6 +243,26 @@ export const fetchMyMembership = createAsyncThunk(
 );
 
 /* -------------------------------- */
+/* Async thunk to fetch all members of the active account */
+export const fetchAccountMembers = createAsyncThunk(
+  "account/fetchMembers",
+  async (accountId: string, { rejectWithValue }) => {
+    try {
+      const memberService = new MemberService();
+      const response = await memberService.getMembers({
+        accountId,
+        limit: 100,
+      });
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.message || "Failed to fetch account members",
+      );
+    }
+  },
+);
+
+/* -------------------------------- */
 export const accountSlice = createSlice({
   name: "account",
   initialState,
@@ -273,6 +313,17 @@ export const accountSlice = createSlice({
       .addCase(fetchAccountDetail.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to fetch account";
+      })
+      .addCase(fetchAccountMembers.fulfilled, (state, action) => {
+        // Handle paginated response causing members to be an object instead of array
+        if (action.payload && typeof action.payload === 'object' && 'data' in action.payload && Array.isArray((action.payload as any).data)) {
+          state.members = (action.payload as any).data;
+        } else if (Array.isArray(action.payload)) {
+          state.members = action.payload;
+        } else {
+          // Fallback to empty array if format is unexpected
+          state.members = [];
+        }
       });
     // // Membership thunk handlers
     // .addCase(fetchMyMembership.pending, (state) => {

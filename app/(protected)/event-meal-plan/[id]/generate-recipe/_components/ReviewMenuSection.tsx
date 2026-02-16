@@ -6,7 +6,8 @@ import {
     Clock,
     Trash2,
     Utensils,
-    Loader2
+    Loader2,
+    Info
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -163,6 +164,26 @@ export const ReviewMenuSection: React.FC<ReviewMenuSectionProps> = ({
                                     <div className="flex justify-between text-sm">
                                         <span className="text-gray-500">Budget</span>
                                         <span className="font-bold text-gray-900">${totalBudget}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm group relative">
+                                        <span className="text-gray-500 flex items-center gap-1 cursor-help">
+                                            Est. Recipe Cost
+                                            <Info className="w-3 h-3 text-gray-400" />
+                                        </span>
+                                        <span className="font-bold text-gray-900">${summary.totalCost.toFixed(2)}</span>
+                                        {/* Tooltip */}
+                                        <div className="absolute bottom-full left-0 mb-2 hidden group-hover:block w-48 p-2 bg-gray-800 text-white text-xs rounded shadow-lg z-10">
+                                            Based on average cost per serving. Actual shopping cost may vary.
+                                        </div>
+                                    </div>
+                                    <Separator className="my-2" />
+                                    <div className="flex justify-between text-sm font-bold">
+                                        <span className={summary.totalCost > totalBudget ? "text-red-500" : "text-green-600"}>
+                                            {summary.totalCost > totalBudget ? "Over Budget" : "Remaining"}
+                                        </span>
+                                        <span className={summary.totalCost > totalBudget ? "text-red-500" : "text-green-600"}>
+                                            ${Math.abs(totalBudget - summary.totalCost).toFixed(2)}
+                                        </span>
                                     </div>
                                 </div>
 

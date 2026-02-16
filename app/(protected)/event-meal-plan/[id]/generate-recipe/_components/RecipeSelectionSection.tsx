@@ -164,6 +164,7 @@ interface RecipeSelectionSectionProps {
     actionLabel?: string;
     onAddEventItem?: (item: { name: string, quantity: number, unit: string, category: string }) => Promise<void>;
     onRemoveRecipe?: (mealType: string, recipeId: string) => void;
+    onUpdateBudget?: (mealType: MealType, budget: number) => void;
 }
 
 export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
@@ -182,7 +183,8 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
     getSelectedCount,
     actionLabel,
     onAddEventItem,
-    onRemoveRecipe
+    onRemoveRecipe,
+    onUpdateBudget
 }) => {
     const [viewRecipe, setViewRecipe] = useState<any | null>(null);
     const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
@@ -496,11 +498,55 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
                                         <div className="flex items-center gap-3">
                                             <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg border border-gray-200 shadow-sm">
                                                 <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Budget</span>
-                                                <Badge variant="secondary" className="bg-[var(--primary-bg)] text-[var(--primary)] font-bold text-sm hover:bg-[var(--primary-bg)]">
-                                                    <Wallet className="w-3.5 h-3.5 mr-1.5" />
-                                                    ${budget}
-                                                </Badge>
+                                                <div className="flex items-center gap-2">
+                                                    {onUpdateBudget ? (
+                                                        <div className="relative">
+                                                            <Wallet className="w-3.5 h-3.5 absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                                            <Input
+                                                                type="number"
+                                                                value={budget}
+                                                                onChange={(e) => onUpdateBudget(mealType, parseFloat(e.target.value) || 0)}
+                                                                className="h-7 w-24 pl-7 pr-2 py-0 text-sm font-bold border-gray-200 focus:border-[var(--primary)] focus:ring-[var(--primary)]"
+                                                            />
+                                                        </div>
+                                                    ) : (
+                                                        <Badge variant="secondary" className="bg-[var(--primary-bg)] text-[var(--primary)] font-bold text-sm hover:bg-[var(--primary-bg)]">
+                                                            <Wallet className="w-3.5 h-3.5 mr-1.5" />
+                                                            ${budget}
+                                                        </Badge>
+                                                    )}
+                                                </div>
                                             </div>
+
+                                            {/* Cost Calculation & Alert */}
+                                            {(() => {
+                                                const currentSpent = recipes
+                                                    .filter(r => selectedIds.includes(r.id))
+                                                    .reduce((sum, r) => {
+                                                        const price = r.estimatedCostPerServing || (r.price ? parseFloat(r.price.replace(/[^0-9.]/g, '')) : 0);
+                                                        const servings = r.servings || 1;
+                                                        return sum + (price * servings);
+                                                    }, 0);
+
+                                                const isOverBudget = currentSpent > budget;
+
+                                                return (
+                                                    <div className={cn(
+                                                        "flex items-center gap-2 px-3 py-2 rounded-lg border shadow-sm",
+                                                        isOverBudget ? "bg-red-50 border-red-200 text-red-700" : "bg-green-50 border-green-200 text-green-700"
+                                                    )}>
+                                                        <span className="text-xs font-semibold uppercase tracking-wider">Spent</span>
+                                                        <span className="font-bold text-sm">
+                                                            ${currentSpent.toFixed(2)}
+                                                        </span>
+                                                        {isOverBudget && (
+                                                            <span className="text-[10px] font-bold bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full ml-1">
+                                                                +${(currentSpent - budget).toFixed(2)}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })()}
                                             {selectedIds.length > 0 && (
                                                 <Badge className="bg-[var(--primary-bg)] text-[var(--primary)] font-bold border border-[var(--primary-light)]/30">
                                                     <CheckCircle2 className="w-3.5 h-3.5 mr-1" />

@@ -121,6 +121,13 @@ export default function EventRecipeSelectionPage() {
             selectedHealthMembers,
             ...dataOverrides
         };
+        // Ensure allocations are saved if mealBudgets is updated
+        if (!stateToSave.allocations && stateToSave.mealBudgets) {
+            (stateToSave as any).allocations = stateToSave.mealBudgets.reduce((acc: any, mb: any) => {
+                acc[mb.mealType] = mb.budget;
+                return acc;
+            }, {});
+        }
 
         try {
             await EventService.saveGenerationState(eventId, stateToSave, stateToSave.step);
@@ -998,6 +1005,7 @@ export default function EventRecipeSelectionPage() {
                             actionLabel="Continue"
                             onAddEventItem={handleDirectAddItem}
                             onRemoveRecipe={handleRemoveRecipe}
+                            onUpdateBudget={(mt, val) => handleManualBudgetChange(mt, val.toString())}
                         />
                     )}
 
@@ -1019,6 +1027,7 @@ export default function EventRecipeSelectionPage() {
                             getSelectedCount={getSelectedCount}
                             actionLabel="Review Final Menu"
                             onRemoveRecipe={handleRemoveRecipe}
+                            onUpdateBudget={(mt, val) => handleManualBudgetChange(mt, val.toString())}
                         />
                     )}
 
