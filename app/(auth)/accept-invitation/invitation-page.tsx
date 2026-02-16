@@ -41,6 +41,30 @@ export default function InvitationPage() {
         // 1. Validate token and get invitation info
         const response = await invitationService.validateToken(token);
         const details = response.data;
+
+        // Check status first
+        if (details.status === "user_accepted") {
+          setStatus("success");
+          return;
+        }
+
+        if (details.status === "approved") {
+          toast({
+            variant: "success",
+            title: "Invitation Approved",
+            description: "Your invitation has already been approved. Redirecting...",
+          });
+          // Redirect to login or account
+          router.push(isAuthenticated ? "/account" : "/login");
+          return;
+        }
+
+        if (details.status === "rejected") {
+          setStatus("error");
+          setErrorMessage("This invitation has been rejected.");
+          return;
+        }
+
         setInvitationDetails(details);
 
         // 2. If authenticated, attempt to accept automatically
@@ -73,16 +97,6 @@ export default function InvitationPage() {
       } catch (error: any) {
         // Use utility to get clean error message
         const errorMessage = getErrorMessage(error);
-
-        // Handle case where invitation was just accepted during registration
-        if (
-          errorMessage.includes("user_accepted") ||
-          errorMessage.includes("user_approved") ||
-          errorMessage === "Invitation has already been user_accepted"
-        ) {
-          setStatus("success");
-          return;
-        }
 
         setStatus("error");
         setErrorMessage(errorMessage);

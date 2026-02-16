@@ -19,7 +19,7 @@ export interface Invitation {
   email: string;
   accountId: string;
   role: string;
-  status: "pending" | "accepted" | "rejected" | "expired";
+  status: "pending" | "user_accepted" | "approved" | "rejected" | "expired";
   token: string;
   expiresAt: string;
   createdAt: string;
