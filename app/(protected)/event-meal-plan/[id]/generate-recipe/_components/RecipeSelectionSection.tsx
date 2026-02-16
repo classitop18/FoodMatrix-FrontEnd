@@ -22,6 +22,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { sweets, drinks } from "@/data/add-items";
 import { RecipeCard } from "@/components/common/RecipeCard";
 import { indianSnacks } from "@/data/indian-snacks";
+import { CocktailService, Cocktail } from "@/services/external/cocktail.service";
+import { MealService, Meal } from "@/services/external/meal.service";
+import { useDebounce } from "@/hooks/useDebounce";
+
 
 
 
@@ -30,22 +34,24 @@ interface StaticItemsGridProps {
     searchInputs: Record<MealType, string>;
     staticSelections: Record<MealType, string[]>;
     handleStaticItemToggle: (mealType: MealType, item: string) => void;
+    extraItems?: any[];
 }
 
 const StaticItemsGrid: React.FC<StaticItemsGridProps> = ({
     mealType,
     searchInputs,
     staticSelections,
-    handleStaticItemToggle
+    handleStaticItemToggle,
+    extraItems = []
 }) => {
     const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80";
 
     const itemsDetails = React.useMemo(() => {
         let details: any[] = [];
-        if (mealType === 'snacks' || mealType === 'dessert') {
-            details = [...indianSnacks.filter(i => i.category === 'snacks'), ...sweets];
-        } else if (mealType === 'beverages') {
-            details = [...indianSnacks.filter(i => i.category === 'beverages'), ...drinks];
+        if (mealType === 'beverages') {
+            details = [...indianSnacks.filter(i => i.category === 'beverages'), ...drinks, ...extraItems];
+        } else if (mealType === 'snacks' || mealType === 'dessert') {
+            details = [...indianSnacks.filter(i => i.category === 'snacks'), ...sweets, ...extraItems];
         } else {
             const simpleItems = STATIC_ITEMS[mealType] || [];
             details = simpleItems.map((name: string) => ({
@@ -183,6 +189,90 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
     const [searchInputs, setSearchInputs] = useState<Record<MealType, string>>({} as Record<MealType, string>);
     const [recipeCounts, setRecipeCounts] = useState<Partial<Record<MealType, number>>>({});
     const [mealCuisines, setMealCuisines] = useState<Partial<Record<MealType, string>>>({});
+    const [externalDrinks, setExternalDrinks] = useState<any[]>([]);
+    const [externalMeals, setExternalMeals] = useState<any[]>([]); // For snacks/desserts
+    const [externalIngredients, setExternalIngredients] = useState<any[]>([]); // For veg/fruit/etc
+    const [isSearchingDrinks, setIsSearchingDrinks] = useState(false);
+
+    // Debounce search for drinks & meals & ingredients
+    const debouncedDrinkSearch = useDebounce(searchInputs['beverages'], 500);
+    const debouncedSnackSearch = useDebounce(searchInputs['snacks'], 500);
+    const debouncedDessertSearch = useDebounce(searchInputs['dessert'], 500);
+
+    // Generic debut for other categories
+    const debouncedGenericSearch = useDebounce(searchInputs[activeMealTab], 500);
+
+    // Effect for Drinks
+    React.useEffect(() => {
+        const searchDrinks = async () => {
+            if (activeMealTab === 'beverages' && debouncedDrinkSearch && debouncedDrinkSearch.length >= 3) {
+                setIsSearchingDrinks(true);
+                const results = await CocktailService.searchCocktails(debouncedDrinkSearch);
+                const formattedResults = results.map(drink => ({
+                    name: drink.strDrink,
+                    unit: 'glass',
+                    category: 'beverages',
+                    image: drink.strDrinkThumb
+                }));
+                setExternalDrinks(formattedResults);
+                setIsSearchingDrinks(false);
+            } else if (!debouncedDrinkSearch) {
+                setExternalDrinks([]);
+            }
+        }
+        searchDrinks();
+    }, [debouncedDrinkSearch, activeMealTab]);
+
+    // Effect for Meals (Snacks/Desserts)
+    React.useEffect(() => {
+        const searchMeals = async () => {
+            const currentSearch = activeMealTab === 'snacks' ? debouncedSnackSearch :
+                activeMealTab === 'dessert' ? debouncedDessertSearch : '';
+
+            if ((activeMealTab === 'snacks' || activeMealTab === 'dessert') && currentSearch && currentSearch.length >= 3) {
+                setIsSearchingDrinks(true); // Re-use loading state or create new one? reusing for simplicity
+                const results = await MealService.searchMeals(currentSearch);
+                const formattedResults = results.map(meal => ({
+                    name: meal.strMeal,
+                    unit: 'serving',
+                    category: activeMealTab,
+                    image: meal.strMealThumb
+                }));
+                setExternalMeals(formattedResults);
+                setIsSearchingDrinks(false);
+            } else if (!currentSearch) {
+                setExternalMeals([]);
+            }
+        }
+        searchMeals();
+    }, [debouncedSnackSearch, debouncedDessertSearch, activeMealTab]);
+
+    // Effect for Ingredients (Vegetables, Fruits, etc.)
+    React.useEffect(() => {
+        const searchIngredients = async () => {
+            // Skip if already handled by drink/meal search
+            if (activeMealTab === 'beverages' || activeMealTab === 'snacks' || activeMealTab === 'dessert') {
+                return;
+            }
+
+            if (debouncedGenericSearch && debouncedGenericSearch.length >= 2) {
+                setIsSearchingDrinks(true); // Reuse loader
+                const results = await MealService.searchIngredients(debouncedGenericSearch);
+                const formattedResults = results.map(ing => ({
+                    name: ing.strIngredient,
+                    unit: 'serving', // Default
+                    category: activeMealTab,
+                    image: MealService.getIngredientImageUrl(ing.strIngredient)
+                }));
+                setExternalIngredients(formattedResults);
+                setIsSearchingDrinks(false);
+            } else {
+                setExternalIngredients([]);
+            }
+        }
+        searchIngredients();
+    }, [debouncedGenericSearch, activeMealTab]);
+
 
     const handleViewDetails = (recipe: any) => {
         setViewRecipe(recipe);
@@ -230,15 +320,31 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
             // Re-construct the full items list to find metadata
             let allItems: any[] = [];
             if (mealType === 'snacks' || mealType === 'dessert') {
-                allItems = [...indianSnacks.filter(i => i.category === 'snacks'), ...sweets];
+                allItems = [...indianSnacks.filter(i => i.category === 'snacks'), ...sweets, ...externalMeals];
             } else if (mealType === 'beverages') {
-                allItems = [...indianSnacks.filter(i => i.category === 'beverages'), ...drinks];
+                allItems = [...indianSnacks.filter(i => i.category === 'beverages'), ...drinks, ...externalDrinks];
             } else {
-                allItems = (STATIC_ITEMS[mealType] || []).map(name => ({ name, unit: 'serving' }));
+                allItems = [
+                    ...(STATIC_ITEMS[mealType] || []).map(name => ({ name, unit: 'serving' })),
+                    ...externalIngredients
+                ];
             }
 
             for (const name of selectedNames) {
-                const itemData = allItems.find(i => i.name === name);
+                let itemData = allItems.find(i => i.name === name);
+                if (!itemData) {
+                    // Check external drinks
+                    itemData = externalDrinks.find(i => i.name === name);
+                }
+                if (!itemData) {
+                    // Check external meals
+                    itemData = externalMeals.find(i => i.name === name);
+                }
+                if (!itemData) {
+                    // Check external ingredients
+                    itemData = externalIngredients.find(i => i.name === name);
+                }
+
                 await onAddEventItem({
                     name: name,
                     quantity: 1, // Default to 1
@@ -487,6 +593,12 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
                                                         <h3 className="text-sm font-bold text-gray-900 block">
                                                             Select items to add:
                                                         </h3>
+                                                        {isSearchingDrinks && (
+                                                            <div className="flex items-center text-xs text-[var(--primary)]">
+                                                                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                                                                Searching online database...
+                                                            </div>
+                                                        )}
 
                                                         {/* Search for static items */}
                                                         <div className="relative w-full md:w-64">
@@ -507,6 +619,11 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
                                                                 searchInputs={searchInputs}
                                                                 staticSelections={staticSelections}
                                                                 handleStaticItemToggle={handleStaticItemToggle}
+                                                                extraItems={
+                                                                    mealType === 'beverages' ? externalDrinks :
+                                                                        (mealType === 'snacks' || mealType === 'dessert') ? externalMeals :
+                                                                            externalIngredients
+                                                                }
                                                             />
                                                         </div>
                                                     </ScrollArea>

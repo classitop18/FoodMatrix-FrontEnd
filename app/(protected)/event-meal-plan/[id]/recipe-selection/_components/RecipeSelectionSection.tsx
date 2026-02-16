@@ -40,6 +40,9 @@ import { cn } from "@/lib/utils";
 import { GeneratedRecipeForMeal, MealBudgetAllocation, GeneratedRecipe } from "./types";
 import { MEAL_TYPE_CONFIG, CUISINE_OPTIONS } from "./constants";
 import { MealType } from "@/services/event/event.types";
+import { CocktailService } from "@/services/external/cocktail.service";
+import { MealService } from "@/services/external/meal.service";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface RecipeSelectionSectionProps {
     globalCuisine: string;
@@ -347,6 +350,91 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
         setSearchInputs(prev => ({ ...prev, [mealType]: value }));
     };
 
+    const [externalDrinks, setExternalDrinks] = useState<any[]>([]);
+    const [externalMeals, setExternalMeals] = useState<any[]>([]); // For snacks/desserts
+    const [externalIngredients, setExternalIngredients] = useState<any[]>([]); // For veg/fruit/etc
+
+    // External Search State
+    const [isSearchingDrinks, setIsSearchingDrinks] = useState(false);
+
+    // Debounce search for drinks & meals & ingredients
+    const debouncedDrinkSearch = useDebounce(searchInputs['beverages'], 500);
+    const debouncedSnackSearch = useDebounce(searchInputs['snacks'], 500);
+    const debouncedDessertSearch = useDebounce(searchInputs['dessert'], 500);
+
+    // Generic debut for other categories
+    const debouncedGenericSearch = useDebounce(searchInputs[activeMealTab], 500);
+
+    // Effect for Drinks
+    React.useEffect(() => {
+        const searchDrinks = async () => {
+            if (activeMealTab === 'beverages' && debouncedDrinkSearch && debouncedDrinkSearch.length >= 3) {
+                const results = await CocktailService.searchCocktails(debouncedDrinkSearch);
+                const formattedResults = results.map(drink => ({
+                    name: drink.strDrink,
+                    unit: 'glass',
+                    category: 'beverages',
+                    image: drink.strDrinkThumb
+                }));
+                setExternalDrinks(formattedResults);
+                setIsSearchingDrinks(false);
+            } else if (!debouncedDrinkSearch) {
+                setExternalDrinks([]);
+            }
+        }
+        searchDrinks();
+    }, [debouncedDrinkSearch, activeMealTab]);
+
+    // Effect for Meals (Snacks/Desserts)
+    React.useEffect(() => {
+        const searchMeals = async () => {
+            const currentSearch = activeMealTab === 'snacks' ? debouncedSnackSearch :
+                activeMealTab === 'dessert' ? debouncedDessertSearch : '';
+
+            if ((activeMealTab === 'snacks' || activeMealTab === 'dessert') && currentSearch && currentSearch.length >= 3) {
+                setIsSearchingDrinks(true);
+                const results = await MealService.searchMeals(currentSearch);
+                const formattedResults = results.map(meal => ({
+                    name: meal.strMeal,
+                    unit: 'serving',
+                    category: activeMealTab,
+                    image: meal.strMealThumb
+                }));
+                setExternalMeals(formattedResults);
+                setIsSearchingDrinks(false);
+            } else if (!currentSearch) {
+                setExternalMeals([]);
+            }
+        }
+        searchMeals();
+    }, [debouncedSnackSearch, debouncedDessertSearch, activeMealTab]);
+
+    // Effect for Ingredients (Vegetables, Fruits, etc.)
+    React.useEffect(() => {
+        const searchIngredients = async () => {
+            // Skip if already handled by drink/meal search
+            if (activeMealTab === 'beverages' || activeMealTab === 'snacks' || activeMealTab === 'dessert') {
+                return;
+            }
+
+            if (debouncedGenericSearch && debouncedGenericSearch.length >= 2) {
+                setIsSearchingDrinks(true); // Reuse loader
+                const results = await MealService.searchIngredients(debouncedGenericSearch);
+                const formattedResults = results.map(ing => ({
+                    name: ing.strIngredient,
+                    unit: 'serving', // Default
+                    category: activeMealTab,
+                    image: MealService.getIngredientImageUrl(ing.strIngredient)
+                }));
+                setExternalIngredients(formattedResults);
+                setIsSearchingDrinks(false);
+            } else {
+                setExternalIngredients([]);
+            }
+        }
+        searchIngredients();
+    }, [debouncedGenericSearch, activeMealTab]);
+
     const [staticSelections, setStaticSelections] = useState<Record<MealType, string[]>>({} as Record<MealType, string[]>);
 
     const handleStaticItemToggle = (mealType: MealType, item: string) => {
@@ -587,6 +675,12 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
                                                                 <h3 className="text-sm font-bold text-gray-900 block">
                                                                     Select Items for {config.label}
                                                                 </h3>
+                                                                {isSearchingDrinks && (
+                                                                    <div className="flex items-center text-xs text-indigo-600 mb-2">
+                                                                        <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                                                                        Searching online database...
+                                                                    </div>
+                                                                )}
 
                                                                 {/* Search for static items */}
                                                                 <div className="relative w-full md:w-64">
@@ -601,22 +695,25 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
                                                             </div>
 
                                                             <ScrollArea className="h-[400px] pr-4">
-                                                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                                                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                                                                     {(() => {
                                                                         // Determine items based on mealType
-                                                                        let itemsDetails = [];
+                                                                        let itemsDetails: { name: string; image: string; unit: string; category?: string; }[] = [];
                                                                         if (mealType === 'snacks' || mealType === 'dessert') {
-                                                                            itemsDetails = [...indianSnacks.filter(i => i.category === 'snacks'), ...sweets];
+                                                                            itemsDetails = [...indianSnacks.filter(i => i.category === 'snacks'), ...sweets, ...externalMeals];
                                                                         } else if (mealType === 'beverages') {
-                                                                            itemsDetails = [...indianSnacks.filter(i => i.category === 'beverages'), ...drinks];
+                                                                            itemsDetails = [...indianSnacks.filter(i => i.category === 'beverages'), ...drinks, ...externalDrinks];
                                                                         } else {
                                                                             // Fallback to STATIC_ITEMS simple strings mapped to objects if not found above
                                                                             const simpleItems = STATIC_ITEMS[mealType] || [];
-                                                                            itemsDetails = simpleItems.map(name => ({
-                                                                                name,
-                                                                                image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80", // Fallback
-                                                                                unit: "serving"
-                                                                            }));
+                                                                            itemsDetails = [
+                                                                                ...simpleItems.map(name => ({
+                                                                                    name,
+                                                                                    image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80", // Fallback
+                                                                                    unit: "serving"
+                                                                                })),
+                                                                                ...externalIngredients
+                                                                            ];
                                                                         }
 
                                                                         // Filter by search
@@ -728,10 +825,10 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
                         );
                     })}
                 </AnimatePresence>
-            </Tabs>
+            </Tabs >
 
             {/* Navigation & Save */}
-            <div className="flex flex-col sm:flex-row justify-between gap-4 pt-6 pb-12">
+            < div className="flex flex-col sm:flex-row justify-between gap-4 pt-6 pb-12" >
                 <Button
                     onClick={onBack}
                     variant="ghost"
@@ -766,7 +863,7 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
                         )}
                     </Button>
                 </div>
-            </div>
-        </motion.div>
+            </div >
+        </motion.div >
     );
 };

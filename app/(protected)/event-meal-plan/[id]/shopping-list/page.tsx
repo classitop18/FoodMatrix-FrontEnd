@@ -58,6 +58,9 @@ import {
     desserts,
     others,
 } from "@/data/add-items";
+import { CocktailService } from "@/services/external/cocktail.service";
+import { MealService } from "@/services/external/meal.service";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export default function EventShoppingListPage() {
     const params = useParams();
@@ -106,12 +109,87 @@ export default function EventShoppingListPage() {
         { id: "vegitables", label: "Vegetables", icon: Carrot, data: vegitables },
         { id: "fruits", label: "Fruits", icon: Apple, data: fruits },
         { id: "snacks", label: "Snacks", icon: Cookie, data: sweets },
-        { id: "beverages", label: "Beverages", icon: Coffee, data: drinks },
+        { id: "beverages", label: "Beverages & Drinks", icon: Wine, data: drinks },
         { id: "desserts", label: "Desserts", icon: Cake, data: sweets },
-        { id: "drinks", label: "Drinks", icon: Wine, data: drinks },
     ];
 
     const hasGenerated = useRef(false);
+
+    // External Search State
+    const [externalItems, setExternalItems] = useState<any[]>([]);
+    const [isSearchingExternal, setIsSearchingExternal] = useState(false);
+    const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+    // Search External API
+    useEffect(() => {
+        const searchExternal = async () => {
+            if (!activeCategory || !searchTerm || searchTerm.length < 3) {
+                setExternalItems([]);
+                return;
+            }
+
+            if (activeCategory === 'beverages') {
+                setIsSearchingExternal(true);
+                try {
+                    const results = await CocktailService.searchCocktails(searchTerm);
+                    const formattedDetails = results.map(drink => ({
+                        name: drink.strDrink,
+                        unit: 'glass', // Default unit
+                        category: activeCategory,
+                        image: drink.strDrinkThumb,
+                        isExternal: true
+                    }));
+                    setExternalItems(formattedDetails);
+                } catch (err) {
+                    console.error("Failed to search cocktails", err);
+                } finally {
+                    setIsSearchingExternal(false);
+                }
+            } else if (activeCategory === 'desserts' || activeCategory === 'snacks') {
+                setIsSearchingExternal(true);
+                try {
+                    const results = await MealService.searchMeals(searchTerm);
+                    const formattedDetails = results.map(meal => ({
+                        name: meal.strMeal,
+                        unit: 'serving', // Default unit
+                        category: activeCategory,
+                        image: meal.strMealThumb,
+                        isExternal: true
+                    }));
+                    setExternalItems(formattedDetails);
+                } catch (err) {
+                    console.error("Failed to search meals", err);
+                } finally {
+                    setIsSearchingExternal(false);
+                }
+            } else {
+                // Ingredient search for everything else (Veg, Fruits, etc)
+                setIsSearchingExternal(true);
+                try {
+                    const results = await MealService.searchIngredients(searchTerm);
+                    const formattedDetails = results.map(ing => ({
+                        name: ing.strIngredient,
+                        unit: 'serving', // Default unit
+                        category: activeCategory,
+                        image: MealService.getIngredientImageUrl(ing.strIngredient),
+                        isExternal: true
+                    }));
+                    setExternalItems(formattedDetails);
+                } catch (err) {
+                    console.error("Failed to search ingredients", err);
+                } finally {
+                    setIsSearchingExternal(false);
+                }
+            }
+        };
+
+        if (debouncedSearchTerm) {
+            searchExternal();
+        } else {
+            setExternalItems([]);
+        }
+
+    }, [debouncedSearchTerm, activeCategory]);
 
     // Auto-generate shopping list on mount if missing but meals exist
     useEffect(() => {
@@ -729,7 +807,7 @@ export default function EventShoppingListPage() {
 
                 {/* Pending Items Alert */}
                 {pendingItems.length > 0 && (
-                    <div className= "bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex items-center gap-3">
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex items-center gap-3">
                         <div className="flex-shrink-0 w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
                             <span className="text-amber-700 font-bold">{pendingItems.length}</span>
                         </div>
@@ -792,17 +870,35 @@ export default function EventShoppingListPage() {
                                                 onChange={(e) => setSearchTerm(e.target.value)}
                                                 className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-[#E2E2E2] rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[var(--primary)] text-black"
                                             />
+                                            {isSearchingExternal && (
+                                                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                                    <Loader2 className="w-4 h-4 animate-spin text-indigo-600" />
+                                                </div>
+                                            )}
                                         </div>
                                         <ScrollArea className="max-h-[300px] overflow-auto">
                                             <div className="grid grid-cols-2 gap-3">
-                                                {categories
-                                                    .find((c) => c.id === activeCategory)
-                                                    ?.data.filter((item) =>
-                                                        item.name.toLowerCase().includes(searchTerm.toLowerCase())
-                                                    )
-                                                    .map((item, idx) => (
+                                                {(() => {
+                                                    const staticList = categories
+                                                        .find((c) => c.id === activeCategory)
+                                                        ?.data.filter((item) =>
+                                                            item.name.toLowerCase().includes(searchTerm.toLowerCase())
+                                                        ) || [];
+
+                                                    // Merge with external items
+                                                    const displayList = [...staticList, ...externalItems];
+
+                                                    if (displayList.length === 0 && !isSearchingExternal) {
+                                                        return (
+                                                            <div className="col-span-2 text-center py-8 text-gray-500 text-sm">
+                                                                No items found.
+                                                            </div>
+                                                        );
+                                                    }
+
+                                                    return displayList.map((item, idx) => (
                                                         <div
-                                                            key={idx}
+                                                            key={`${idx}-${item.name}`}
                                                             onClick={() => {
                                                                 setSelectedItemToAdd(item);
                                                                 setAddItemUnit(item.unit);
@@ -818,7 +914,8 @@ export default function EventShoppingListPage() {
                                                             </div>
                                                             <span className="text-sm font-medium text-gray-700 line-clamp-1">{item.name}</span>
                                                         </div>
-                                                    ))}
+                                                    ));
+                                                })()}
                                             </div>
                                         </ScrollArea>
                                     </div>
