@@ -58,7 +58,6 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import ConfirmDialog from "@/components/common/confirmation-dialog";
 import ConfirmationModal from "@/components/common/ConfirmationModal";
 
 type MealType =

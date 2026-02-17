@@ -25,8 +25,8 @@ import { RootState } from "@/redux/store.redux";
 
 // Types & Constants
 import { MealType } from "@/services/event/event.types";
-import { HealthStats, MealBudgetAllocation, GeneratedRecipeForMeal, MIN_BUDGET_PERCENTAGES } from "./_components/types";
-import { MEAL_TYPE_CONFIG, DEFAULT_BUDGET_WEIGHTS } from "./_components/constants";
+import { HealthStats, MealBudgetAllocation, GeneratedRecipeForMeal, MIN_BUDGET_PERCENTAGES, CategoryBudgetAllocation, BudgetCategory, MIN_CATEGORY_PERCENTAGES } from "./_components/types";
+import { MEAL_TYPE_CONFIG, DEFAULT_BUDGET_WEIGHTS, BUDGET_CATEGORIES, DEFAULT_CATEGORY_WEIGHTS } from "./_components/constants";
 
 // Components
 import { StepIndicator } from "./_components/StepIndicator";
@@ -48,6 +48,7 @@ export default function EventRecipeSelectionPage() {
     const [totalBudget, setTotalBudget] = useState<number>(100);
     // selectedMealTypes is now derived from event data
     const [mealBudgets, setMealBudgets] = useState<MealBudgetAllocation[]>([]);
+    const [categoryBudgets, setCategoryBudgets] = useState<CategoryBudgetAllocation[]>([]);
     const [mealRecipes, setMealRecipes] = useState<GeneratedRecipeForMeal[]>([]);
     const [activeMealTab, setActiveMealTab] = useState<MealType>("dinner");
     const [globalCuisine, setGlobalCuisine] = useState<string>("");
@@ -56,6 +57,7 @@ export default function EventRecipeSelectionPage() {
     const [selectedHealthMembers, setSelectedHealthMembers] = useState<string[]>([]);
     const [aiRecommendations, setAIRecommendations] = useState<string[]>([]);
     const [budgetValidationErrors, setBudgetValidationErrors] = useState<Partial<Record<MealType, string>>>({});
+    const [categoryValidationErrors, setCategoryValidationErrors] = useState<Partial<Record<BudgetCategory, string>>>({});
 
     // Persistence Ref
     const isRestoring = useRef(false);
@@ -90,6 +92,7 @@ export default function EventRecipeSelectionPage() {
                     if (savedState.budgetStrategy) setBudgetStrategy(savedState.budgetStrategy);
                     if (savedState.totalBudget) setTotalBudget(savedState.totalBudget);
                     if (savedState.mealBudgets) setMealBudgets(savedState.mealBudgets);
+                    if (savedState.categoryBudgets) setCategoryBudgets(savedState.categoryBudgets);
                     if (savedState.mealRecipes) setMealRecipes(savedState.mealRecipes);
                     if (savedState.activeMealTab) setActiveMealTab(savedState.activeMealTab);
                     if (savedState.globalCuisine) setGlobalCuisine(savedState.globalCuisine);
@@ -114,6 +117,7 @@ export default function EventRecipeSelectionPage() {
             budgetStrategy,
             totalBudget,
             mealBudgets,
+            categoryBudgets,
             mealRecipes,
             activeMealTab,
             globalCuisine,
@@ -474,6 +478,126 @@ export default function EventRecipeSelectionPage() {
         ));
     }, [totalBudget]);
 
+    // ---- Category Budget Handlers ----
+
+    // Initialize category budgets from defaults
+    useEffect(() => {
+        if (categoryBudgets.length > 0) return; // Already initialized (or restored)
+        const allCategories: BudgetCategory[] = ['starter', 'main_course', 'side_dish', 'snacks', 'desserts', 'beverages'];
+        setCategoryBudgets(allCategories.map(cat => ({
+            category: cat,
+            percentage: DEFAULT_CATEGORY_WEIGHTS[cat],
+            budget: Math.round((DEFAULT_CATEGORY_WEIGHTS[cat] / 100) * totalBudget),
+            spent: 0,
+            minPercentage: MIN_CATEGORY_PERCENTAGES[cat],
+        })));
+    }, [totalBudget]);
+
+    // Recalculate category budget amounts when totalBudget changes
+    useEffect(() => {
+        if (categoryBudgets.length === 0) return;
+        setCategoryBudgets(prev => prev.map(cb => ({
+            ...cb,
+            budget: Math.round((cb.percentage / 100) * totalBudget),
+        })));
+    }, [totalBudget]);
+
+    // Compute spent per category from selected recipes' prices
+    useEffect(() => {
+        const spentByCategory: Record<BudgetCategory, number> = {
+            starter: 0,
+            main_course: 0,
+            side_dish: 0,
+            snacks: 0,
+            desserts: 0,
+            beverages: 0,
+        };
+
+        mealRecipes.forEach(mr => {
+            const selectedRecipes = mr.recipes.filter(r => mr.selectedRecipeIds?.includes(r.id));
+            selectedRecipes.forEach(r => {
+                const price = typeof r.price === 'string' ? parseFloat(r.price.replace(/[^0-9.]/g, '')) : (r.price || 0);
+                if (isNaN(price)) return;
+
+                // Map meal types to budget categories
+                const mealType = mr.mealType;
+                if (mealType === 'snacks') {
+                    spentByCategory.snacks += price;
+                } else if (mealType === 'beverages') {
+                    spentByCategory.beverages += price;
+                } else if (mealType === 'dessert') {
+                    spentByCategory.desserts += price;
+                } else {
+                    // For main meals (breakfast/lunch/dinner), try to use recipe courseType or default to main_course
+                    const courseType = r.courseType?.toLowerCase() || '';
+                    if (courseType.includes('starter') || courseType.includes('appetizer')) {
+                        spentByCategory.starter += price;
+                    } else if (courseType.includes('side')) {
+                        spentByCategory.side_dish += price;
+                    } else {
+                        spentByCategory.main_course += price;
+                    }
+                }
+            });
+        });
+
+        setCategoryBudgets(prev => prev.map(cb => ({
+            ...cb,
+            spent: spentByCategory[cb.category] || 0,
+        })));
+    }, [mealRecipes]);
+
+    // Handler for category budget change
+    const handleCategoryBudgetChange = useCallback((category: BudgetCategory, value: string) => {
+        const numValue = parseInt(value) || 0;
+        setCategoryBudgets(prev => {
+            const updated = prev.map(cb =>
+                cb.category === category ? { ...cb, budget: numValue } : cb
+            );
+            const totalAllocated = updated.reduce((sum, cb) => sum + cb.budget, 0);
+            return updated.map(cb => ({
+                ...cb,
+                percentage: totalAllocated > 0 ? Math.round((cb.budget / totalBudget) * 100) : 0
+            }));
+        });
+    }, [totalBudget]);
+
+    // Handler for category percentage change with minimum validation
+    const handleCategoryPercentageChange = useCallback((category: BudgetCategory, value: string) => {
+        const numValue = parseInt(value) || 0;
+        const minPercentage = MIN_CATEGORY_PERCENTAGES[category];
+
+        if (numValue < minPercentage) {
+            setCategoryValidationErrors(prev => ({
+                ...prev,
+                [category]: `Minimum ${minPercentage}% required for ${BUDGET_CATEGORIES.find(bc => bc.value === category)?.label || category}`
+            }));
+        } else {
+            setCategoryValidationErrors(prev => {
+                const { [category]: removed, ...rest } = prev;
+                return rest;
+            });
+        }
+
+        setCategoryBudgets(prev => prev.map(cb =>
+            cb.category === category
+                ? {
+                    ...cb,
+                    percentage: numValue,
+                    budget: Math.round((numValue / 100) * totalBudget),
+                    minPercentage
+                }
+                : cb
+        ));
+    }, [totalBudget]);
+
+    // Category-level validation for continue button
+    const canContinueCategoryBudget = useMemo(() => {
+        if (budgetStrategy === "ai") return true;
+        const totalPct = categoryBudgets.reduce((s, cb) => s + cb.percentage, 0);
+        return Object.keys(categoryValidationErrors).length === 0 && totalPct === 100;
+    }, [budgetStrategy, categoryValidationErrors, categoryBudgets]);
+
     const handleContinueToBudget = () => {
         goToNextStep();
     };
@@ -557,7 +681,7 @@ export default function EventRecipeSelectionPage() {
         goToNextStep();
     };
 
-    const handleGenerateRecipesForMeal = async (mealType: MealType, customSearch?: string, count: number = 3, specificCuisine?: string) => {
+    const handleGenerateRecipesForMeal = async (mealType: MealType, customSearch?: string, count: number = 3, specificCuisine?: string, courseType?: string) => {
         // Handle Add-ons (Event Items) - Direct to DB
         if (['snacks', 'beverages', 'dessert'].includes(mealType)) {
             if (!customSearch) {
@@ -621,6 +745,7 @@ export default function EventRecipeSelectionPage() {
                 eventId,
                 data: {
                     mealType,
+                    courseType: courseType || undefined,
                     recipeCount: customSearch ? 1 : count,
                     budget: mealBudget > 0 ? mealBudget : undefined,
                     customSearch: customSearch?.trim(),
@@ -635,6 +760,7 @@ export default function EventRecipeSelectionPage() {
                 id: r.id || `ai-${Date.now()}-${idx}`,
                 isAIGenerated: true,
                 isCustomSearch: !!customSearch,
+                courseType: courseType || r.courseType || undefined, // Tag with the course type used for generation
                 cookingTime: r.cookingTime || (r.totalTimeMinutes ? `${r.totalTimeMinutes} min` : '30 min'),
                 price: r.price || (r.costAnalysis?.costPerServing ? `$${r.costAnalysis.costPerServing.toFixed(2)}` : 'N/A'),
             }));
@@ -643,12 +769,13 @@ export default function EventRecipeSelectionPage() {
                 if (mr.mealType !== mealType) return mr;
 
                 // Merge Logic:
-                // If Custom Search: Append new recipe to EXISTING list (keep all previous recipes)
-                // If Full Generate: Keep only SELECTED recipes + New keys (replace unselected)
+                // 1. Custom Search: Append new recipe to EXISTING list (keep all previous recipes)
+                // 2. Course Type Generation: Append to existing (keep all) — user can generate starter, then main course separately
+                // 3. Full Generate (no courseType): Keep only SELECTED recipes + New ones (replace unselected)
 
                 let keptRecipes = [];
-                if (customSearch) {
-                    // Keep ALL existing recipes for this meal type
+                if (customSearch || courseType) {
+                    // Keep ALL existing recipes — additive mode for custom search and course-type generation
                     keptRecipes = mr.recipes;
                 } else {
                     // Keep only currently selected recipes (standard "Regenerate" behavior)
@@ -973,16 +1100,16 @@ export default function EventRecipeSelectionPage() {
                             setBudgetStrategy={setBudgetStrategy}
                             totalBudget={totalBudget}
                             setTotalBudget={setTotalBudget}
-                            mealBudgets={mealBudgets}
-                            handleManualBudgetChange={handleManualBudgetChange}
-                            handleManualPercentageChange={handleManualPercentageChange}
+                            categoryBudgets={categoryBudgets}
+                            handleCategoryBudgetChange={handleCategoryBudgetChange}
+                            handleCategoryPercentageChange={handleCategoryPercentageChange}
                             handleAIDistributeBudget={handleAIDistributeBudget}
                             isAIDistributing={suggestBudgetMutation.isPending}
-                            validationErrors={budgetValidationErrors}
+                            validationErrors={categoryValidationErrors}
                             aiRecommendations={aiRecommendations}
                             onBack={goToPrevStep}
                             onContinue={handleContinueToRecipes}
-                            canContinue={canContinueToRecipes}
+                            canContinue={canContinueCategoryBudget}
                         />
                     )}
 

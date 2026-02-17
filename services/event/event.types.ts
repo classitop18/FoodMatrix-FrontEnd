@@ -4,11 +4,26 @@
 export type OccasionType =
     | "birthday"
     | "anniversary"
-    | "festival"
+    | "thanksgiving"
+    | "super_bowl"
+    | "fourth_of_july"
+    | "christmas"
+    | "easter"
+    | "halloween"
+    | "memorial_day"
+    | "bbq"
+    | "potluck"
+    | "baby_shower"
+    | "bridal_shower"
+    | "game_night"
+    | "tailgate"
     | "gathering"
     | "housewarming"
     | "celebration"
     | "dinner_party"
+    | "wedding"
+    | "corporate"
+    | "festival"
     | "other";
 
 // Budget Types
@@ -359,6 +374,7 @@ export interface BudgetSuggestionResponse {
 // Event Recipe Generation Request
 export interface EventRecipeGenerationDto {
     mealType: MealType;
+    courseType?: string;
     recipeCount?: number;
     budget?: number;
     preferredCuisines?: string[];
@@ -427,4 +443,29 @@ export interface EventGenerationState {
     lastStep?: string;
     createdAt: string;
     updatedAt: string;
+}
+
+// Budget Tracking Types
+export interface MealBudgetTrackingResponse {
+    mealType: MealType;
+    mealName: string;
+    allocated: number;
+    spent: number;
+    remaining: number;
+    utilization: number;
+    status: "under_budget" | "on_track" | "over_budget";
+    recipeCount: number;
+}
+
+export interface BudgetTrackingResponse {
+    eventId: string;
+    eventName: string;
+    totalBudget: number;
+    totalAllocated: number;
+    totalSpent: number;
+    totalRemaining: number;
+    overallUtilization: number;
+    overallStatus: "under_budget" | "on_track" | "over_budget";
+    currency: string;
+    mealBreakdown: MealBudgetTrackingResponse[];
 }

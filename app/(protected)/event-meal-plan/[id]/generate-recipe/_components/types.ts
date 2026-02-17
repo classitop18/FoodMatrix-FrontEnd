@@ -15,6 +15,18 @@ export interface MealBudgetAllocation {
     minPercentage?: number; // Minimum allowed percentage for validation
 }
 
+// Budget categories for course-based distribution
+export type BudgetCategory = 'starter' | 'main_course' | 'side_dish' | 'snacks' | 'desserts' | 'beverages';
+
+export interface CategoryBudgetAllocation {
+    category: BudgetCategory;
+    budget: number;
+    percentage: number;
+    spent: number; // Real-time tracked spend
+    reasoning?: string; // AI reasoning for this allocation
+    minPercentage?: number;
+}
+
 export interface GeneratedRecipeForMeal {
     mealType: MealType;
     recipes: any[];
@@ -41,7 +53,7 @@ export interface AIBudgetSuggestionResponse {
     totalAllocated: number;
 }
 
-// Minimum percentage constraints per meal type
+// Minimum percentage constraints per meal type (legacy, kept for backward compat)
 export const MIN_BUDGET_PERCENTAGES: Record<MealType, number> = {
     breakfast: 5,
     lunch: 10,
@@ -49,4 +61,14 @@ export const MIN_BUDGET_PERCENTAGES: Record<MealType, number> = {
     dinner: 15,
     dessert: 3,
     beverages: 2
+};
+
+// Minimum percentage constraints per budget category
+export const MIN_CATEGORY_PERCENTAGES: Record<BudgetCategory, number> = {
+    starter: 5,
+    main_course: 20,
+    side_dish: 5,
+    snacks: 3,
+    desserts: 3,
+    beverages: 3,
 };

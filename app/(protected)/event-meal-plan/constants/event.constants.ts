@@ -18,6 +18,13 @@ import {
     Cookie,
     Wine,
     Sandwich,
+    Flame,
+    Flag,
+    Gift,
+    TreePine,
+    Gamepad2,
+    Baby,
+    Star,
 } from "lucide-react";
 import {
     OccasionOption,
@@ -27,7 +34,7 @@ import {
     MealType,
 } from "../types/event.types";
 
-// Occasion options with icons and colors
+// Occasion options with icons and colors (US-focused events)
 export const OCCASION_OPTIONS: OccasionOption[] = [
     {
         value: "birthday",
@@ -44,11 +51,39 @@ export const OCCASION_OPTIONS: OccasionOption[] = [
         bgGradient: "from-red-50 to-red-100",
     },
     {
-        value: "festival",
-        label: "Festival",
-        icon: Sparkles,
+        value: "thanksgiving",
+        label: "Thanksgiving",
+        icon: UtensilsCrossed,
         color: "text-orange-500",
         bgGradient: "from-orange-50 to-orange-100",
+    },
+    {
+        value: "super_bowl",
+        label: "Super Bowl Party",
+        icon: Trophy,
+        color: "text-blue-600",
+        bgGradient: "from-blue-50 to-blue-100",
+    },
+    {
+        value: "fourth_of_july",
+        label: "4th of July",
+        icon: Flag,
+        color: "text-red-600",
+        bgGradient: "from-red-50 to-blue-100",
+    },
+    {
+        value: "christmas",
+        label: "Christmas",
+        icon: TreePine,
+        color: "text-green-600",
+        bgGradient: "from-green-50 to-red-50",
+    },
+    {
+        value: "bbq",
+        label: "BBQ / Cookout",
+        icon: Flame,
+        color: "text-orange-600",
+        bgGradient: "from-orange-50 to-red-50",
     },
     {
         value: "gathering",
@@ -56,6 +91,34 @@ export const OCCASION_OPTIONS: OccasionOption[] = [
         icon: Users,
         color: "text-blue-500",
         bgGradient: "from-blue-50 to-blue-100",
+    },
+    {
+        value: "dinner_party",
+        label: "Dinner Party",
+        icon: Wine,
+        color: "text-purple-500",
+        bgGradient: "from-purple-50 to-purple-100",
+    },
+    {
+        value: "potluck",
+        label: "Potluck",
+        icon: ChefHat,
+        color: "text-teal-500",
+        bgGradient: "from-teal-50 to-teal-100",
+    },
+    {
+        value: "game_night",
+        label: "Game Night",
+        icon: Gamepad2,
+        color: "text-indigo-500",
+        bgGradient: "from-indigo-50 to-indigo-100",
+    },
+    {
+        value: "baby_shower",
+        label: "Baby Shower",
+        icon: Baby,
+        color: "text-pink-400",
+        bgGradient: "from-pink-50 to-yellow-50",
     },
     {
         value: "housewarming",
@@ -67,7 +130,7 @@ export const OCCASION_OPTIONS: OccasionOption[] = [
     {
         value: "celebration",
         label: "Celebration",
-        icon: Trophy,
+        icon: Sparkles,
         color: "text-yellow-500",
         bgGradient: "from-yellow-50 to-yellow-100",
     },

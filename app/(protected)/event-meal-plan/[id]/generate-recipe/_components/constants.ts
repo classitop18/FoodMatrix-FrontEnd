@@ -1,4 +1,4 @@
-import { Coffee, Sun, Cookie, Moon, GlassWater } from "lucide-react";
+import { Coffee, Sun, Cookie, Moon, GlassWater, UtensilsCrossed, Beef, Salad, Soup, Sandwich, Sparkles } from "lucide-react";
 import { MealType } from "@/services/event/event.types";
 import React from "react";
 
@@ -18,4 +18,36 @@ export const DEFAULT_BUDGET_WEIGHTS: Record<MealType, number> = {
     dinner: 30,
     dessert: 3,
     beverages: 2
+};
+
+// Course type options for recipe generation (menu categories)
+export const COURSE_TYPE_OPTIONS: { value: string; label: string; icon: React.ElementType; description: string }[] = [
+    { value: "ALL", label: "All Courses", icon: Sparkles, description: "Mix of all course types" },
+    { value: "starter", label: "Starters / Appetizers", icon: Sandwich, description: "Finger food, snacks, small plates" },
+    { value: "main_course", label: "Main Course", icon: Beef, description: "Rice, breads, curries, pasta" },
+    { value: "side_dish", label: "Side Dishes", icon: Salad, description: "Salad, raita, pickles, accompaniments" },
+    { value: "appetizer", label: "Appetizers", icon: UtensilsCrossed, description: "Bite-sized, canapés" },
+    { value: "soup", label: "Soups", icon: Soup, description: "Broths, chowders, consommés" },
+    { value: "salad", label: "Salads", icon: Salad, description: "Fresh, seasonal, mixed greens" },
+];
+
+// Budget categories for course-based budget distribution
+import { BudgetCategory } from "./types";
+
+export const BUDGET_CATEGORIES: { value: BudgetCategory; label: string; icon: React.ElementType; description: string; color: string }[] = [
+    { value: "starter", label: "Starters", icon: Sandwich, description: "Appetizers, finger food, small plates", color: "text-orange-500" },
+    { value: "main_course", label: "Main Course", icon: Beef, description: "Rice, curries, pasta, breads", color: "text-red-500" },
+    { value: "side_dish", label: "Side Dishes", icon: Salad, description: "Salad, raita, pickles", color: "text-green-500" },
+    { value: "snacks", label: "Snacks", icon: Cookie, description: "Light bites, chips, nuts", color: "text-yellow-500" },
+    { value: "desserts", label: "Desserts", icon: Cookie, description: "Sweets, cakes, ice cream", color: "text-pink-500" },
+    { value: "beverages", label: "Beverages", icon: GlassWater, description: "Drinks, juice, tea/coffee", color: "text-blue-500" },
+];
+
+export const DEFAULT_CATEGORY_WEIGHTS: Record<BudgetCategory, number> = {
+    starter: 15,
+    main_course: 35,
+    side_dish: 10,
+    snacks: 10,
+    desserts: 15,
+    beverages: 15,
 };

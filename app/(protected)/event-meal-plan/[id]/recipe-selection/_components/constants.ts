@@ -63,6 +63,7 @@ export const DEFAULT_BUDGET_WEIGHTS: Record<MealType, number> = {
 };
 
 export const CUISINE_OPTIONS = [
+    
     { value: "indian", label: "🇮🇳 Indian" },
     { value: "north_indian", label: "🍛 North Indian" },
     { value: "south_indian", label: "🥘 South Indian" },

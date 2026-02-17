@@ -30,6 +30,7 @@ interface RecipeCardProps {
   selectionMode?: boolean;
   isCustom?: boolean;
   showAiBadge?: boolean;
+  courseTypeBadge?: string; // e.g. 'Starter', 'Main Course' — shown as badge on card
 }
 
 export function RecipeCard({
@@ -40,7 +41,8 @@ export function RecipeCard({
   selected = false,
   selectionMode = false,
   isCustom = false,
-  showAiBadge = false
+  showAiBadge = false,
+  courseTypeBadge
 }: RecipeCardProps) {
   const [hasError, setHasError] = useState(false);
   const imageUrl = getRecipeImageUrl(recipe.imageUrl);
@@ -102,6 +104,11 @@ export function RecipeCard({
           {showAiBadge && !isCustom && (
             <span className="bg-[var(--primary)] text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md shadow-sm border border-white/20">
               AI
+            </span>
+          )}
+          {courseTypeBadge && (
+            <span className="bg-emerald-500 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md shadow-sm border border-white/20">
+              {courseTypeBadge}
             </span>
           )}
 

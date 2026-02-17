@@ -130,6 +130,8 @@ export const API_ENDPOINTS = {
     LOG_CONSUMPTION: (eventId: string) => `/events/${eventId}/member-logs`,
     // Analytics
     GET_ANALYTICS: (eventId: string) => `/events/${eventId}/analytics`,
+    // Budget Tracking
+    GET_BUDGET_TRACKING: (eventId: string) => `/events/${eventId}/budget-tracking`,
     // Event Items (Add-ons)
     GET_ITEMS: (eventId: string) => `/events/${eventId}/items`,
     ADD_ITEM: (eventId: string) => `/events/${eventId}/items`,

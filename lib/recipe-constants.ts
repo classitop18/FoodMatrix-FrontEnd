@@ -1,4 +1,6 @@
 export const cuisineOptions = [
+
+  { value:"american", label: "American" , icon: "🍔" , region:"American"},
   // European Cuisines
   { value: "italian", label: "Italian", icon: "🍝", region: "Europe" },
   { value: "french", label: "French", icon: "🥐", region: "Europe" },

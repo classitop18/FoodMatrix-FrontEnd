@@ -228,6 +228,7 @@ export function RecipeFiltersSidebar({
             <ScrollArea className="h-[200px] pr-4">
               <div className="space-y-3 pt-2">
                 {[
+                  "American",
                   "Italian",
                   "Mexican",
                   "Indian",
@@ -236,7 +237,7 @@ export function RecipeFiltersSidebar({
                   "Thai",
                   "French",
                   "Mediterranean",
-                  "American",
+    
                   "Korean",
                   "Greek",
                   "Spanish",

@@ -6,11 +6,26 @@ import { LucideIcon } from "lucide-react";
 export type OccasionType =
     | "birthday"
     | "anniversary"
-    | "festival"
+    | "thanksgiving"
+    | "super_bowl"
+    | "fourth_of_july"
+    | "christmas"
+    | "easter"
+    | "halloween"
+    | "memorial_day"
+    | "bbq"
+    | "potluck"
+    | "baby_shower"
+    | "bridal_shower"
+    | "game_night"
+    | "tailgate"
     | "gathering"
     | "housewarming"
     | "celebration"
     | "dinner_party"
+    | "wedding"
+    | "corporate"
+    | "festival"
     | "other";
 
 // Budget Types
@@ -22,8 +37,42 @@ export type EventStatus = "draft" | "planned" | "in_progress" | "completed" | "c
 // Meal Types
 export type MealType = "breakfast" | "lunch" | "snacks" | "dinner" | "dessert" | "beverages";
 
+// Course Types (within a meal)
+export type CourseType =
+    | "starter"
+    | "main_course"
+    | "side_dish"
+    | "appetizer"
+    | "salad"
+    | "soup";
+
 // Meal Status
 export type MealStatus = "planned" | "prepared" | "served" | "cancelled";
+
+// Budget Tracking Types
+export interface MealBudgetTracking {
+    mealType: MealType;
+    mealName: string;
+    allocated: number;
+    spent: number;
+    remaining: number;
+    utilization: number;
+    status: "under_budget" | "on_track" | "over_budget";
+    recipeCount: number;
+}
+
+export interface BudgetTracking {
+    eventId: string;
+    eventName: string;
+    totalBudget: number;
+    totalAllocated: number;
+    totalSpent: number;
+    totalRemaining: number;
+    overallUtilization: number;
+    overallStatus: "under_budget" | "on_track" | "over_budget";
+    currency: string;
+    mealBreakdown: MealBudgetTracking[];
+}
 
 // Event Form Data (for creation wizard)
 export interface EventFormData {

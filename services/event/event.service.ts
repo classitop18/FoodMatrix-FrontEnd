@@ -22,6 +22,7 @@ import {
     CreateEventItemDto,
     UpdateEventItemDto,
     EventGenerationState,
+    BudgetTrackingResponse,
 } from "./event.types";
 
 export const EventService = {
@@ -303,6 +304,16 @@ export const EventService = {
     getEventAnalytics: async (eventId: string): Promise<CostAnalysisResponse> => {
         const response = await apiClient.get(
             API_ENDPOINTS.EVENT.GET_ANALYTICS(eventId)
+        );
+        return response.data.data;
+    },
+
+    /**
+     * Get budget tracking data for an event
+     */
+    getBudgetTracking: async (eventId: string): Promise<BudgetTrackingResponse> => {
+        const response = await apiClient.get(
+            API_ENDPOINTS.EVENT.GET_BUDGET_TRACKING(eventId)
         );
         return response.data.data;
     },

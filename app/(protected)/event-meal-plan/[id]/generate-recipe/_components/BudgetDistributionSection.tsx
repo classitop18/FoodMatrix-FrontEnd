@@ -10,21 +10,20 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { MealBudgetAllocation, MIN_BUDGET_PERCENTAGES } from "./types";
-import { MEAL_TYPE_CONFIG } from "./constants";
-import { MealType } from "@/services/event/event.types";
+import { CategoryBudgetAllocation, BudgetCategory, MIN_CATEGORY_PERCENTAGES } from "./types";
+import { BUDGET_CATEGORIES } from "./constants";
 
 interface BudgetDistributionSectionProps {
     budgetStrategy: "manual" | "ai";
     setBudgetStrategy: (value: "manual" | "ai") => void;
     totalBudget: number;
     setTotalBudget: (value: number) => void;
-    mealBudgets: MealBudgetAllocation[];
-    handleManualBudgetChange: (mealType: MealType, value: string) => void;
-    handleManualPercentageChange: (mealType: MealType, value: string) => void;
+    categoryBudgets: CategoryBudgetAllocation[];
+    handleCategoryBudgetChange: (category: BudgetCategory, value: string) => void;
+    handleCategoryPercentageChange: (category: BudgetCategory, value: string) => void;
     handleAIDistributeBudget: () => void;
     isAIDistributing: boolean;
-    validationErrors: Partial<Record<MealType, string>>;
+    validationErrors: Partial<Record<BudgetCategory, string>>;
     aiRecommendations: string[];
     onBack: () => void;
     onContinue: () => void;
@@ -36,9 +35,9 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
     setBudgetStrategy,
     totalBudget,
     setTotalBudget,
-    mealBudgets,
-    handleManualBudgetChange,
-    handleManualPercentageChange,
+    categoryBudgets,
+    handleCategoryBudgetChange,
+    handleCategoryPercentageChange,
     handleAIDistributeBudget,
     isAIDistributing,
     validationErrors,
@@ -48,46 +47,36 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
     canContinue
 }) => {
 
-    const totalAllocated = mealBudgets.reduce((sum, mb) => sum + mb.budget, 0);
-    const totalPercentage = mealBudgets.reduce((sum, mb) => sum + mb.percentage, 0);
+    const totalAllocated = categoryBudgets.reduce((sum, cb) => sum + cb.budget, 0);
+    const totalPercentage = categoryBudgets.reduce((sum, cb) => sum + cb.percentage, 0);
+    const totalSpent = categoryBudgets.reduce((sum, cb) => sum + cb.spent, 0);
 
     // Check if budget is properly distributed (required validation)
     const isBudgetDistributed = useMemo(() => {
-        if (mealBudgets.length === 0) return false;
+        if (categoryBudgets.length === 0) return false;
         if (budgetStrategy === "ai") {
-            // For AI strategy, need to have run AI distribution (all budgets must have values)
-            return mealBudgets.every(mb => mb.budget > 0 && mb.percentage > 0);
+            return categoryBudgets.every(cb => cb.budget > 0 && cb.percentage > 0);
         }
         if (budgetStrategy === "manual") {
-            const mainMeals = ["breakfast", "lunch", "dinner"];
-            const relevantBudgets = mealBudgets.filter(mb => mainMeals.includes(mb.mealType.toLowerCase()));
-            const relevantTotalPercentage = relevantBudgets.reduce((sum, mb) => sum + mb.percentage, 0);
-
-            // Validation: Total must be 100% and no validation errors for main meals
-            const hasMainValidationErrors = Object.keys(validationErrors).some(vt => mainMeals.includes(vt.toLowerCase()));
-            return relevantTotalPercentage === 100 && !hasMainValidationErrors;
+            const hasValidationErrors = Object.keys(validationErrors).length > 0;
+            return totalPercentage === 100 && !hasValidationErrors;
         }
-    }, [mealBudgets, budgetStrategy, totalPercentage, validationErrors]);
+    }, [categoryBudgets, budgetStrategy, totalPercentage, validationErrors]);
 
     // Get validation message for continue button
     const getValidationMessage = () => {
-        if (mealBudgets.length === 0) {
-            return "No meal types selected";
+        if (categoryBudgets.length === 0) {
+            return "No budget categories found";
         }
-        if (budgetStrategy === "ai" && !mealBudgets.every(mb => mb.budget > 0)) {
+        if (budgetStrategy === "ai" && !categoryBudgets.every(cb => cb.budget > 0)) {
             return "Please click 'Distribute Budget with AI' to allocate budget";
         }
         if (budgetStrategy === "manual") {
-            const mainMeals = ["breakfast", "lunch", "dinner"];
-            const relevantTotalPercentage = mealBudgets
-                .filter(mb => mainMeals.includes(mb.mealType.toLowerCase()))
-                .reduce((sum, mb) => sum + mb.percentage, 0);
-
-            if (Object.keys(validationErrors).some(err => mainMeals.includes(err.toLowerCase()))) {
+            if (Object.keys(validationErrors).length > 0) {
                 return "Please fix the validation errors above";
             }
-            if (relevantTotalPercentage !== 100) {
-                return `Total allocation must be 100% (currently ${relevantTotalPercentage}%)`;
+            if (totalPercentage !== 100) {
+                return `Total allocation must be 100% (currently ${totalPercentage}%)`;
             }
         }
         return null;
@@ -117,7 +106,7 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                                 <Badge className="bg-red-100 text-red-700 text-[10px] font-bold uppercase">Required</Badge>
                             </div>
                             <CardDescription className="text-gray-500">
-                                Allocate your budget across selected meals before proceeding
+                                Allocate your budget across menu categories — starters, main course, snacks, desserts, beverages
                             </CardDescription>
                         </div>
                     </div>
@@ -157,7 +146,7 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                                             </Badge>
                                         </div>
                                         <p className="text-sm text-gray-500 mt-1 pl-7">
-                                            Smart distribution based on meal importance and dietary needs
+                                            Smart distribution based on menu importance and event type
                                         </p>
                                     </div>
                                 </div>
@@ -194,14 +183,6 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                             </Label>
                         </div>
                         <p className="text-xs text-gray-500 mt-2">This is set from your event configuration</p>
-
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4 text-xs text-blue-800 flex items-start gap-2">
-                            <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                            <span>
-                                <strong>Note:</strong> Budget distribution focuses on main meals (Breakfast, Lunch, Dinner).
-                                Snacks, Beverages, and other items are not included here and will be handled via the Shopping List.
-                            </span>
-                        </div>
 
                         {/* AI Distribution Button */}
                         {budgetStrategy === "ai" && (
@@ -248,12 +229,12 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                             </div>
                         )}
 
-                        {/* Manual Budget Allocation with Percentage Input */}
+                        {/* Manual Budget Allocation — Course Categories */}
                         {budgetStrategy === "manual" && (
                             <div className="space-y-4 animate-in slide-in-from-top-4 duration-300">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
-                                        <h4 className="text-sm font-bold text-[#313131] uppercase tracking-wider">Allocation Breakdown</h4>
+                                        <h4 className="text-sm font-bold text-[#313131] uppercase tracking-wider">Category Breakdown</h4>
                                         <span className="text-red-500 text-sm">*</span>
                                     </div>
                                     <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200">
@@ -262,29 +243,35 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                                     </div>
                                 </div>
                                 <div className="space-y-3">
-                                    {mealBudgets.filter(mb => ["breakfast", "lunch", "dinner"].includes(mb.mealType.toLowerCase())).map((mb) => {
-                                        const config = MEAL_TYPE_CONFIG[mb.mealType] || { label: mb.mealType, icon: Info, color: "text-gray-500", defaultTime: "" };
-                                        const minPercentage = MIN_BUDGET_PERCENTAGES[mb.mealType] || 0;
-                                        const hasError = validationErrors[mb.mealType];
+                                    {categoryBudgets.map((cb) => {
+                                        const catConfig = BUDGET_CATEGORIES.find(bc => bc.value === cb.category);
+                                        if (!catConfig) return null;
+                                        const minPercentage = MIN_CATEGORY_PERCENTAGES[cb.category] || 0;
+                                        const hasError = validationErrors[cb.category];
+                                        const spentPercent = cb.budget > 0 ? Math.round((cb.spent / cb.budget) * 100) : 0;
+                                        const isOverBudget = cb.spent > cb.budget && cb.budget > 0;
 
                                         return (
                                             <div
-                                                key={mb.mealType}
+                                                key={cb.category}
                                                 className={cn(
                                                     "p-4 bg-white rounded-xl border-2 transition-all",
                                                     hasError
                                                         ? "border-red-300 bg-red-50/30"
-                                                        : "border-gray-200 hover:border-gray-300"
+                                                        : isOverBudget
+                                                            ? "border-amber-300 bg-amber-50/20"
+                                                            : "border-gray-200 hover:border-gray-300"
                                                 )}
                                             >
                                                 <div className="flex items-center gap-4">
-                                                    <div className="flex items-center gap-3 w-40">
-                                                        <div className={`p-2.5 rounded-lg bg-[var(--primary-bg)] ${config.color}`}>
-                                                            <config.icon className="w-5 h-5" />
+                                                    <div className="flex items-center gap-3 w-44">
+                                                        <div className={`p-2.5 rounded-lg bg-[var(--primary-bg)] ${catConfig.color}`}>
+                                                            <catConfig.icon className="w-5 h-5" />
                                                         </div>
                                                         <div>
-                                                            <span className="text-sm font-bold text-[#313131] block capitalize">{config.label}</span>
-                                                            <span className="text-xs text-gray-400">Min {minPercentage}%</span>
+                                                            <span className="text-sm font-bold text-[#313131] block">{catConfig.label}</span>
+                                                            <span className="text-[10px] text-gray-400">{catConfig.description}</span>
+                                                            <span className="text-[10px] text-gray-400 block">Min {minPercentage}%</span>
                                                         </div>
                                                     </div>
 
@@ -296,8 +283,8 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                                                                 type="number"
                                                                 min={minPercentage}
                                                                 max={100}
-                                                                value={mb.percentage}
-                                                                onChange={(e) => handleManualPercentageChange(mb.mealType, e.target.value)}
+                                                                value={cb.percentage}
+                                                                onChange={(e) => handleCategoryPercentageChange(cb.category, e.target.value)}
                                                                 className={cn(
                                                                     "w-full pr-8 font-semibold border-gray-200 focus:border-[var(--primary)] focus:ring-[var(--primary)]",
                                                                     hasError && "border-red-400 focus:border-red-500 focus:ring-red-500"
@@ -309,20 +296,43 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                                                     </div>
 
                                                     {/* Budget (Auto-calculated) */}
-                                                    <div className="w-32">
+                                                    <div className="w-28">
                                                         <Label className="text-xs text-gray-500 mb-1 block font-medium">Amount</Label>
                                                         <div className="relative">
                                                             <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                                                             <Input
                                                                 type="number"
-                                                                value={mb.budget}
+                                                                value={cb.budget}
                                                                 readOnly
                                                                 className="w-full pl-8 font-semibold bg-gray-50 text-[#313131] border-gray-200"
                                                                 placeholder="0"
                                                             />
                                                         </div>
                                                     </div>
+
+                                                    {/* Spent Tracker */}
+                                                    <div className="w-28">
+                                                        <Label className="text-xs text-gray-500 mb-1 block font-medium">Spent</Label>
+                                                        <div className={cn(
+                                                            "px-3 py-2 rounded-lg text-sm font-bold text-center border",
+                                                            isOverBudget
+                                                                ? "bg-red-50 text-red-600 border-red-200"
+                                                                : spentPercent >= 80
+                                                                    ? "bg-amber-50 text-amber-600 border-amber-200"
+                                                                    : "bg-green-50 text-green-600 border-green-200"
+                                                        )}>
+                                                            ${cb.spent.toFixed(0)}
+                                                        </div>
+                                                    </div>
                                                 </div>
+
+                                                {/* Over-budget warning */}
+                                                {isOverBudget && (
+                                                    <div className="flex items-center gap-2 mt-3 p-2 bg-amber-50 rounded-lg text-amber-700 text-xs border border-amber-200">
+                                                        <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                                                        <span>Over budget by ${(cb.spent - cb.budget).toFixed(2)} — you can still continue, this is just a warning</span>
+                                                    </div>
+                                                )}
 
                                                 {/* Error Message */}
                                                 {hasError && (
@@ -337,80 +347,104 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                                 </div>
 
                                 {/* Total Percentage Validation */}
-                                {(() => {
-                                    const relevantMealBudgets = mealBudgets.filter(mb => ["breakfast", "lunch", "dinner"].includes(mb.mealType.toLowerCase()));
-                                    const relevantTotalPercentage = relevantMealBudgets.reduce((sum, mb) => sum + mb.percentage, 0);
-
-                                    return relevantMealBudgets.length > 0 && (
-                                        <div className={cn(
-                                            "flex items-center gap-2 p-4 rounded-xl text-sm font-medium",
-                                            relevantTotalPercentage === 100
-                                                ? "bg-green-50 text-green-700 border border-green-200"
-                                                : relevantTotalPercentage > 100
-                                                    ? "bg-red-50 text-red-700 border border-red-200"
-                                                    : "bg-amber-50 text-amber-700 border border-amber-200"
-                                        )}>
-                                            {relevantTotalPercentage === 100 ? (
-                                                <>
-                                                    <CheckCircle2 className="w-5 h-5" />
-                                                    <span>Perfect! Budget is fully allocated (100%)</span>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <AlertTriangle className="w-5 h-5" />
-                                                    <span>
-                                                        Total allocation is {relevantTotalPercentage}%.
-                                                        {relevantTotalPercentage > 100
-                                                            ? " Exceeds 100% - please reduce allocations."
-                                                            : ` Allocate remaining ${100 - relevantTotalPercentage}% to continue.`
-                                                        }
-                                                    </span>
-                                                </>
-                                            )}
-                                        </div>
-                                    );
-                                })()}
+                                {categoryBudgets.length > 0 && (
+                                    <div className={cn(
+                                        "flex items-center gap-2 p-4 rounded-xl text-sm font-medium",
+                                        totalPercentage === 100
+                                            ? "bg-green-50 text-green-700 border border-green-200"
+                                            : totalPercentage > 100
+                                                ? "bg-red-50 text-red-700 border border-red-200"
+                                                : "bg-amber-50 text-amber-700 border border-amber-200"
+                                    )}>
+                                        {totalPercentage === 100 ? (
+                                            <>
+                                                <CheckCircle2 className="w-5 h-5" />
+                                                <span>Perfect! Budget is fully allocated (100%)</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <AlertTriangle className="w-5 h-5" />
+                                                <span>
+                                                    Total allocation is {totalPercentage}%.
+                                                    {totalPercentage > 100
+                                                        ? " Exceeds 100% - please reduce allocations."
+                                                        : ` Allocate remaining ${100 - totalPercentage}% to continue.`
+                                                    }
+                                                </span>
+                                            </>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         )}
 
                         {/* AI Budget Allocation Display (Read-only for AI mode) */}
-                        {budgetStrategy === "ai" && mealBudgets.length > 0 && mealBudgets.some(mb => mb.budget > 0) && (
+                        {budgetStrategy === "ai" && categoryBudgets.length > 0 && categoryBudgets.some(cb => cb.budget > 0) && (
                             <div className="space-y-4">
                                 <div className="flex items-center gap-2">
                                     <h4 className="text-sm font-bold text-[#313131] uppercase tracking-wider">AI-Optimized Allocation</h4>
                                     <CheckCircle2 className="w-4 h-4 text-green-600" />
                                 </div>
                                 <div className="space-y-3">
-                                    {mealBudgets.filter(mb => ["breakfast", "lunch", "dinner"].includes(mb.mealType.toLowerCase())).map((mb) => {
-                                        const config = MEAL_TYPE_CONFIG[mb.mealType] || { label: mb.mealType, icon: Info, color: "text-gray-500", defaultTime: "" };
+                                    {categoryBudgets.map((cb) => {
+                                        const catConfig = BUDGET_CATEGORIES.find(bc => bc.value === cb.category);
+                                        if (!catConfig) return null;
+                                        const isOverBudget = cb.spent > cb.budget && cb.budget > 0;
+                                        const spentPercent = cb.budget > 0 ? Math.round((cb.spent / cb.budget) * 100) : 0;
+
                                         return (
-                                            <div key={mb.mealType} className="p-4 bg-[var(--primary-bg)] rounded-xl border border-[var(--primary-light)]/20">
+                                            <div key={cb.category} className="p-4 bg-[var(--primary-bg)] rounded-xl border border-[var(--primary-light)]/20">
                                                 <div className="flex items-center gap-4">
                                                     <div className="flex items-center gap-3 w-36">
-                                                        <div className={`p-2 rounded-lg bg-white shadow-sm border border-gray-100 ${config.color}`}>
-                                                            <config.icon className="w-5 h-5" />
+                                                        <div className={`p-2 rounded-lg bg-white shadow-sm border border-gray-100 ${catConfig.color}`}>
+                                                            <catConfig.icon className="w-5 h-5" />
                                                         </div>
-                                                        <span className="text-sm font-bold text-[#313131] capitalize">{config.label}</span>
+                                                        <span className="text-sm font-bold text-[#313131]">{catConfig.label}</span>
                                                     </div>
                                                     <div className="flex-1">
                                                         <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
                                                             <div
                                                                 className="h-full bg-[var(--primary)] rounded-full transition-all duration-500"
-                                                                style={{ width: `${mb.percentage}%` }}
+                                                                style={{ width: `${cb.percentage}%` }}
                                                             />
                                                         </div>
+                                                        {/* Spent overlay bar */}
+                                                        {cb.spent > 0 && (
+                                                            <div className="w-full bg-transparent rounded-full h-1.5 mt-1 overflow-hidden">
+                                                                <div
+                                                                    className={cn(
+                                                                        "h-full rounded-full transition-all duration-500",
+                                                                        isOverBudget ? "bg-red-400" : spentPercent >= 80 ? "bg-amber-400" : "bg-green-400"
+                                                                    )}
+                                                                    style={{ width: `${Math.min(spentPercent, 100)}%` }}
+                                                                />
+                                                            </div>
+                                                        )}
                                                     </div>
                                                     <div className="text-sm font-bold text-[var(--primary)] w-16 text-right tabular-nums">
-                                                        {mb.percentage}%
+                                                        {cb.percentage}%
                                                     </div>
                                                     <div className="text-sm font-bold text-[#313131] w-20 text-right tabular-nums">
-                                                        ${mb.budget}
+                                                        ${cb.budget}
+                                                    </div>
+                                                    <div className={cn(
+                                                        "text-xs font-bold w-24 text-right tabular-nums",
+                                                        isOverBudget ? "text-red-600" : "text-green-600"
+                                                    )}>
+                                                        Spent: ${cb.spent.toFixed(0)}
                                                     </div>
                                                 </div>
                                                 {/* AI Reasoning */}
-                                                {mb.reasoning && (
+                                                {cb.reasoning && (
                                                     <div className="mt-3 pt-3 border-t border-[var(--primary-light)]/20 text-xs text-gray-600">
-                                                        <span className="font-semibold text-[var(--primary)]">AI Insight:</span> {mb.reasoning}
+                                                        <span className="font-semibold text-[var(--primary)]">AI Insight:</span> {cb.reasoning}
+                                                    </div>
+                                                )}
+                                                {/* Over-budget warning */}
+                                                {isOverBudget && (
+                                                    <div className="flex items-center gap-2 mt-2 p-2 bg-amber-50 rounded-lg text-amber-700 text-xs border border-amber-200">
+                                                        <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+                                                        <span>Over budget by ${(cb.spent - cb.budget).toFixed(2)}</span>
                                                     </div>
                                                 )}
                                             </div>
@@ -420,53 +454,66 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                             </div>
                         )}
 
-                        {/* Visualization - Main Meals Only */}
-                        {(() => {
-                            const mainMeals = ["breakfast", "lunch", "dinner"];
-                            const relevantMealBudgets = mealBudgets.filter(mb => mainMeals.includes(mb.mealType.toLowerCase()));
-                            const relevantTotalAllocated = relevantMealBudgets.reduce((sum, mb) => sum + mb.budget, 0);
-
-                            return relevantMealBudgets.length > 0 && relevantMealBudgets.some(mb => mb.budget > 0) && (
-                                <div className="p-6 bg-[var(--primary)] rounded-xl text-white shadow-xl relative overflow-hidden">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent"></div>
-                                    <div className="relative z-10">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <span className="text-sm font-medium text-white/80">Total Allocated</span>
-                                            <span className="text-xl font-bold font-mono tracking-tight">
-                                                ${relevantTotalAllocated.toLocaleString()}
-                                                <span className="text-sm font-normal text-white/60 ml-2 font-sans">
-                                                    of ${totalBudget.toLocaleString()}
-                                                </span>
+                        {/* Visualization — Overall Budget */}
+                        {categoryBudgets.length > 0 && categoryBudgets.some(cb => cb.budget > 0) && (
+                            <div className="p-6 bg-[var(--primary)] rounded-xl text-white shadow-xl relative overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent"></div>
+                                <div className="relative z-10">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <span className="text-sm font-medium text-white/80">Total Allocated</span>
+                                        <span className="text-xl font-bold font-mono tracking-tight">
+                                            ${totalAllocated.toLocaleString()}
+                                            <span className="text-sm font-normal text-white/60 ml-2 font-sans">
+                                                of ${totalBudget.toLocaleString()}
                                             </span>
-                                        </div>
-                                        <div className="w-full bg-white/20 rounded-full h-4 overflow-hidden shadow-inner">
+                                        </span>
+                                    </div>
+                                    <div className="w-full bg-white/20 rounded-full h-4 overflow-hidden shadow-inner">
+                                        <div
+                                            className={cn(
+                                                "h-full rounded-full transition-all duration-500 ease-out shadow-lg",
+                                                totalAllocated > totalBudget
+                                                    ? "bg-gradient-to-r from-red-400 to-red-500"
+                                                    : totalAllocated === totalBudget
+                                                        ? "bg-gradient-to-r from-green-400 to-emerald-400"
+                                                        : "bg-gradient-to-r from-[var(--primary-light)] to-white/80"
+                                            )}
+                                            style={{
+                                                width: `${Math.min((totalAllocated / totalBudget) * 100, 100)}%`
+                                            }}
+                                        />
+                                    </div>
+                                    {/* Spent bar underneath */}
+                                    {totalSpent > 0 && (
+                                        <div className="w-full bg-white/10 rounded-full h-2 mt-2 overflow-hidden">
                                             <div
                                                 className={cn(
-                                                    "h-full rounded-full transition-all duration-500 ease-out shadow-lg",
-                                                    relevantTotalAllocated > totalBudget
-                                                        ? "bg-gradient-to-r from-red-400 to-red-500"
-                                                        : relevantTotalAllocated === totalBudget
-                                                            ? "bg-gradient-to-r from-green-400 to-emerald-400"
-                                                            : "bg-gradient-to-r from-[var(--primary-light)] to-white/80"
+                                                    "h-full rounded-full transition-all duration-500",
+                                                    totalSpent > totalBudget ? "bg-red-400" : "bg-green-400"
                                                 )}
                                                 style={{
-                                                    width: `${Math.min((relevantTotalAllocated / totalBudget) * 100, 100)}%`
+                                                    width: `${Math.min((totalSpent / totalBudget) * 100, 100)}%`
                                                 }}
                                             />
                                         </div>
-                                        <div className="mt-3 flex justify-between text-xs font-medium text-white/70">
-                                            <span>{Math.round((relevantTotalAllocated / totalBudget) * 100)}% Used</span>
-                                            {relevantTotalAllocated < totalBudget && (
-                                                <span className="text-green-300 flex items-center gap-1">
-                                                    <DollarSign className="w-3 h-3" />
-                                                    {(totalBudget - relevantTotalAllocated).toLocaleString()} available
-                                                </span>
-                                            )}
-                                        </div>
+                                    )}
+                                    <div className="mt-3 flex justify-between text-xs font-medium text-white/70">
+                                        <span>{Math.round((totalAllocated / totalBudget) * 100)}% Allocated</span>
+                                        {totalSpent > 0 && (
+                                            <span className={totalSpent > totalBudget ? "text-red-300" : "text-green-300"}>
+                                                ${totalSpent.toFixed(0)} spent
+                                            </span>
+                                        )}
+                                        {totalAllocated < totalBudget && (
+                                            <span className="text-green-300 flex items-center gap-1">
+                                                <DollarSign className="w-3 h-3" />
+                                                {(totalBudget - totalAllocated).toLocaleString()} available
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
-                            );
-                        })()}
+                            </div>
+                        )}
                     </div>
                 </CardContent>
             </Card>
@@ -493,6 +540,9 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                             : "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"
                     )}
                 >
+                    {validationMessage && (
+                        <span className="mr-2 text-xs opacity-70">{validationMessage}</span>
+                    )}
                     Continue to Recipes
                     <MoveRight className="w-4 h-4 ml-2" />
                 </Button>
