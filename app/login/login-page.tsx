@@ -14,11 +14,14 @@ import { getErrorMessage } from "@/lib/error-utils";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "@/redux/features/auth/auth.slice";
 import { useRouter, useSearchParams } from "next/navigation";
+import { queryClient } from "@/lib/react-query";
+import { AuthService } from "@/services/auth/auth.service";
+import { AccountService } from "@/services/account/account.service";
 
 import Image from "next/image";
 import pattern1 from "@/public/hero-pattern-1.svg";
 import pattern2 from "@/public/hero-pattern-2.svg";
-import foodBanner from "@/public/food-banner.svg";
+
 
 type LoginFormData = {
   emailOrUsername: string;
@@ -104,6 +107,32 @@ export default function LoginPage() {
       }
 
       const user = response.data;
+
+      // Store token first so subsequent requests have it
+      localStorage.setItem("accessToken", user.accessToken);
+
+      // Force fetch auth/me and accounts BEFORE dispatching login success
+      // This ensures data is ready when AuthProvider mounts/updates
+      const authService = new AuthService();
+      const accountService = new AccountService();
+
+      try {
+        await Promise.all([
+          queryClient.fetchQuery({
+            queryKey: ["auth", "me"],
+            queryFn: () => authService.getCurrentSession(),
+          }),
+          queryClient.fetchQuery({
+            queryKey: ["myaccounts"],
+            queryFn: () => accountService.getMyAccount(),
+          })
+        ]);
+      } catch (fetchError) {
+        console.error("Error pre-fetching user data:", fetchError);
+        // Continue anyway, AuthProvider will handle errors/retries if needed
+        // but ideally we want to wait.
+      }
+
       dispatch(
         loginSuccess({
           user,
@@ -111,12 +140,20 @@ export default function LoginPage() {
         }),
       );
 
+      // Invalidate accounts so they are re-fetched (redundant but safe)
+      queryClient.invalidateQueries({ queryKey: ["myaccounts"] });
+
       toast({
         title: "Login Successful",
         description: "Welcome back!",
         variant: "default",
       });
-      router.push(returnUrl || "/dashboard");
+
+      if (returnUrl) {
+        router.push(returnUrl);
+      }
+      // logic for dashboard redirect is handled in AuthProvider activeAccount check
+      // router.push(returnUrl || "/dashboard");
     } catch (error: any) {
       console.error("Login error:", error);
 

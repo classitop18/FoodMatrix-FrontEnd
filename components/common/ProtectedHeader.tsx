@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useLogout } from "@/services/auth/auth.mutation";
 import { toast } from "@/hooks/use-toast";
+import Loader from "./Loader";
 
 export default function ProtectedHeader() {
   const router = useRouter();
@@ -24,7 +25,6 @@ export default function ProtectedHeader() {
       title: "Logout",
       description: "You have been logged out.",
     });
-
     router.push("/");
   };
 
@@ -43,6 +43,15 @@ export default function ProtectedHeader() {
   }, []);
 
   const initials = `${user?.firstName?.[0] ?? ""}${user?.lastName?.[0] ?? ""}`;
+
+
+  if (logoutMutation?.isPending) {
+    return (
+      <>
+        <Loader />
+      </>
+    );
+  }
 
   return (
     <header className="sticky top-0 z-[50] w-full bg-white/90 backdrop-blur border-b border-gray-200">

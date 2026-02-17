@@ -1,8 +1,8 @@
 "use client";
 
-export default function Loader() {
+export default function Loader({ message }: { message?: string }) {
   return (
-    <div className="fixed z-[99] inset-0 flex items-center justify-center bg-white overflow-hidden">
+    <div className="fixed z-[99] inset-0 flex flex-col items-center justify-center bg-white overflow-hidden gap-4">
       {/* Main Loader (Centered) */}
       <div className="relative z-10 flex items-center justify-center w-24 h-24">
         {/* Rings */}
@@ -17,6 +17,12 @@ export default function Loader() {
           <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center"></div>
         </div>
       </div>
+
+      {message && (
+        <p className="text-[var(--primary)] font-medium text-lg animate-pulse">
+          {message}
+        </p>
+      )}
     </div>
   );
 }

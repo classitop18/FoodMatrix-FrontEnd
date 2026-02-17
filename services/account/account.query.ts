@@ -3,10 +3,12 @@ import { AccountService } from "./account.service";
 
 const accountService = new AccountService();
 
-export const useMyAccounts = () => {
+export const useMyAccounts = (options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: ["myaccounts"],
     queryFn: () => accountService.getMyAccount(),
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    enabled: options?.enabled,
   });
 };
 

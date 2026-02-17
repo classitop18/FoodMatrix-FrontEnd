@@ -17,6 +17,8 @@ export const useLogin = () => {
     onSuccess: (data) => {
       const user = data.data;
       localStorage.setItem("accessToken", user.accessToken);
+      // queryClient.invalidateQueries({ queryKey: ["auth", "user", "myaccount"] });e
+
     },
 
     onError: (error: any) => {

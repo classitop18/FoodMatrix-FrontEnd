@@ -187,7 +187,7 @@ class ApiClient {
     );
   }
 
-  private async refreshAccessToken(): Promise<string> {
+  private async refreshAccessToken(silent: boolean = false): Promise<string> {
     try {
       const response = await this.refreshClient.post("/auth/refresh-token");
 
@@ -203,45 +203,48 @@ class ApiClient {
     } catch (error: any) {
       this.refreshing = false;
 
-      // Handle specific refresh token errors
-      const errorCode = error.response?.data?.errorCode;
-      const errorMessage = error.response?.data?.message;
+      // Only show toasts if NOT silent
+      if (!silent) {
+        // Handle specific refresh token errors
+        const errorCode = error.response?.data?.errorCode;
+        const errorMessage = error.response?.data?.message;
 
-      if (errorCode === "REFRESH_TOKEN_MISSING") {
-        toast({
-          variant: "destructive",
-          title: "Session Expired",
+        if (errorCode === "REFRESH_TOKEN_MISSING") {
+          toast({
+            variant: "destructive",
+            title: "Session Expired",
 
-          description: "Your session has expired. Please login again.",
-        });
-      } else if (errorCode === "SESSION_EXPIRED") {
-        toast({
-          variant: "destructive",
-          title: "Session Expired",
+            description: "Your session has expired. Please login again.",
+          });
+        } else if (errorCode === "SESSION_EXPIRED") {
+          toast({
+            variant: "destructive",
+            title: "Session Expired",
 
-          description: "Your session has expired. Please login again.",
-        });
-      } else if (errorCode === "INVALID_REFRESH_TOKEN") {
-        toast({
-          variant: "destructive",
-          title: "Invalid Session",
+            description: "Your session has expired. Please login again.",
+          });
+        } else if (errorCode === "INVALID_REFRESH_TOKEN") {
+          toast({
+            variant: "destructive",
+            title: "Invalid Session",
 
-          description: "Invalid session. Please login again.",
-        });
-      } else if (errorMessage) {
-        toast({
-          variant: "destructive",
-          title: "Something went wrong",
+            description: "Invalid session. Please login again.",
+          });
+        } else if (errorMessage) {
+          toast({
+            variant: "destructive",
+            title: "Something went wrong",
 
-          description: errorMessage,
-        });
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Something went wrong",
+            description: errorMessage,
+          });
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Something went wrong",
 
-          description: "Failed to refresh session. Please login again.",
-        });
+            description: "Failed to refresh session. Please login again.",
+          });
+        }
       }
 
       throw error;
@@ -297,7 +300,8 @@ class ApiClient {
   // Manual refresh token method (can be called explicitly)
   public async manualRefreshToken(silent: boolean = false): Promise<string> {
     try {
-      const newToken = await this.refreshAccessToken();
+      // Pass silent flag to refreshAccessToken
+      const newToken = await this.refreshAccessToken(silent);
       if (!silent) {
         toast({
           variant: "success",

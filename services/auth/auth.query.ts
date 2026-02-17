@@ -11,6 +11,7 @@ export const useAuthMe = (options?: { enabled?: boolean }) => {
     queryFn: () => authService.getCurrentSession(),
     retry: false,
     refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
     enabled: options?.enabled,
   });
 };

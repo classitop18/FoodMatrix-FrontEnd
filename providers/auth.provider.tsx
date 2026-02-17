@@ -38,7 +38,7 @@ function AuthNavigationLogic() {
       "/subscription-plan"
     ];
     const isPublicPath = publicPaths.some(path => pathname.startsWith(path)) || pathname === "/";
-    const protectedPaths = ["/dashboard", "/account", "/profile", "/setup"]; // Add other protected roots
+    const protectedPaths = ["/dashboard", "/account", "/profile", "/setup", "/meal-planning"]; // Add other protected roots
     const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path));
 
     const returnUrl = searchParams.get("returnUrl");
@@ -83,6 +83,8 @@ export default function AuthProvider({
           await authService.refreshToken(true);
         } catch (error) {
           // Silent fail - user will be redirected to login by useAuthMe error
+          console.error("Session restoration failed", error);
+
         }
       }
       setIsRestoringSession(false);
@@ -96,20 +98,38 @@ export default function AuthProvider({
     isError: isAuthError,
   } = useAuthMe({ enabled: !isRestoringSession });
 
-  const isAuthLoading = isRestoringSession || isAuthLoadingProp;
+  // Gate accounts query on auth - only fetch when we have a user
+  const {
+    data: accountsData,
+    isLoading: isAccountsLoading,
+    isError: isAccountsError // Destructure error state
+  } = useMyAccounts({
+    enabled: !!authData?.data
+  });
 
-  const { data: accountsData, isLoading: isAccountsLoading } = useMyAccounts();
+
+  console.log("authData", authData);
+  console.log("accountsData", accountsData);
+  console.log("isAccountsLoading", isAccountsLoading);
+  console.log("isAccountsError", isAccountsError);
+  console.log("isAuthLoadingProp", isAuthLoadingProp);
+  console.log("isAuthError", isAuthError);
+  console.log("isRestoringSession", isRestoringSession);
+  // console.log("activeAccountId", activeAccountId);
+  // console.log("account", account);
+  // console.log("accountError", accountError);
+  // console.log("user", user);
 
   const [showSetupDialog, setShowSetupDialog] = useState(false);
   const [pendingInvitation, setPendingInvitation] = useState<any>(null);
 
   // Get current active account and user from Redux
-  const { activeAccountId } = useSelector((state: RootState) => state.account);
+  const { activeAccountId, account, error: accountError } = useSelector((state: RootState) => state.account);
   const { user } = useSelector((state: RootState) => state.auth);
 
   /* ---------- AUTH STATE SYNC ---------- */
   useEffect(() => {
-    if (isAuthLoading) return;
+    if (isRestoringSession || isAuthLoadingProp) return;
 
     if (isAuthError || !authData?.data) {
       dispatch(logout());
@@ -124,7 +144,19 @@ export default function AuthProvider({
         accessToken: authData.accessToken,
       }),
     );
-  }, [isAuthLoading, isAuthError, authData, dispatch]);
+  }, [isRestoringSession, isAuthLoadingProp, isAuthError, authData, dispatch]);
+
+  /* ---------- ACCOUNTS ERROR HANDLING ---------- */
+  useEffect(() => {
+    if (isAccountsError || accountError) {
+      console.error("Failed to load accounts or details", { isAccountsError, accountError });
+      // If critical error, logout
+      if (isAccountsError) {
+        dispatch(logout());
+        dispatch(clearAccount());
+      }
+    }
+  }, [isAccountsError, accountError, dispatch]);
 
   /* ---------- ACCOUNTS ---------- */
   useEffect(() => {
@@ -141,6 +173,7 @@ export default function AuthProvider({
 
       if (!activeAccountId || !persistedAccountExists) {
         dispatch(setActiveAccountId(accounts[0].id));
+        // localStorage.setItem("foodmatrix_active_account_id", accounts[0].id);
       }
 
       setShowSetupDialog(false);
@@ -174,26 +207,51 @@ export default function AuthProvider({
     }
   }, [accountsData, isAccountsLoading, dispatch, pathname, activeAccountId]);
 
-  /* ---------- FETCH ACCOUNT DETAILS & MEMBERSHIP ---------- */
+  /* ---------- FETCH ACCOUNT DETAILS & DATA ---------- */
   useEffect(() => {
     if (activeAccountId) {
+      // Fetch account details and members - Only depends on activeAccountId
       dispatch(fetchAccountDetail(activeAccountId) as any);
       dispatch(fetchAccountMembers(activeAccountId) as any);
+    }
+  }, [activeAccountId, dispatch]);
 
-      if (user?.id) {
-        dispatch(
-          fetchMyMembership({
-            accountId: activeAccountId,
-            userId: user.id,
-          }) as any,
-        );
-      }
+  /* ---------- FETCH MY MEMBERSHIP ---------- */
+  useEffect(() => {
+    if (activeAccountId && user?.id) {
+      // Fetch my membership - Depends on both activeAccountId and user.id
+      dispatch(
+        fetchMyMembership({
+          accountId: activeAccountId,
+          userId: user.id,
+        }) as any,
+      );
     }
   }, [activeAccountId, user?.id, dispatch]);
 
   /* ---------- LOADER ---------- */
-  if (isAuthLoading || isAccountsLoading) {
-    return <Loader />;
+  // Block protected routes until we have an active account
+  const protectedPaths = ["/dashboard", "/account", "/profile", "/setup", "/meal-planning"];
+  const isProtectedRoute = protectedPaths.some(path => pathname.startsWith(path));
+
+  // Account is ready if we have an activeAccountId AND we have fetched the account details (or hit an error)
+  const isAccountReady = !!activeAccountId && (!!account || !!accountError);
+
+  // If we don't have accounts (accountsData is empty or not loaded yet),
+  // we shouldn't block on !isAccountReady indefinitely.
+  // We ONLY want to block if we actually HAVE accounts but haven't selected/loaded one yet.
+  const hasAccounts = accountsData?.length > 0 || (accountsData?.data && accountsData.data.length > 0);
+
+  // Show loader if:
+  // 1. Session restoring or Auth loading
+  // 2. OR (User is authenticated AND we are on a protected route AND (Accounts are loading OR (We have accounts but Active ID not set yet)))
+  const shouldShowLoader =
+    (isProtectedRoute && (isRestoringSession || isAuthLoadingProp)) || // Only block on protected routes during load
+    (!!user && isProtectedRoute && isAccountsLoading) ||
+    (!!user && isProtectedRoute && hasAccounts && !isAccountReady);
+
+  if (shouldShowLoader) {
+    return <Loader message={isAccountReady ? undefined : "Preparing your dashboard..."} />;
   }
 
   /* ---------- BLOCK UI ---------- */
