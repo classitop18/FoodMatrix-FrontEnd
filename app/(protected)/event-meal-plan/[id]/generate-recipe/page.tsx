@@ -100,7 +100,10 @@ export default function EventRecipeSelectionPage() {
                         setCategoryBudgets(savedState.categoryBudgets);
                     }
 
-                    if (savedState.mealRecipes) setMealRecipes(savedState.mealRecipes);
+                    if (savedState.mealRecipes) {
+                        // Sanitize to ensure we never restore a "generating" state
+                        setMealRecipes(savedState.mealRecipes.map((mr: any) => ({ ...mr, isGenerating: false })));
+                    }
                     if (savedState.activeMealTab) setActiveMealTab(savedState.activeMealTab);
                     if (savedState.globalCuisine) setGlobalCuisine(savedState.globalCuisine);
                     if (savedState.considerHealthProfile !== undefined) setConsiderHealthProfile(savedState.considerHealthProfile);
@@ -125,7 +128,8 @@ export default function EventRecipeSelectionPage() {
             totalBudget,
             mealBudgets,
             categoryBudgets,
-            mealRecipes,
+            // Sanitize recipes to never save "generating" state
+            mealRecipes: mealRecipes.map(mr => ({ ...mr, isGenerating: false })),
             activeMealTab,
             globalCuisine,
             considerHealthProfile,
@@ -146,6 +150,20 @@ export default function EventRecipeSelectionPage() {
             console.error("Failed to save state to backend", error);
         }
     };
+
+    // Ref to always hold the latest saveWizardState (avoids stale closures in useEffect)
+    const saveWizardStateRef = useRef(saveWizardState);
+    saveWizardStateRef.current = saveWizardState;
+
+    // AUTO-SAVE: Persist mealRecipes to backend whenever they change
+    useEffect(() => {
+        if (isRestoring.current || !eventId) return;
+        // Debounce to avoid saving on every rapid interaction
+        const timer = setTimeout(() => {
+            saveWizardStateRef.current();
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [mealRecipes, eventId]);
 
     // Queries
     const { data: event, isLoading: isEventLoading } = useEvent(eventId);
@@ -932,8 +950,17 @@ export default function EventRecipeSelectionPage() {
         ));
 
         try {
-            // Get existing names to avoid duplicates
-            const existingNames = existingRecipes[mealType]?.map(r => r.name) || [];
+            // Get existing names to avoid duplicates — ONLY for THIS event (not other events)
+            // 1. DB-saved recipes for this event (all meal types, to avoid cross-meal duplicates)
+            const savedNames = Object.values(existingRecipes)
+                .flat()
+                .map(r => r.name)
+                .filter(Boolean);
+            // 2. Locally generated (unsaved) recipes in this wizard session
+            const localNames = mealRecipes
+                .flatMap(mr => mr.recipes.map(r => r.name))
+                .filter(Boolean);
+            const existingNames = [...new Set([...savedNames, ...localNames])];
 
             const recipeData = await generateEventRecipes.mutateAsync({
                 eventId,

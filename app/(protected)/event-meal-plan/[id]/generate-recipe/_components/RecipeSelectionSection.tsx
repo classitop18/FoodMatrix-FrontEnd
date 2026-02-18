@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { GeneratedRecipeForMeal, MealBudgetAllocation, CategoryBudgetAllocation } from "./types";
-import { MEAL_TYPE_CONFIG, COURSE_TYPE_OPTIONS } from "./constants";
+import { MEAL_TYPE_CONFIG, COURSE_TYPE_OPTIONS, BUDGET_CATEGORIES } from "./constants";
 import { MealType } from "@/services/event/event.types";
 import { cuisineOptions } from "@/lib/recipe-constants";
 import { getRecipeImageUrl } from "@/lib/recipe-utils";
@@ -25,6 +25,19 @@ import { indianSnacks } from "@/data/indian-snacks";
 import { CocktailService, Cocktail } from "@/services/external/cocktail.service";
 import { MealService, Meal } from "@/services/external/meal.service";
 import { useDebounce } from "@/hooks/useDebounce";
+
+/**
+ * Maps granular course type values (from COURSE_TYPE_OPTIONS) to budget category keys (from BUDGET_CATEGORIES).
+ * e.g. "appetizer" | "soup" → "starter", "salad" → "side_dish"
+ */
+function mapCourseToCategory(courseType?: string): string | undefined {
+    if (!courseType) return undefined;
+    if (['starter', 'appetizer', 'soup'].includes(courseType)) return 'starter';
+    if (['side_dish', 'salad'].includes(courseType)) return 'side_dish';
+    if (courseType === 'main_course') return 'main_course';
+    // Direct matches for snacks, desserts, beverages
+    return courseType;
+}
 
 
 
@@ -561,6 +574,57 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
                                             )}
                                         </div>
                                     </div>
+
+                                    {/* Per-Category Budget Breakdown */}
+                                    {['breakfast', 'lunch', 'dinner'].includes(mealType) && (() => {
+                                        const activeCats = (categoryBudgets[mealType] || []).filter(cb => cb.budget > 0);
+                                        if (activeCats.length === 0) return null;
+
+                                        return (
+                                            <div className="flex flex-wrap gap-2 mt-4">
+                                                {activeCats.map(cat => {
+                                                    const catConfig = BUDGET_CATEGORIES.find(bc => bc.value === cat.category);
+                                                    const categorySpent = recipes
+                                                        .filter(r => selectedIds.includes(r.id) && mapCourseToCategory(r.courseType) === cat.category)
+                                                        .reduce((sum, r) => {
+                                                            const price = r.estimatedCostPerServing || (r.price ? parseFloat(r.price.replace(/[^0-9.]/g, '')) : 0);
+                                                            const servings = r.servings || 1;
+                                                            return sum + (price * servings);
+                                                        }, 0);
+                                                    const isOver = categorySpent > cat.budget;
+
+                                                    return (
+                                                        <div
+                                                            key={cat.category}
+                                                            className={cn(
+                                                                "flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold transition-colors",
+                                                                isOver
+                                                                    ? "bg-red-50 border-red-200 text-red-700"
+                                                                    : categorySpent > 0
+                                                                        ? "bg-green-50 border-green-200 text-green-700"
+                                                                        : "bg-gray-50 border-gray-200 text-gray-600"
+                                                            )}
+                                                        >
+                                                            <span className={cn("font-bold", catConfig?.color || "text-gray-500")}>
+                                                                {catConfig?.label || cat.category}
+                                                            </span>
+                                                            <span className="text-gray-400">|</span>
+                                                            <span>${cat.budget.toFixed(0)}</span>
+                                                            <span className="text-gray-400">→</span>
+                                                            <span className={cn("font-bold", isOver ? "text-red-600" : "text-green-600")}>
+                                                                ${categorySpent.toFixed(2)}
+                                                            </span>
+                                                            {isOver && (
+                                                                <span className="text-[10px] font-bold bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full">
+                                                                    +${(categorySpent - cat.budget).toFixed(2)}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        );
+                                    })()}
                                 </CardHeader>
                                 <CardContent className="pt-6 px-6 pb-6">
                                     <div className="space-y-6">
