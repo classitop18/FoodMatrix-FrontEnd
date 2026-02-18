@@ -357,6 +357,7 @@ export interface MealBudgetAllocation {
     suggestedBudget: number;
     percentage: number;
     reasoning: string;
+    categoryBreakdown?: Record<string, number>;
 }
 
 // Budget Suggestion Response
@@ -381,6 +382,8 @@ export interface EventRecipeGenerationDto {
     customSearch?: string;
     considerHealthProfiles?: boolean;
     targetMemberIds?: string[];
+    excludedCategories?: string[]; // e.g. ["starter", "dessert"]
+    existingRecipeNames?: string[]; // e.g. ["Butter Chicken", "Naan"]
 }
 
 // AI Generated Recipe (from event)

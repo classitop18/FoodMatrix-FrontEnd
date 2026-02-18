@@ -44,11 +44,11 @@ export default function EventRecipeSelectionPage() {
 
     // States
     const [step, setStep] = useState<"health" | "budget" | "main-courses" | "extras" | "review">("health");
-    const [budgetStrategy, setBudgetStrategy] = useState<"manual" | "ai">("ai");
+    const [budgetStrategy, setBudgetStrategy] = useState<"manual" | "ai">("manual");
     const [totalBudget, setTotalBudget] = useState<number>(100);
     // selectedMealTypes is now derived from event data
     const [mealBudgets, setMealBudgets] = useState<MealBudgetAllocation[]>([]);
-    const [categoryBudgets, setCategoryBudgets] = useState<CategoryBudgetAllocation[]>([]);
+    const [categoryBudgets, setCategoryBudgets] = useState<Record<MealType, CategoryBudgetAllocation[]>>({} as any);
     const [mealRecipes, setMealRecipes] = useState<GeneratedRecipeForMeal[]>([]);
     const [activeMealTab, setActiveMealTab] = useState<MealType>("dinner");
     const [globalCuisine, setGlobalCuisine] = useState<string>("");
@@ -57,7 +57,8 @@ export default function EventRecipeSelectionPage() {
     const [selectedHealthMembers, setSelectedHealthMembers] = useState<string[]>([]);
     const [aiRecommendations, setAIRecommendations] = useState<string[]>([]);
     const [budgetValidationErrors, setBudgetValidationErrors] = useState<Partial<Record<MealType, string>>>({});
-    const [categoryValidationErrors, setCategoryValidationErrors] = useState<Partial<Record<BudgetCategory, string>>>({});
+    const [categoryValidationErrors, setCategoryValidationErrors] = useState<Record<MealType, Partial<Record<BudgetCategory, string>>>>({} as any);
+    const [isBudgetStale, setIsBudgetStale] = useState(false); // New State
 
     // Persistence Ref
     const isRestoring = useRef(false);
@@ -70,6 +71,7 @@ export default function EventRecipeSelectionPage() {
             try {
                 // 1. Try fetching from Backend first
                 const backendState = await EventService.getGenerationState(eventId);
+                console.log({ backendState })
 
                 let savedState = null;
 
@@ -91,8 +93,13 @@ export default function EventRecipeSelectionPage() {
                     if (savedState.step) setStep(savedState.step);
                     if (savedState.budgetStrategy) setBudgetStrategy(savedState.budgetStrategy);
                     if (savedState.totalBudget) setTotalBudget(savedState.totalBudget);
-                    if (savedState.mealBudgets) setMealBudgets(savedState.mealBudgets);
-                    if (savedState.categoryBudgets) setCategoryBudgets(savedState.categoryBudgets);
+                    if (savedState.mealBudgets && Array.isArray(savedState.mealBudgets)) setMealBudgets(savedState.mealBudgets);
+
+                    // Migration Check: If categoryBudgets is an Array (old format), discard it. It must be an Object/Record.
+                    if (savedState.categoryBudgets && !Array.isArray(savedState.categoryBudgets)) {
+                        setCategoryBudgets(savedState.categoryBudgets);
+                    }
+
                     if (savedState.mealRecipes) setMealRecipes(savedState.mealRecipes);
                     if (savedState.activeMealTab) setActiveMealTab(savedState.activeMealTab);
                     if (savedState.globalCuisine) setGlobalCuisine(savedState.globalCuisine);
@@ -142,6 +149,7 @@ export default function EventRecipeSelectionPage() {
 
     // Queries
     const { data: event, isLoading: isEventLoading } = useEvent(eventId);
+
     const { activeAccountId } = useSelector((state: RootState) => state.account);
     const { data: membersData, isLoading: isMembersLoading } = useMembers(
         { accountId: activeAccountId || "", limit: 100, includeHealthProfile: true },
@@ -170,21 +178,17 @@ export default function EventRecipeSelectionPage() {
 
     const selectedMealTypes = useMemo<MealType[]>(() => {
         let types: MealType[] = [];
-
-        // First priority: Use selectedMealTypes from event creation
         if ((event as any)?.selectedMealTypes && Array.isArray((event as any).selectedMealTypes) && (event as any).selectedMealTypes.length > 0) {
             types = (event as any).selectedMealTypes as MealType[];
         }
-        // Fallback: Use existing meals if they exist
         else if ((event as any)?.meals && (event as any).meals.length > 0) {
             const existingMealTypes = (event as any).meals.map((m: any) => m.mealType as MealType);
             types = Array.from(new Set(existingMealTypes));
         }
-
-        // USER REQUEST: Only allow Dinner, Lunch, Breakfast in this flow. 
-        // Snacks/Beverages/Desserts should be handled in Shopping List flow only.
         return types.filter(t => ['breakfast', 'lunch', 'dinner'].includes(t.toLowerCase() as any));
     }, [event]);
+
+
 
     // Initialize selected members
     useEffect(() => {
@@ -480,133 +484,240 @@ export default function EventRecipeSelectionPage() {
 
     // ---- Category Budget Handlers ----
 
-    // Initialize category budgets from defaults
+    // Initialize category budgets from defaults per Meal Type
     useEffect(() => {
-        if (categoryBudgets.length > 0) return; // Already initialized (or restored)
-        const allCategories: BudgetCategory[] = ['starter', 'main_course', 'side_dish', 'snacks', 'desserts', 'beverages'];
-        setCategoryBudgets(allCategories.map(cat => ({
-            category: cat,
-            percentage: DEFAULT_CATEGORY_WEIGHTS[cat],
-            budget: Math.round((DEFAULT_CATEGORY_WEIGHTS[cat] / 100) * totalBudget),
-            spent: 0,
-            minPercentage: MIN_CATEGORY_PERCENTAGES[cat],
-        })));
-    }, [totalBudget]);
+        if (selectedMealTypes.length === 0) return;
 
-    // Recalculate category budget amounts when totalBudget changes
+        setCategoryBudgets(prev => {
+            const next = { ...prev };
+            console.log({ next }, "next")
+            const allCategories: BudgetCategory[] = ['starter', 'main_course', 'side_dish', 'snacks', 'desserts', 'beverages'];
+
+            selectedMealTypes.forEach(mealType => {
+                // Optimization: Only initialize if missing or structure invalid
+                if (!next[mealType]) {
+                    const mealBudget = mealBudgets.find(mb => mb.mealType === mealType)?.budget || 0;
+
+                    next[mealType] = allCategories.map(cat => ({
+                        category: cat,
+                        percentage: DEFAULT_CATEGORY_WEIGHTS[cat],
+                        budget: Math.round((DEFAULT_CATEGORY_WEIGHTS[cat] / 100) * mealBudget),
+                        spent: 0,
+                        minPercentage: MIN_CATEGORY_PERCENTAGES[cat],
+                    }));
+                }
+            });
+            return next;
+        });
+    }, [selectedMealTypes, mealBudgets]); // Re-run when meal budgets change to update amounts if needed? No, separate effect for amounts.
+
+    // Recalculate category budget amounts when Meal Budgets change
     useEffect(() => {
-        if (categoryBudgets.length === 0) return;
-        setCategoryBudgets(prev => prev.map(cb => ({
-            ...cb,
-            budget: Math.round((cb.percentage / 100) * totalBudget),
-        })));
-    }, [totalBudget]);
+        setCategoryBudgets(prev => {
+            const next = { ...prev };
+            let hasChanges = false;
+
+            Object.keys(next).forEach((key) => {
+                const mealType = key as MealType;
+                const mealBudget = mealBudgets.find(mb => mb.mealType === mealType)?.budget || 0;
+
+                // Safety Check: Ensure we are working with an array
+                if (!Array.isArray(next[mealType])) return;
+
+                const updatedCats = next[mealType].map(cb => {
+                    const newBudget = Math.round((cb.percentage / 100) * mealBudget);
+                    if (newBudget !== cb.budget) hasChanges = true;
+                    return { ...cb, budget: newBudget };
+                });
+
+                if (hasChanges) next[mealType] = updatedCats;
+            });
+
+            return hasChanges ? next : prev;
+        });
+    }, [mealBudgets]);
 
     // Compute spent per category from selected recipes' prices
     useEffect(() => {
-        const spentByCategory: Record<BudgetCategory, number> = {
-            starter: 0,
-            main_course: 0,
-            side_dish: 0,
-            snacks: 0,
-            desserts: 0,
-            beverages: 0,
-        };
+        const spentByMealAndCategory: Record<MealType, Record<BudgetCategory, number>> = {} as any;
 
         mealRecipes.forEach(mr => {
+            const mealType = mr.mealType;
+            if (!spentByMealAndCategory[mealType]) {
+                spentByMealAndCategory[mealType] = { starter: 0, main_course: 0, side_dish: 0, snacks: 0, desserts: 0, beverages: 0 };
+            }
+
             const selectedRecipes = mr.recipes.filter(r => mr.selectedRecipeIds?.includes(r.id));
             selectedRecipes.forEach(r => {
                 const price = typeof r.price === 'string' ? parseFloat(r.price.replace(/[^0-9.]/g, '')) : (r.price || 0);
                 if (isNaN(price)) return;
 
-                // Map meal types to budget categories
-                const mealType = mr.mealType;
                 if (mealType === 'snacks') {
-                    spentByCategory.snacks += price;
+                    spentByMealAndCategory[mealType].snacks += price;
                 } else if (mealType === 'beverages') {
-                    spentByCategory.beverages += price;
+                    spentByMealAndCategory[mealType].beverages += price;
                 } else if (mealType === 'dessert') {
-                    spentByCategory.desserts += price;
+                    spentByMealAndCategory[mealType].desserts += price;
                 } else {
-                    // For main meals (breakfast/lunch/dinner), try to use recipe courseType or default to main_course
                     const courseType = r.courseType?.toLowerCase() || '';
                     if (courseType.includes('starter') || courseType.includes('appetizer')) {
-                        spentByCategory.starter += price;
+                        spentByMealAndCategory[mealType].starter += price;
                     } else if (courseType.includes('side')) {
-                        spentByCategory.side_dish += price;
+                        spentByMealAndCategory[mealType].side_dish += price;
                     } else {
-                        spentByCategory.main_course += price;
+                        spentByMealAndCategory[mealType].main_course += price;
                     }
                 }
             });
         });
 
-        setCategoryBudgets(prev => prev.map(cb => ({
-            ...cb,
-            spent: spentByCategory[cb.category] || 0,
-        })));
+        setCategoryBudgets(prev => {
+            const next = { ...prev };
+            Object.keys(next).forEach(key => {
+                const mt = key as MealType;
+                if (spentByMealAndCategory[mt]) {
+                    next[mt] = next[mt].map(cb => ({
+                        ...cb,
+                        spent: spentByMealAndCategory[mt][cb.category] || 0
+                    }));
+                }
+            });
+            return next;
+        });
     }, [mealRecipes]);
 
     // Handler for category budget change
-    const handleCategoryBudgetChange = useCallback((category: BudgetCategory, value: string) => {
+    const handleCategoryBudgetChange = useCallback((mealType: MealType, category: BudgetCategory, value: string) => {
         const numValue = parseInt(value) || 0;
         setCategoryBudgets(prev => {
-            const updated = prev.map(cb =>
+            const currentCats = prev[mealType] || [];
+            const mealBudget = mealBudgets.find(mb => mb.mealType === mealType)?.budget || 0;
+
+            const updated = currentCats.map(cb =>
                 cb.category === category ? { ...cb, budget: numValue } : cb
             );
-            const totalAllocated = updated.reduce((sum, cb) => sum + cb.budget, 0);
-            return updated.map(cb => ({
-                ...cb,
-                percentage: totalAllocated > 0 ? Math.round((cb.budget / totalBudget) * 100) : 0
-            }));
+
+            // Recalculate percentage based on MEAL budget
+            return {
+                ...prev,
+                [mealType]: updated.map(cb => ({
+                    ...cb,
+                    percentage: mealBudget > 0 ? Math.round((cb.budget / mealBudget) * 100) : 0
+                }))
+            };
         });
-    }, [totalBudget]);
+    }, [mealBudgets]);
 
     // Handler for category percentage change with minimum validation
-    const handleCategoryPercentageChange = useCallback((category: BudgetCategory, value: string) => {
+    const handleCategoryPercentageChange = useCallback((mealType: MealType, category: BudgetCategory, value: string) => {
+
+        console.log({
+            mealType,
+            category,
+            value
+        })
         const numValue = parseInt(value) || 0;
         const minPercentage = MIN_CATEGORY_PERCENTAGES[category];
 
-        if (numValue < minPercentage) {
+        // Allow 0 explicitly (to represent "removed/disabled"), otherwise check minimum
+        if (numValue > 0 && numValue < minPercentage) {
             setCategoryValidationErrors(prev => ({
                 ...prev,
-                [category]: `Minimum ${minPercentage}% required for ${BUDGET_CATEGORIES.find(bc => bc.value === category)?.label || category}`
+                [mealType]: {
+                    ...(prev[mealType] || {}),
+                    [category]: `Minimum ${minPercentage}% required for ${BUDGET_CATEGORIES.find(bc => bc.value === category)?.label || category}`
+                }
             }));
         } else {
+            // If checking/unchecking in AI mode, mark as STALE to force recalculation
+            if (budgetStrategy === "ai") {
+                setIsBudgetStale(true);
+            }
+
             setCategoryValidationErrors(prev => {
-                const { [category]: removed, ...rest } = prev;
-                return rest;
+                const currentMealErrors = { ...(prev[mealType] || {}) };
+                delete currentMealErrors[category];
+                return { ...prev, [mealType]: currentMealErrors };
             });
         }
 
-        setCategoryBudgets(prev => prev.map(cb =>
-            cb.category === category
-                ? {
-                    ...cb,
-                    percentage: numValue,
-                    budget: Math.round((numValue / 100) * totalBudget),
-                    minPercentage
-                }
-                : cb
-        ));
-    }, [totalBudget]);
+        setCategoryBudgets(prev => {
+            const currentCats = prev[mealType] || [];
+            const mealBudget = mealBudgets.find(mb => mb.mealType === mealType)?.budget || 0;
+
+            return {
+                ...prev,
+                [mealType]: currentCats.map(cb =>
+                    cb.category === category
+                        ? {
+                            ...cb,
+                            percentage: numValue,
+                            budget: Math.round((numValue / 100) * mealBudget),
+                            minPercentage
+                        }
+                        : cb
+                )
+            };
+        });
+    }, [mealBudgets]);
 
     // Category-level validation for continue button
     const canContinueCategoryBudget = useMemo(() => {
         if (budgetStrategy === "ai") return true;
-        const totalPct = categoryBudgets.reduce((s, cb) => s + cb.percentage, 0);
-        return Object.keys(categoryValidationErrors).length === 0 && totalPct === 100;
-    }, [budgetStrategy, categoryValidationErrors, categoryBudgets]);
+
+        // Validation: For EVERY valid meal type, total percentage must be 100
+        return selectedMealTypes.filter(mt => ['breakfast', 'lunch', 'dinner'].includes(mt)).every(mt => {
+            const cats = categoryBudgets[mt] || [];
+            if (cats.length === 0) return true; // Or false?
+            const totalPct = cats.reduce((s, cb) => s + cb.percentage, 0);
+            const hasErrors = Object.keys(categoryValidationErrors[mt] || {}).length > 0;
+            return totalPct === 100 && !hasErrors;
+        });
+    }, [budgetStrategy, categoryValidationErrors, categoryBudgets, selectedMealTypes]);
 
     const handleContinueToBudget = () => {
         goToNextStep();
     };
 
     // AI Budget Distribution using actual API
+    // AI Budget Distribution using actual API
     const handleAIDistributeBudget = useCallback(async () => {
         try {
+            const toastId = toast.loading("AI is optimizing your budget...");
+
+            // 1. Prepare Active Categories (send only what user hasn't actively removed/set to 0)
+            // If checking "removed", we look for 0% percentage or 0 budget.
+            // However, initially, we might want to send ALL categories if none are explicitly removed.
+            // Let's assume if state exists, we respect it.
+            // 1. Prepare Active Categories based on user's current setup
+            // If user removed a category (0%), do not send it to AI.
+            const activeCategories: Record<MealType, string[]> = {} as any;
+
+            selectedMealTypes.forEach(mt => {
+                const currentBudgets = categoryBudgets[mt];
+                if (currentBudgets && currentBudgets.length > 0) {
+                    const active = currentBudgets
+                        .filter(cb => cb.percentage > 0 || cb.budget > 0)
+                        .map(cb => cb.category);
+
+                    // If user has some active categories, use them.
+                    // If all are 0 (e.g. initialized but empty), default to ALL to let AI decide.
+                    if (active.length > 0) {
+                        activeCategories[mt] = active;
+                    } else {
+                        activeCategories[mt] = BUDGET_CATEGORIES.map(c => c.value);
+                    }
+                } else {
+                    activeCategories[mt] = BUDGET_CATEGORIES.map(c => c.value);
+                }
+            });
+
             // Call the actual budget suggestion API
-            const response = await suggestBudgetMutation.mutateAsync({ eventId, mealTypes: selectedMealTypes });
+            const response = await suggestBudgetMutation.mutateAsync({
+                eventId,
+                mealTypes: selectedMealTypes,
+                activeCategories
+            } as any);
 
             // Transform API response to local state format
             const allocations: MealBudgetAllocation[] = response.allocations.map(a => ({
@@ -618,7 +729,53 @@ export default function EventRecipeSelectionPage() {
             }));
 
             setMealBudgets(allocations);
+
+            // Apply Category Breakdowns from AI
+            setCategoryBudgets(prev => {
+                const next = { ...prev };
+
+                response.allocations.forEach(alloc => {
+                    const mt = alloc.mealType as MealType;
+                    const breakdown = alloc.categoryBreakdown;
+                    const mealBudget = alloc.suggestedBudget;
+
+                    if (breakdown && Object.keys(breakdown).length > 0) {
+                        // Map AI breakdown to our state
+                        next[mt] = (categoryBudgets[mt] || BUDGET_CATEGORIES.map(c => ({
+                            category: c.value,
+                            percentage: 0,
+                            budget: 0,
+                            spent: 0,
+                            minPercentage: MIN_CATEGORY_PERCENTAGES[c.value]
+                        }))).map(cb => {
+                            // AI returns percentage of MEAL budget (0-100)
+                            const aiPct = breakdown[cb.category] || 0;
+                            return {
+                                ...cb,
+                                percentage: aiPct,
+                                budget: Math.round((aiPct / 100) * mealBudget),
+                                spent: 0 // Reset spent to 0 for AI distribution
+                            };
+                        });
+                    } else {
+                        // Fallback implies AI didn't return breakdown (maybe old prompt), keep defaults logic?
+                        // Or distribute evenly among active?
+                        // For now we do nothing if no breakdown, just update total amounts based on new meal budget
+                        // But we should update the budgets based on existing percentages and NEW meal budget
+                        const currentCats = next[mt] || [];
+                        next[mt] = currentCats.map(cb => ({
+                            ...cb,
+                            budget: Math.round((cb.percentage / 100) * mealBudget),
+                            spent: 0 // Reset spent to 0 for AI distribution
+                        }));
+                    }
+                });
+                return next;
+            });
+
             setAIRecommendations(response.aiRecommendations || []);
+
+            toast.dismiss(toastId);
 
             // Show success with AI recommendation if available
             if (response.aiRecommendations && response.aiRecommendations.length > 0) {
@@ -631,6 +788,8 @@ export default function EventRecipeSelectionPage() {
             } else {
                 toast.success("AI has optimized your budget distribution!");
             }
+
+            setIsBudgetStale(false);
         } catch (error: any) {
             console.error("Budget suggestion error:", error);
             toast.error(error?.message || "Failed to get AI budget suggestion");
@@ -638,7 +797,7 @@ export default function EventRecipeSelectionPage() {
             // Fallback to local calculation
             fallbackBudgetDistribution();
         }
-    }, [eventId, suggestBudgetMutation]);
+    }, [eventId, suggestBudgetMutation, selectedMealTypes, categoryBudgets]);
 
     // Fallback budget distribution (local calculation)
     const fallbackBudgetDistribution = useCallback(() => {
@@ -668,10 +827,19 @@ export default function EventRecipeSelectionPage() {
 
     // Validate if continue is allowed (all percentages >= minimum)
     const canContinueToRecipes = useMemo(() => {
-        if (budgetStrategy === "ai") return true;
+        const totalAllocated = mealBudgets.reduce((sum, mb) => sum + mb.budget, 0);
+        // Must have some budget allocated to proceed
+        if (totalAllocated <= 0) return false;
+
+        if (budgetStrategy === "ai") {
+            // For AI, we strictly require it to be up-to-date
+            return !isBudgetStale;
+        }
+
+        // Manual mode validation
         return Object.keys(budgetValidationErrors).length === 0 &&
             mealBudgets.every(mb => mb.percentage >= (MIN_BUDGET_PERCENTAGES[mb.mealType] || 0));
-    }, [budgetStrategy, budgetValidationErrors, mealBudgets]);
+    }, [budgetStrategy, budgetValidationErrors, mealBudgets, isBudgetStale]);
 
     const handleContinueToRecipes = () => {
         if (!canContinueToRecipes) {
@@ -680,6 +848,23 @@ export default function EventRecipeSelectionPage() {
         }
         goToNextStep();
     };
+
+    // Existing recipes to avoid duplication
+    const existingRecipes = useMemo(() => {
+        if (!event || !event.meals) return {} as Record<MealType, { id: string, name: string, courseType?: string }[]>;
+        const map: Record<MealType, { id: string, name: string, courseType?: string }[]> = {} as any;
+
+        event.meals.forEach((meal: any) => {
+            if (meal.recipes) {
+                map[meal.mealType as MealType] = meal.recipes.map((r: any) => ({
+                    id: r.id,
+                    name: r.recipe?.name || "Unknown Recipe",
+                    courseType: r.recipe?.courseType
+                }));
+            }
+        });
+        return map;
+    }, [event]);
 
     const handleGenerateRecipesForMeal = async (mealType: MealType, customSearch?: string, count: number = 3, specificCuisine?: string, courseType?: string) => {
         // Handle Add-ons (Event Items) - Direct to DB
@@ -734,6 +919,12 @@ export default function EventRecipeSelectionPage() {
 
         const mealBudget = mealBudgets.find(mb => mb.mealType === mealType)?.budget || 0;
 
+        // Calculate excluded categories based on 0 budget
+        const currentCategoryBudgets = categoryBudgets[mealType] || [];
+        const excludedCategories = currentCategoryBudgets
+            .filter(cb => cb.percentage === 0 || cb.budget === 0)
+            .map(cb => cb.category);
+
         setMealRecipes(prev => prev.map(mr =>
             mr.mealType === mealType
                 ? { ...mr, isGenerating: true, customSearch }
@@ -741,6 +932,9 @@ export default function EventRecipeSelectionPage() {
         ));
 
         try {
+            // Get existing names to avoid duplicates
+            const existingNames = existingRecipes[mealType]?.map(r => r.name) || [];
+
             const recipeData = await generateEventRecipes.mutateAsync({
                 eventId,
                 data: {
@@ -752,6 +946,8 @@ export default function EventRecipeSelectionPage() {
                     preferredCuisines: ((specificCuisine || globalCuisine) && (specificCuisine || globalCuisine) !== "ALL" && !customSearch) ? [specificCuisine || globalCuisine] : undefined,
                     considerHealthProfiles: considerHealthProfile,
                     targetMemberIds: considerHealthProfile && activeHealthParticipants.length > 0 ? activeHealthParticipants.map((p: any) => p.id) : [],
+                    excludedCategories: excludedCategories.length > 0 ? excludedCategories : undefined,
+                    existingRecipeNames: existingNames.length > 0 ? existingNames : undefined
                 }
             });
 
@@ -1084,6 +1280,7 @@ export default function EventRecipeSelectionPage() {
                         <HealthProfileSection
                             key="health"
                             healthStats={healthStats}
+
                             considerHealthProfile={considerHealthProfile}
                             setConsiderHealthProfile={setConsiderHealthProfile}
                             participants={participants}
@@ -1097,6 +1294,7 @@ export default function EventRecipeSelectionPage() {
                         <BudgetDistributionSection
                             key="budget"
                             budgetStrategy={budgetStrategy}
+                            selectedMealTypes={selectedMealTypes}
                             setBudgetStrategy={setBudgetStrategy}
                             totalBudget={totalBudget}
                             setTotalBudget={setTotalBudget}
@@ -1110,6 +1308,7 @@ export default function EventRecipeSelectionPage() {
                             onBack={goToPrevStep}
                             onContinue={handleContinueToRecipes}
                             canContinue={canContinueCategoryBudget}
+                            isBudgetStale={isBudgetStale}
                         />
                     )}
 
@@ -1133,12 +1332,15 @@ export default function EventRecipeSelectionPage() {
                             onAddEventItem={handleDirectAddItem}
                             onRemoveRecipe={handleRemoveRecipe}
                             onUpdateBudget={(mt, val) => handleManualBudgetChange(mt, val.toString())}
+                            categoryBudgets={categoryBudgets}
+                            existingRecipes={existingRecipes}
                         />
                     )}
 
                     {step === "extras" && (
                         <RecipeSelectionSection
                             key="extras"
+                            existingRecipes={existingRecipes}
                             globalCuisine={globalCuisine}
                             setGlobalCuisine={setGlobalCuisine}
                             selectedMealTypes={selectedMealTypes.filter(mt => ['snacks', 'beverages', 'dessert'].includes(mt))}
@@ -1155,6 +1357,7 @@ export default function EventRecipeSelectionPage() {
                             actionLabel="Review Final Menu"
                             onRemoveRecipe={handleRemoveRecipe}
                             onUpdateBudget={(mt, val) => handleManualBudgetChange(mt, val.toString())}
+                            categoryBudgets={categoryBudgets}
                         />
                     )}
 

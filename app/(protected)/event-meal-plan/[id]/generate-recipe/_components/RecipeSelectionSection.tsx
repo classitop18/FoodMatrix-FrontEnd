@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Sparkles, ArrowLeft, Loader2, CheckCircle, Search, ChefHat, Wallet, CheckCircle2, AlertCircle, Check, Trash2 } from "lucide-react";
 import { getUnsplashImage } from "@/app/actions/unsplash";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { GeneratedRecipeForMeal, MealBudgetAllocation } from "./types";
+import { GeneratedRecipeForMeal, MealBudgetAllocation, CategoryBudgetAllocation } from "./types";
 import { MEAL_TYPE_CONFIG, COURSE_TYPE_OPTIONS } from "./constants";
 import { MealType } from "@/services/event/event.types";
 import { cuisineOptions } from "@/lib/recipe-constants";
@@ -165,6 +165,8 @@ interface RecipeSelectionSectionProps {
     onAddEventItem?: (item: { name: string, quantity: number, unit: string, category: string }) => Promise<void>;
     onRemoveRecipe?: (mealType: string, recipeId: string) => void;
     onUpdateBudget?: (mealType: MealType, budget: number) => void;
+    categoryBudgets: Record<MealType, CategoryBudgetAllocation[]>;
+    existingRecipes?: Record<MealType, { id: string, name: string, courseType?: string }[]>;
 }
 
 export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
@@ -184,7 +186,9 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
     actionLabel,
     onAddEventItem,
     onRemoveRecipe,
-    onUpdateBudget
+    onUpdateBudget,
+    categoryBudgets,
+    existingRecipes = {} as Record<MealType, { id: string, name: string, courseType?: string }[]>
 }) => {
     const [viewRecipe, setViewRecipe] = useState<any | null>(null);
     const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
@@ -571,26 +575,42 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
                                                         <span className="text-xs font-normal text-gray-500">— What type of dish do you want?</span>
                                                     </Label>
                                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
-                                                        {COURSE_TYPE_OPTIONS.map((option) => {
-                                                            const isSelected = (mealCourseTypes[mealType] || 'ALL') === option.value;
-                                                            const Icon = option.icon;
-                                                            return (
-                                                                <button
-                                                                    key={option.value}
-                                                                    onClick={() => setMealCourseTypes(prev => ({ ...prev, [mealType]: option.value }))}
-                                                                    className={cn(
-                                                                        "flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all text-center",
-                                                                        isSelected
-                                                                            ? "border-[var(--primary)] bg-[var(--primary)] text-white shadow-md scale-[1.02]"
-                                                                            : "border-gray-200 bg-white text-gray-600 hover:border-[var(--primary-light)] hover:bg-[var(--primary-bg)] hover:shadow-sm"
-                                                                    )}
-                                                                >
-                                                                    <Icon className={cn("w-5 h-5", isSelected ? "text-white" : "text-[var(--primary)]")} />
-                                                                    <span className="text-xs font-bold leading-tight">{option.label}</span>
-                                                                    <span className={cn("text-[10px] leading-tight", isSelected ? "text-white/80" : "text-gray-400")}>{option.description}</span>
-                                                                </button>
-                                                            );
-                                                        })}
+                                                        {(() => {
+                                                            const activeCats = (categoryBudgets[mealType] || [])
+                                                                .filter(cb => cb.percentage > 0 || cb.budget > 0)
+                                                                .map(cb => cb.category);
+
+                                                            const visibleOptions = activeCats.length === 0
+                                                                ? COURSE_TYPE_OPTIONS
+                                                                : COURSE_TYPE_OPTIONS.filter(opt => {
+                                                                    if (opt.value === 'ALL') return true;
+                                                                    if (['starter', 'appetizer', 'soup'].includes(opt.value)) return activeCats.includes('starter');
+                                                                    if (['side_dish', 'salad'].includes(opt.value)) return activeCats.includes('side_dish');
+                                                                    if (opt.value === 'main_course') return activeCats.includes('main_course');
+                                                                    return true;
+                                                                });
+
+                                                            return visibleOptions.map((option) => {
+                                                                const isSelected = (mealCourseTypes[mealType] || 'ALL') === option.value;
+                                                                const Icon = option.icon;
+                                                                return (
+                                                                    <button
+                                                                        key={option.value}
+                                                                        onClick={() => setMealCourseTypes(prev => ({ ...prev, [mealType]: option.value }))}
+                                                                        className={cn(
+                                                                            "flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all text-center",
+                                                                            isSelected
+                                                                                ? "border-[var(--primary)] bg-[var(--primary)] text-white shadow-md scale-[1.02]"
+                                                                                : "border-gray-200 bg-white text-gray-600 hover:border-[var(--primary-light)] hover:bg-[var(--primary-bg)] hover:shadow-sm"
+                                                                        )}
+                                                                    >
+                                                                        <Icon className={cn("w-5 h-5", isSelected ? "text-white" : "text-[var(--primary)]")} />
+                                                                        <span className="text-xs font-bold leading-tight">{option.label}</span>
+                                                                        <span className={cn("text-[10px] leading-tight", isSelected ? "text-white/80" : "text-gray-400")}>{option.description}</span>
+                                                                    </button>
+                                                                );
+                                                            })
+                                                        })()}
                                                     </div>
                                                 </div>
 
@@ -741,6 +761,79 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
                                             <div className="flex items-center gap-2 p-3 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 text-sm">
                                                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
                                                 <span>Generating again will add new recipes to your existing list. Click on a recipe card to select/deselect it.</span>
+                                            </div>
+                                        )}
+
+                                        {/* Existing Recipes Section */}
+                                        {['breakfast', 'lunch', 'dinner'].includes(mealType) && existingRecipes[mealType] && existingRecipes[mealType].length > 0 && (
+                                            <div className="mb-8">
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="bg-green-100 p-1.5 rounded-full">
+                                                            <CheckCircle2 className="w-4 h-4 text-green-700" />
+                                                        </div>
+                                                        <h3 className="font-bold text-gray-800">Already in Menu</h3>
+                                                        <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200">
+                                                            {existingRecipes[mealType].length} items
+                                                        </Badge>
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 opacity-90">
+                                                    {existingRecipes[mealType].map(recipe => (
+                                                        <div key={recipe.id} className="relative group ring-2 ring-green-500/20 rounded-xl">
+                                                            {/* Overlay Badge */}
+                                                            <div className="absolute top-3 right-3 z-10">
+                                                                <Badge className="bg-white/90 text-green-700 backdrop-blur-md shadow-sm border border-green-100 font-bold">
+                                                                    <CheckCircle2 className="w-3 h-3 mr-1" />
+                                                                    Added
+                                                                </Badge>
+                                                            </div>
+                                                            <RecipeCard
+                                                                recipe={{
+                                                                    id: recipe.id,
+                                                                    name: recipe.name,
+                                                                    description: "Already added to your menu",
+                                                                    imageUrl: getRecipeImageUrl(recipe.name),
+                                                                    totalTimeMinutes: 30,
+                                                                    prepTimeMinutes: 10,
+                                                                    cookTimeMinutes: 20,
+                                                                    difficultyLevel: "Medium",
+                                                                    cuisineType: "Global",
+                                                                    estimatedCostPerServing: 0,
+                                                                    calories: 0,
+                                                                    isFavorite: false,
+                                                                    mealType: mealType,
+                                                                    averageRating: 5,
+                                                                    totalRatings: 1,
+                                                                    timesCooked: 0,
+                                                                    isPublic: false,
+                                                                    createdAt: new Date().toISOString(),
+                                                                    nutrition: null,
+                                                                    costAnalysis: null,
+                                                                    ingredients: [],
+                                                                    instructions: [],
+                                                                    servings: 1
+                                                                }}
+                                                                courseTypeBadge={recipe.courseType ? (COURSE_TYPE_OPTIONS.find(ct => ct.value === recipe.courseType)?.label || recipe.courseType) : undefined}
+                                                                onViewDetails={() => { }}
+                                                                className="cursor-default pointer-events-none grayscale-[10%]"
+                                                                selectionMode={false}
+                                                            />
+                                                        </div>
+                                                    ))}
+                                                </div>
+
+                                                <div className="relative my-8">
+                                                    <div className="absolute inset-0 flex items-center">
+                                                        <span className="w-full border-t border-gray-200 border-dashed" />
+                                                    </div>
+                                                    <div className="relative flex justify-center text-xs uppercase">
+                                                        <span className="bg-white px-2 text-gray-400 font-bold tracking-wider">
+                                                            Generate New Recipes Below
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         )}
 

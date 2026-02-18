@@ -63,7 +63,6 @@ import { cn } from "@/lib/utils";
 import { EventRecipeResponse, MealType } from "@/services/event/event.types";
 import { Recipe } from "@/services/recipe";
 import { RecipeDetailsDialog } from "@/components/common/RecipeDetailsDialog";
-import ThemeButton from "@/components/common/buttons/theme-button";
 import { useToast } from "@/hooks/use-toast";
 
 
@@ -137,6 +136,9 @@ export default function EventDetailPage() {
     // Fetch event data
     const { data: event, isLoading, error, refetch: refetchEvent } = useEvent(eventId);
     const { data: meals, refetch: refetchMeals } = useEventMeals(eventId);
+
+
+    console.log({ event })
 
     // Mutations
     const deleteEventMutation = useDeleteEvent();

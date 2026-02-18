@@ -23,6 +23,7 @@ import {
     UpdateEventItemDto,
     EventGenerationState,
     BudgetTrackingResponse,
+    MealType,
 } from "./event.types";
 
 export const EventService = {
@@ -100,10 +101,14 @@ export const EventService = {
     /**
      * Get AI-suggested budget allocation for event meals
      */
-    suggestBudget: async (eventId: string, mealTypes?: string[]): Promise<BudgetSuggestionResponse> => {
+    suggestBudget: async (
+        eventId: string,
+        mealTypes?: string[],
+        activeCategories?: Record<MealType, string[]>
+    ): Promise<BudgetSuggestionResponse> => {
         const response = await apiClient.post(
             API_ENDPOINTS.EVENT.SUGGEST_BUDGET(eventId),
-            { mealTypes }
+            { mealTypes, activeCategories }
         );
         return response.data.data;
     },

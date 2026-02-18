@@ -320,8 +320,8 @@ export function useSuggestBudget() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ eventId, mealTypes }: { eventId: string; mealTypes?: string[] }) =>
-            EventService.suggestBudget(eventId, mealTypes),
+        mutationFn: ({ eventId, mealTypes, activeCategories }: { eventId: string; mealTypes?: string[]; activeCategories?: Record<string, string[]> }) =>
+            EventService.suggestBudget(eventId, mealTypes, activeCategories as any),
         onSuccess: (data, variables) => {
             queryClient.invalidateQueries({ queryKey: eventQueryKeys.detail(variables.eventId) });
             toast.success("Budget allocation suggested by AI!");
