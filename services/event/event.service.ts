@@ -391,7 +391,7 @@ export const EventService = {
         }
     },
 
-    // ===== Generation State Persistence =====
+     // ===== Generation State Persistence =====
     getGenerationState: async (eventId: string): Promise<EventGenerationState | null> => {
         try {
             const response = await apiClient.get(
@@ -415,3 +415,4 @@ export const EventService = {
         );
     },
 };
+ 

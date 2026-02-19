@@ -142,5 +142,10 @@ export const API_ENDPOINTS = {
     GET_GENERATION_STATE: (eventId: string) => `/events/${eventId}/generation-state`,
     SAVE_GENERATION_STATE: (eventId: string) => `/events/${eventId}/generation-state`,
   },
+
+  // Places
+  PLACES: {
+    NEARBY_GROCERY_SHOPS: "/places/nearby-grocery-shops",
+  },
 };
 

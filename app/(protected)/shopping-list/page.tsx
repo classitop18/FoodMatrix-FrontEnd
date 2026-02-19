@@ -4,7 +4,10 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { ShoppingCart, ArrowLeft, CheckCircle2, ScanLine } from "lucide-react";
+import { ReceiptUpload } from "@/components/receipts/ReceiptUpload";
+import { ReceiptPreview } from "@/components/receipts/ReceiptPreview";
+import { Receipt } from "@/services/receipt/types/receipt.types";
 
 interface Recipe {
   id: string;
@@ -15,6 +18,7 @@ interface Recipe {
 export default function ShoppingListPage() {
   const router = useRouter();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [scannedReceipts, setScannedReceipts] = useState<Receipt[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,82 +37,130 @@ export default function ShoppingListPage() {
     }
   }, []);
 
+  const handleReceiptUploadSuccess = (receipt: Receipt) => {
+    setScannedReceipts((prev) => [...prev, receipt]);
+  };
+
   if (loading) return <div className="p-10 text-center">Loading...</div>;
 
   return (
-    <div className="min-h-screen bg-[#F2F4F7] relative pb-20 font-sans">
-      {/* Background Decoration */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-gradient-to-br from-[#7dab4f]/10 to-transparent rounded-full blur-[100px]" />
-        <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] bg-gradient-to-tr from-blue-500/5 to-transparent rounded-full blur-[100px]" />
-      </div>
-
-      <div className="container mx-auto px-4 md:px-6 relative z-10 py-12 max-w-5xl">
+    <div className="h-[calc(100vh-57px)] bg-gradient-to-r from-[#F3F0FD] to-[#F3F0FD00] relative overflow-auto font-sans">
+      <div className="max-w-8xl mx-auto px-4 md:px-6 relative z-10 py-8">
         <div className="flex items-center gap-4 mb-8">
-          <Button variant="ghost" onClick={() => router.back()}>
+          <Button
+            variant="ghost"
+            onClick={() => router.back()}
+            className="hover:bg-[#F3F0FD] text-[#7661d3]"
+          >
             <ArrowLeft className="w-5 h-5 mr-2" />
             Back
           </Button>
-          <h1 className="text-3xl font-black text-[#1a1a1a]">Shopping List</h1>
+          <h1 className="text-2xl lg:text-3xl font-extrabold text-[#313131] tracking-tight">Shopping List</h1>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Recipes List */}
-          <div className="lg:col-span-1 space-y-4">
-            <h2 className="text-lg font-bold text-gray-700">
-              Selected Recipes
-            </h2>
-            {recipes.length === 0 ? (
-              <p className="text-gray-500">No recipes selected.</p>
-            ) : (
-              recipes.map((r) => (
-                <Card key={r.id} className="bg-white/80 backdrop-blur">
-                  <CardHeader className="p-4">
-                    <CardTitle className="text-base font-bold">
-                      {r.name}
-                    </CardTitle>
-                  </CardHeader>
-                </Card>
-              ))
-            )}
+          {/* Left Column: Recipes & Actions */}
+          <div className="lg:col-span-1 space-y-6">
+
+            {/* Receipt Upload Section */}
+            <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
+              <h2 className="text-lg font-bold text-[#313131] flex items-center gap-2 mb-4">
+                <ScanLine className="w-5 h-5 text-[#7661d3]" />
+                Scan Receipt
+              </h2>
+              <ReceiptUpload onUploadSuccess={handleReceiptUploadSuccess} />
+            </div>
+
+            {/* Selected Recipes List */}
+            <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
+              <h2 className="text-lg font-bold text-[#313131] mb-4">
+                Selected Recipes
+              </h2>
+              <div className="space-y-3">
+                {recipes.length === 0 ? (
+                  <p className="text-gray-500 text-sm">No recipes selected.</p>
+                ) : (
+                  recipes.map((r) => (
+                    <div key={r.id} className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                      <p className="text-sm font-bold text-[#313131]">{r.name}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
           </div>
 
-          {/* Aggregated Ingredients (Mockup if actual aggregation logic is complex) */}
-          <div className="lg:col-span-2 space-y-4">
-            <Card className="border-0 shadow-lg bg-white">
-              <CardHeader className="bg-gradient-to-r from-[#7dab4f] to-[#5a8c3e] text-white rounded-t-xl">
-                <CardTitle className="flex items-center gap-2">
-                  <ShoppingCart className="w-5 h-5" />
-                  Consolidated List
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                {recipes.length > 0 ? (
+          {/* Right Column: Consolidated List & Scanned Receipts */}
+          <div className="lg:col-span-2 space-y-8">
+
+            {/* Scanned Receipts Display */}
+            {scannedReceipts.length > 0 && (
+              <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
+                <h2 className="text-lg font-bold text-[#313131] mb-4">Scanned Receipts</h2>
+                <div className="space-y-4">
+                  {scannedReceipts.map((receipt) => (
+                    <ReceiptPreview key={receipt.id} receipt={receipt} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Consolidated List */}
+            <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
+              <div className="flex items-center gap-2 mb-6">
+                <div className="h-10 w-10 bg-[#F3F0FD] rounded-lg flex items-center justify-center text-[#7661d3]">
+                  <ShoppingCart size={20} />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-[#313131]">Consolidated List</h2>
+                  <p className="text-sm text-gray-500">Combined ingredients from recipes and receipts</p>
+                </div>
+              </div>
+
+              <div className="p-0">
+                {recipes.length > 0 || scannedReceipts.length > 0 ? (
                   <div className="space-y-6">
-                    <p className="text-sm text-gray-500 mb-4">
-                      This is a consolidated list of ingredients based on your
-                      selected recipes.
-                    </p>
-                    {/* In a real app, we would aggregate ingredients here */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Recipe Ingredients */}
                       {recipes
                         .flatMap((r) => r.ingredients || [])
                         .map((ing: any, i) => (
                           <div
-                            key={i}
-                            className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100"
+                            key={`recipe-${i}`}
+                            className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 group hover:border-[#7661d3]/30 transition-colors"
                           >
-                            <CheckCircle2 className="w-4 h-4 text-[#7dab4f]" />
-                            <span className="font-medium text-gray-700">
+                            <div className="h-5 w-5 rounded-full bg-[#e8f5e0] flex items-center justify-center shrink-0">
+                              <CheckCircle2 className="w-3 h-3 text-[#7dab4f]" />
+                            </div>
+                            <span className="font-medium text-gray-700 text-sm">
                               {ing.quantity || ""} {ing.unit || ""} {ing.name}
                             </span>
                           </div>
                         ))}
-                      {recipes.every(
-                        (r) => !r.ingredients || r.ingredients.length === 0,
-                      ) && (
+
+                      {/* Scanned Receipt Items */}
+                      {scannedReceipts
+                        .flatMap((r) => r.items || [])
+                        .map((item, i) => (
+                          <div
+                            key={`receipt-${i}`}
+                            className="flex items-center gap-3 p-3 bg-[#F3F0FD]/50 rounded-xl border border-[#F3F0FD] group hover:border-[#7661d3]/30 transition-colors"
+                          >
+                            <div className="h-5 w-5 rounded-full bg-[#F3F0FD] flex items-center justify-center shrink-0">
+                              <CheckCircle2 className="w-3 h-3 text-[#7661d3]" />
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="font-medium text-gray-700 text-sm">
+                                {item.name}
+                              </span>
+                              {item.price && <span className="text-xs text-gray-500">${item.price}</span>}
+                            </div>
+                          </div>
+                        ))}
+
+                      {recipes.length === 0 && scannedReceipts.length === 0 && (
                         <div className="col-span-2 text-center py-10 text-gray-400">
-                          No ingredient data available for these recipes.
+                          Your list is empty.
                         </div>
                       )}
                     </div>
@@ -118,8 +170,8 @@ export default function ShoppingListPage() {
                     Your list is empty.
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         </div>
       </div>
