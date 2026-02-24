@@ -3,12 +3,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store.redux";
-import { User, Building2, ChevronDown, LogOut, Settings } from "lucide-react";
+import { User, Building2, ChevronDown, LogOut, Settings, Bell } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useLogout } from "@/services/auth/auth.mutation";
 import { toast } from "@/hooks/use-toast";
 import Loader from "./Loader";
+import { useNotificationContext } from "@/providers/NotificationContext";
 
 export default function ProtectedHeader() {
   const router = useRouter();
@@ -17,6 +18,7 @@ export default function ProtectedHeader() {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const logoutMutation = useLogout();
+  const { unreadCount } = useNotificationContext();
 
   const handleLogout = async () => {
     await logoutMutation.mutateAsync();
@@ -70,6 +72,20 @@ export default function ProtectedHeader() {
                 </span>
               </div>
             )}
+
+            {/* Notification Bell */}
+            <Link
+              href="/notifications"
+              className="relative p-2 rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-[#7661d3]/30"
+              aria-label="Notifications"
+            >
+              <Bell size={20} className="text-gray-600" />
+              {unreadCount > 0 && (
+                <span className="absolute top-0.5 right-0.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold leading-none text-white bg-red-500 rounded-full">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
+            </Link>
 
             <div className="relative" ref={dropdownRef}>
               <button
@@ -145,6 +161,24 @@ export default function ProtectedHeader() {
                         </p>
                         <p className="text-[10px] text-gray-500">
                           Manage your account
+                        </p>
+                      </div>
+                    </Link>
+
+                    <Link
+                      href="/notifications"
+                      onClick={() => setOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50"
+                    >
+                      <div className="grid h-8 w-8 place-items-center rounded-lg bg-[#F3F0FD]">
+                        <Bell size={16} className="text-[#7661d3]" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">
+                          Notifications
+                        </p>
+                        <p className="text-[10px] text-gray-500">
+                          View all notifications
                         </p>
                       </div>
                     </Link>

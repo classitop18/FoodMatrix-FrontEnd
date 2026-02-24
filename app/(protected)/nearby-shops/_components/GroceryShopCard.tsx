@@ -35,8 +35,8 @@ export default function GroceryShopCard({ shop }: GroceryShopCardProps) {
                         <div className="absolute top-3 right-3">
                             <span
                                 className={`px-3 py-1 rounded-full text-xs font-bold backdrop-blur-md ${shop.isOpen
-                                        ? "bg-emerald-500/90 text-white"
-                                        : "bg-red-500/90 text-white"
+                                    ? "bg-emerald-500/90 text-white"
+                                    : "bg-red-500/90 text-white"
                                     }`}
                             >
                                 {shop.isOpen ? "Open Now" : "Closed"}
@@ -67,8 +67,8 @@ export default function GroceryShopCard({ shop }: GroceryShopCardProps) {
                         <div className="absolute top-3 right-3">
                             <span
                                 className={`px-3 py-1 rounded-full text-xs font-bold ${shop.isOpen
-                                        ? "bg-emerald-500/90 text-white"
-                                        : "bg-red-500/90 text-white"
+                                    ? "bg-emerald-500/90 text-white"
+                                    : "bg-red-500/90 text-white"
                                     }`}
                             >
                                 {shop.isOpen ? "Open Now" : "Closed"}
@@ -101,8 +101,8 @@ export default function GroceryShopCard({ shop }: GroceryShopCardProps) {
                                 <Star
                                     key={star}
                                     className={`w-3.5 h-3.5 ${star <= Math.round(shop.rating!)
-                                            ? "fill-amber-400 text-amber-400"
-                                            : "text-gray-200"
+                                        ? "fill-amber-400 text-amber-400"
+                                        : "text-gray-200"
                                         }`}
                                 />
                             ))}

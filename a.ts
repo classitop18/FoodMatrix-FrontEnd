@@ -9,6 +9,7 @@ const publicRoutes = [
   "/forgot-password",
   "/verify-email",
 ];
+
 const authRoutes = ["/login", "/register", "/forgot-password", "/verify-email"]; // routes not allowed for logged-in users
 
 export function middleware(request: NextRequest) {
@@ -25,14 +26,12 @@ export function middleware(request: NextRequest) {
   if (publicRoutes.includes(pathname)) {
     return NextResponse.next();
   }
-
   // ----- Protected route: requires token -----
   if (!token) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", pathname); // redirect back after login
     return NextResponse.redirect(loginUrl);
   }
-
   return NextResponse.next();
 }
 

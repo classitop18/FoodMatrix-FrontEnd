@@ -143,9 +143,21 @@ export const API_ENDPOINTS = {
     SAVE_GENERATION_STATE: (eventId: string) => `/events/${eventId}/generation-state`,
   },
 
+  // Notifications
+  NOTIFICATION: {
+    REGISTER_TOKEN: "/notifications/register-token",
+    UNREGISTER_TOKEN: "/notifications/unregister-token",
+    HISTORY: "/notifications/history",
+    UNREAD_COUNT: "/notifications/unread-count",
+    MARK_READ: (id: string) => `/notifications/${id}/read`,
+    MARK_ALL_READ: "/notifications/read-all",
+    SUBSCRIBE_TOPIC: "/notifications/topic/subscribe",
+    UNSUBSCRIBE_TOPIC: "/notifications/topic/unsubscribe",
+    SEND: "/notifications/send",
+  },
+
   // Places
   PLACES: {
     NEARBY_GROCERY_SHOPS: "/places/nearby-grocery-shops",
   },
 };
-
