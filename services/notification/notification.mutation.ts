@@ -17,11 +17,56 @@ export const useRegisterFCMToken = () => {
 export const useMarkAsRead = () => {
     return useMutation({
         mutationFn: (id: string) => notificationService.markAsRead(id),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["notifications"] });
+        onMutate: async (id: string) => {
+            // Cancel any outgoing refetches
+            await queryClient.cancelQueries({ queryKey: ["notifications"] });
+
+            // Snapshot previous value
+            const previousHistory = queryClient.getQueryData(["notifications", "history"]);
+            const previousUnread = queryClient.getQueryData(["notifications", "unreadCount"]);
+
+            // Optimistically update cache
+            queryClient.setQueriesData(
+                { queryKey: ["notifications", "history"] },
+                (old: any) => {
+                    if (!old?.data) return old;
+                    return {
+                        ...old,
+                        data: old.data.map((n: any) =>
+                            n.id === id ? { ...n, isRead: true } : n
+                        ),
+                        unreadCount: Math.max(0, (old.unreadCount ?? 1) - 1),
+                    };
+                }
+            );
+
+            queryClient.setQueryData(
+                ["notifications", "unreadCount"],
+                (old: any) => ({
+                    ...old,
+                    unreadCount: Math.max(0, (old?.unreadCount ?? 1) - 1),
+                })
+            );
+
+            return { previousHistory, previousUnread };
         },
-        onError: (error: any) => {
-            console.error("Error marking notification as read:", error);
+        onError: (_error, _id, context) => {
+            // Rollback on failure
+            if (context?.previousHistory) {
+                queryClient.setQueriesData(
+                    { queryKey: ["notifications", "history"] },
+                    context.previousHistory
+                );
+            }
+            if (context?.previousUnread) {
+                queryClient.setQueryData(
+                    ["notifications", "unreadCount"],
+                    context.previousUnread
+                );
+            }
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["notifications"] });
         },
     });
 };
@@ -29,11 +74,47 @@ export const useMarkAsRead = () => {
 export const useMarkAllAsRead = () => {
     return useMutation({
         mutationFn: () => notificationService.markAllAsRead(),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["notifications"] });
+        onMutate: async () => {
+            await queryClient.cancelQueries({ queryKey: ["notifications"] });
+
+            const previousHistory = queryClient.getQueryData(["notifications", "history"]);
+            const previousUnread = queryClient.getQueryData(["notifications", "unreadCount"]);
+
+            queryClient.setQueriesData(
+                { queryKey: ["notifications", "history"] },
+                (old: any) => {
+                    if (!old?.data) return old;
+                    return {
+                        ...old,
+                        data: old.data.map((n: any) => ({ ...n, isRead: true })),
+                        unreadCount: 0,
+                    };
+                }
+            );
+
+            queryClient.setQueryData(
+                ["notifications", "unreadCount"],
+                (old: any) => ({ ...old, unreadCount: 0 })
+            );
+
+            return { previousHistory, previousUnread };
         },
-        onError: (error: any) => {
-            console.error("Error marking all notifications as read:", error);
+        onError: (_error, _vars, context) => {
+            if (context?.previousHistory) {
+                queryClient.setQueriesData(
+                    { queryKey: ["notifications", "history"] },
+                    context.previousHistory
+                );
+            }
+            if (context?.previousUnread) {
+                queryClient.setQueryData(
+                    ["notifications", "unreadCount"],
+                    context.previousUnread
+                );
+            }
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["notifications"] });
         },
     });
 };

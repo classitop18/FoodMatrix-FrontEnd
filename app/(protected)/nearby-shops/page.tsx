@@ -67,7 +67,7 @@ export default function NearbyShopsPage() {
     const handleAddressSelect = (details: PlaceDetails) => {
         if (details.latitude && details.longitude) {
             setCustomLocation({
-                lat: details.latitude,
+                lat: details.latitude, 
                 lng: details.longitude,
                 label:
                     details.formattedAddress ||
@@ -123,7 +123,7 @@ export default function NearbyShopsPage() {
     }
 
     return (
-        <div className="p-4 md:p-6 space-y-6 max-w-[1400px] mx-auto">
+        <div className="p-4 md:p-6 space-y-6 max-w-8xl mx-auto">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="space-y-1">

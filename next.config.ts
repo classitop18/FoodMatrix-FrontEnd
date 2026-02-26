@@ -35,6 +35,13 @@ const nextConfig: NextConfig = {
         hostname: "www.freepik.com",
         pathname: "/**",
       },
+      {
+        // CloudFront CDN for S3 uploads
+        protocol: "https",
+        hostname: "d8k560yezazuw.cloudfront.net",
+        pathname: "/**",
+      },
+
     ],
   },
 };
