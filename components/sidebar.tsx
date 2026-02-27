@@ -25,6 +25,7 @@ import {
   Wrench,
   MenuIcon,
   X,
+  ScanLine,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -63,15 +64,12 @@ const navigationItems = [
   {
     section: "Features",
     items: [
-      {
-        path: "/meal-intelligence",
-        icon: TrendingUp,
-        label: "Meal Intelligence",
-      },
+      { path: "/meal-intelligence", icon: TrendingUp, label: "Meal Intelligence" },
       { path: "/rewards", icon: Award, label: "Rewards" },
       { path: "/voice-assistant", icon: Mic, label: "Voice Assistant" },
       { path: "/event-meal-plan/list", icon: BookOpen, label: "Event Meal Plans" },
       { path: "/nearby-shops", icon: Store, label: "Nearby Shops" },
+      { path: "/receipts", icon: ScanLine, label: "Receipts" },
     ],
   },
   {
