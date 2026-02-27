@@ -12,8 +12,10 @@ import {
     Pencil,
     Eye,
     ShoppingBag,
+    User,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface ReceiptCardProps {
     receipt: Receipt;
@@ -83,10 +85,10 @@ export function ReceiptCard({ receipt, onClick, onTag }: ReceiptCardProps) {
 
                     <Badge
                         className={`text-[10px] font-bold px-2 py-0.5 flex-shrink-0 border-0 ${isPdf
-                                ? "bg-[#F3F0FD] text-[#7661d3] hover:bg-[#F3F0FD]"
-                                : fileType === "image"
-                                    ? "bg-[#e8f5e0] text-[#7dab4f] hover:bg-[#e8f5e0]"
-                                    : "bg-gray-100 text-gray-500"
+                            ? "bg-[#F3F0FD] text-[#7661d3] hover:bg-[#F3F0FD]"
+                            : fileType === "image"
+                                ? "bg-[#e8f5e0] text-[#7dab4f] hover:bg-[#e8f5e0]"
+                                : "bg-gray-100 text-gray-500"
                             }`}
                     >
                         {isPdf ? "PDF" : fileType === "image" ? "IMAGE" : "TEXT"}
@@ -134,6 +136,21 @@ export function ReceiptCard({ receipt, onClick, onTag }: ReceiptCardProps) {
                                 +{tags.length - 3} more
                             </span>
                         )}
+                    </div>
+                )}
+
+                {/* Submitter Info */}
+                {receipt.submittedBy && (
+                    <div className="flex items-center gap-2 mt-auto pt-2 border-t border-gray-50">
+                        <Avatar className="w-5 h-5">
+                            <AvatarImage src={receipt.submittedBy.avatar || ""} />
+                            <AvatarFallback className="bg-[#7661d3] text-white text-[9px] font-bold">
+                                {receipt.submittedBy.firstName?.charAt(0) || <User className="w-3 h-3" />}
+                            </AvatarFallback>
+                        </Avatar>
+                        <span className="text-[10px] font-medium text-gray-500">
+                            {receipt.submittedBy.firstName} {receipt.submittedBy.lastName || ""}
+                        </span>
                     </div>
                 )}
             </div>

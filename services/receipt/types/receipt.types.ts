@@ -9,6 +9,7 @@ export interface Receipt {
     userId: string;
     eventId?: string | null;
     shoppingListId?: string | null;
+    accountId?: string | null;
     storeName?: string | null;
     totalAmount?: string | null;
     taxAmount?: string | null;
@@ -20,6 +21,11 @@ export interface Receipt {
     tags?: string[] | null;
     createdAt: string;
     updatedAt?: string;
+    submittedBy?: {
+        firstName: string;
+        lastName?: string | null;
+        avatar?: string | null;
+    } | null;
 }
 
 export interface ReceiptListParams {

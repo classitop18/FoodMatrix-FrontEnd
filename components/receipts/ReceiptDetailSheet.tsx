@@ -30,8 +30,10 @@ import {
     ExternalLink,
     ImageIcon,
     Hash,
+    User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface ReceiptDetailSheetProps {
     receipt: Receipt | null;
@@ -332,6 +334,25 @@ export function ReceiptDetailSheet({ receipt, open, onClose }: ReceiptDetailShee
                                         label="Tax"
                                         icon={<IndianRupee className="w-3.5 h-3.5" />}
                                         value={`₹${Number(receipt.taxAmount).toFixed(2)}`}
+                                    />
+                                )}
+                                {receipt.submittedBy && (
+                                    <MetaRow
+                                        label="Submitted By"
+                                        icon={<User className="w-3.5 h-3.5" />}
+                                        value={
+                                            <div className="flex items-center justify-end gap-2">
+                                                <span className="text-sm font-semibold text-[#313131]">
+                                                    {receipt.submittedBy.firstName} {receipt.submittedBy.lastName || ""}
+                                                </span>
+                                                <Avatar className="w-6 h-6 border shadow-sm">
+                                                    <AvatarImage src={receipt.submittedBy.avatar || ""} />
+                                                    <AvatarFallback className="bg-[#7dab4f] text-white text-[10px] font-bold">
+                                                        {receipt.submittedBy.firstName?.charAt(0)}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                            </div>
+                                        }
                                     />
                                 )}
                             </div>
