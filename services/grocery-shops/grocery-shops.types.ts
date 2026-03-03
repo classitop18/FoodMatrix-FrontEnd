@@ -17,4 +17,5 @@ export interface NearbyGroceryShopsPayload {
     latitude: number;
     longitude: number;
     radius?: number;
+    types?: string[];
 }

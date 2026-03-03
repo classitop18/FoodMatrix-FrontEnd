@@ -114,8 +114,8 @@ export function ReceiptPagination({
                             variant="ghost"
                             size="icon"
                             className={`w-7 h-7 rounded-lg text-xs font-semibold transition-all ${page === p
-                                    ? "bg-[#7661d3] text-white hover:bg-[#6450c2] shadow-sm"
-                                    : "text-gray-500 hover:text-[#7661d3] hover:bg-[#F3F0FD]"
+                                ? "bg-[#7661d3] text-white hover:bg-[#6450c2] shadow-sm"
+                                : "text-gray-500 hover:text-[#7661d3] hover:bg-[#F3F0FD]"
                                 }`}
                             onClick={() => onPageChange(p as number)}
                         >

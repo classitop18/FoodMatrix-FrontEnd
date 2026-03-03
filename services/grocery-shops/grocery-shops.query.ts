@@ -7,14 +7,16 @@ export const useNearbyGroceryShops = (
     latitude: number | undefined | null,
     longitude: number | undefined | null,
     radius: number = 15000,
+    types: string[] = ["grocery_store", "supermarket"],
 ) => {
     return useQuery({
-        queryKey: ["nearbyGroceryShops", latitude, longitude, radius],
+        queryKey: ["nearbyGroceryShops", latitude, longitude, radius, types],
         queryFn: () =>
             groceryShopsService.searchNearby({
                 latitude: Number(latitude),
                 longitude: Number(longitude),
                 radius,
+                types,
             }),
         enabled: !!latitude && !!longitude,
         staleTime: 1000 * 60 * 10, // 10 minutes - shops don't change often

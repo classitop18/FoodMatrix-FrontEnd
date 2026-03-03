@@ -161,7 +161,7 @@ export function ReceiptUploadButton({ onSuccess, variant = "default" }: ReceiptU
                         )}
 
                         {/* ── Step 2: Details ── */}
-                        {step === "details" && file && (
+                        {step === "details" && file && !uploadMutation.isPending && (
                             <div className="space-y-5">
                                 {/* File preview */}
                                 <div className="flex items-center gap-3 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5">
@@ -226,10 +226,52 @@ export function ReceiptUploadButton({ onSuccess, variant = "default" }: ReceiptU
                                 </div>
                             </div>
                         )}
+
+                        {/* ── Step 2: Scanning Animation ── */}
+                        {step === "details" && file && uploadMutation.isPending && (
+                            <div className="relative w-full h-[320px] rounded-2xl overflow-hidden bg-gray-50 flex items-center justify-center border border-gray-200">
+                                {previewUrl ? (
+                                    <div
+                                        className="absolute inset-0 bg-cover bg-center blur-[4px] opacity-60 scale-105"
+                                        style={{ backgroundImage: `url(${previewUrl})` }}
+                                    />
+                                ) : (
+                                    <FileText className="w-16 h-16 text-gray-300 blur-sm" />
+                                )}
+
+                                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#7dab4f]/5 to-transparent pointer-events-none" />
+
+                                <div
+                                    className="absolute left-0 right-0 h-1 bg-[#7dab4f] shadow-[0_0_20px_5px_rgba(125,171,79,0.5)] z-10 w-full"
+                                    style={{
+                                        animation: "scanLine 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite"
+                                    }}
+                                />
+
+                                <div className="relative z-20 flex flex-col items-center justify-center">
+                                    <div className="bg-white/95 backdrop-blur-md px-5 py-3 rounded-full shadow-lg flex items-center gap-3 border border-white/50">
+                                        <Loader2 className="w-5 h-5 text-[#7dab4f] animate-spin" />
+                                        <span className="text-sm font-extrabold text-[#313131] tracking-tight">Extracting Data...</span>
+                                    </div>
+                                    <p className="text-[11px] text-gray-500 font-semibold mt-3 bg-white/90 px-3 py-1 rounded-full shadow-sm">
+                                        Items • Amount • Taxes • Date
+                                    </p>
+                                </div>
+
+                                <style>{`
+                                    @keyframes scanLine {
+                                        0% { top: 0%; opacity: 0; }
+                                        5% { opacity: 1; }
+                                        95% { opacity: 1; }
+                                        100% { top: 100%; opacity: 0; }
+                                    }
+                                `}</style>
+                            </div>
+                        )}
                     </div>
 
                     {/* Footer */}
-                    {step === "details" && (
+                    {step === "details" && !uploadMutation.isPending && (
                         <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex items-center gap-3">
                             <Button
                                 variant="ghost"
