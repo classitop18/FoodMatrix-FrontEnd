@@ -17,6 +17,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { getRecipeImageUrl as getImageUrl } from "@/lib/recipe-utils";
 import { format } from "date-fns";
 import {
     Store,
@@ -140,7 +141,7 @@ export function ReceiptDetailSheet({ receipt, open, onClose }: ReceiptDetailShee
     const isImage = receipt.imageUrl && !receipt.imageUrl.toLowerCase().includes(".pdf");
     const isPdf = receipt.imageUrl && receipt.imageUrl.toLowerCase().includes(".pdf");
     const currency = receipt.currency || "USD";
-    const currencySymbol = currency === "USD" ? "$" : currency === "EUR" ? "€" : currency === "INR" ? "₹" : "$";
+    const currencySymbol = currency === "USD" ? "$" : currency === "EUR" ? "€" : currency === "INR" ? "$" : "$";
 
     const storeName =
         receipt.storeName && receipt.storeName !== "Unknown Store"
@@ -260,14 +261,14 @@ export function ReceiptDetailSheet({ receipt, open, onClose }: ReceiptDetailShee
                                         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex-1 min-h-[350px]">
                                             {isPdf ? (
                                                 <iframe
-                                                    src={receipt.imageUrl}
+                                                    src={getImageUrl(receipt.imageUrl)}
                                                     className="w-full h-full min-h-[350px]"
                                                     title="Receipt PDF"
                                                 />
                                             ) : (
                                                 <div className="flex items-center justify-center h-full bg-gray-50/50 p-4 min-h-[300px]">
                                                     <img
-                                                        src={receipt.imageUrl}
+                                                        src={getImageUrl(receipt.imageUrl)}
                                                         alt="Receipt"
                                                         className="max-w-full max-h-[480px] object-contain rounded-lg shadow-sm"
                                                     />
@@ -275,7 +276,7 @@ export function ReceiptDetailSheet({ receipt, open, onClose }: ReceiptDetailShee
                                             )}
                                         </div>
                                         <a
-                                            href={receipt.imageUrl}
+                                            href={getImageUrl(receipt.imageUrl)}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="flex items-center justify-center gap-2 text-xs text-[#7661d3] hover:text-[#5a468a] font-bold bg-white border border-[#7661d3]/20 rounded-xl py-2.5 hover:bg-[#F3F0FD] transition-colors"

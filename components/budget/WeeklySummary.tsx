@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, IndianRupee, Info } from "lucide-react";
+import { CalendarDays, DollarSign, Info } from "lucide-react";
 import type { WeeklySummary as WeeklySummaryType } from "@/services/budget/types/budget.types";
 
 interface WeeklySummaryProps {
@@ -41,12 +41,12 @@ export function WeeklySummary({ data, isLoading }: WeeklySummaryProps) {
                         This Week
                     </h2>
                     <p className="text-xs text-gray-400">
-                        {new Date(data.weekStart).toLocaleDateString("en-IN", {
+                        {new Date(data.weekStart).toLocaleDateString("en-US", {
                             day: "numeric",
                             month: "short",
                         })}{" "}
                         –{" "}
-                        {new Date(data.weekEnd).toLocaleDateString("en-IN", {
+                        {new Date(data.weekEnd).toLocaleDateString("en-US", {
                             day: "numeric",
                             month: "short",
                         })}
@@ -60,7 +60,7 @@ export function WeeklySummary({ data, isLoading }: WeeklySummaryProps) {
                             Budget
                         </p>
                         <p className="text-sm font-extrabold text-[#7661d3]">
-                            ₹{data.totalBudget.toFixed(0)}
+                            ${data.totalBudget.toFixed(0)}
                         </p>
                     </div>
                     <div className="w-px h-8 bg-gray-200" />
@@ -69,7 +69,7 @@ export function WeeklySummary({ data, isLoading }: WeeklySummaryProps) {
                             Spent
                         </p>
                         <p className="text-sm font-extrabold text-[#7dab4f]">
-                            ₹{data.totalSpent.toFixed(0)}
+                            ${data.totalSpent.toFixed(0)}
                         </p>
                     </div>
                     <div className="w-px h-8 bg-gray-200" />
@@ -80,7 +80,7 @@ export function WeeklySummary({ data, isLoading }: WeeklySummaryProps) {
                         <p
                             className={`text-sm font-extrabold ${isOverBudgetWeek ? "text-red-500" : "text-[#313131]"}`}
                         >
-                            {isOverBudgetWeek ? "-" : ""}₹
+                            {isOverBudgetWeek ? "-" : ""}$
                             {Math.abs(data.totalBalance).toFixed(0)}
                         </p>
                     </div>
@@ -101,10 +101,10 @@ export function WeeklySummary({ data, isLoading }: WeeklySummaryProps) {
                         <div
                             key={day.date}
                             className={`rounded-xl p-3 text-center transition-all ${isToday
-                                    ? "bg-[#F3F0FD] border-2 border-[#7661d3]/30 ring-2 ring-[#7661d3]/10"
-                                    : isFuture
-                                        ? "bg-gray-50/50 border border-dashed border-gray-200"
-                                        : "bg-gray-50 border border-gray-100"
+                                ? "bg-[#F3F0FD] border-2 border-[#7661d3]/30 ring-2 ring-[#7661d3]/10"
+                                : isFuture
+                                    ? "bg-gray-50/50 border border-dashed border-gray-200"
+                                    : "bg-gray-50 border border-gray-100"
                                 }`}
                         >
                             {/* Day Name */}
@@ -132,7 +132,7 @@ export function WeeklySummary({ data, isLoading }: WeeklySummaryProps) {
                                     <p
                                         className={`text-xs font-bold mb-1 ${day.isFallback ? "text-blue-500" : "text-[#7661d3]"}`}
                                     >
-                                        ₹{day.allocatedAmount.toFixed(0)}
+                                        ${day.allocatedAmount.toFixed(0)}
                                     </p>
 
                                     {/* Spent */}
@@ -141,14 +141,14 @@ export function WeeklySummary({ data, isLoading }: WeeklySummaryProps) {
                                     </p>
                                     <p
                                         className={`text-xs font-bold ${day.hasExpense
-                                                ? dayOverBudget
-                                                    ? "text-red-500"
-                                                    : "text-[#7dab4f]"
-                                                : "text-gray-300"
+                                            ? dayOverBudget
+                                                ? "text-red-500"
+                                                : "text-[#7dab4f]"
+                                            : "text-gray-300"
                                             }`}
                                     >
                                         {day.hasExpense
-                                            ? `₹${day.amountSpent.toFixed(0)}`
+                                            ? `$${day.amountSpent.toFixed(0)}`
                                             : "—"}
                                     </p>
 

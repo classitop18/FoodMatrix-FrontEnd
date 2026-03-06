@@ -4,7 +4,7 @@ import {
     Wallet,
     TrendingUp,
     TrendingDown,
-    IndianRupee,
+    DollarSign,
     Plus,
     Info,
 } from "lucide-react";
@@ -90,7 +90,7 @@ export function BudgetDashboard({
                         Today's Budget
                     </h2>
                     <p className="text-xs text-gray-400 mt-0.5">
-                        {new Date().toLocaleDateString("en-IN", {
+                        {new Date().toLocaleDateString("en-US", {
                             weekday: "long",
                             day: "numeric",
                             month: "long",
@@ -116,7 +116,7 @@ export function BudgetDashboard({
                             {todayBudget.fallbackFromDate
                                 ? new Date(
                                     todayBudget.fallbackFromDate,
-                                ).toLocaleDateString("en-IN", {
+                                ).toLocaleDateString("en-US", {
                                     day: "numeric",
                                     month: "short",
                                 })
@@ -174,7 +174,7 @@ export function BudgetDashboard({
                             Budget
                         </p>
                         <p className="text-xl font-extrabold text-[#7661d3]">
-                            ₹{todayBudget?.allocatedAmount.toFixed(2)}
+                            ${todayBudget?.allocatedAmount.toFixed(2)}
                         </p>
                     </div>
                     <div
@@ -187,7 +187,7 @@ export function BudgetDashboard({
                             <p
                                 className={`text-xl font-extrabold ${isOverBudget ? "text-red-500" : "text-[#7dab4f]"}`}
                             >
-                                ₹{todayBudget?.amountSpent.toFixed(2)}
+                                ${todayBudget?.amountSpent.toFixed(2)}
                             </p>
                             {isOverBudget ? (
                                 <TrendingUp className="w-4 h-4 text-red-500" />
@@ -203,7 +203,7 @@ export function BudgetDashboard({
                             {isOverBudget ? "Over Budget" : "Remaining"}
                         </p>
                         <p className="text-xl font-extrabold text-white">
-                            {isOverBudget ? "-" : ""}₹
+                            {isOverBudget ? "-" : ""}$
                             {Math.abs(todayBudget?.balance ?? 0).toFixed(2)}
                         </p>
                     </div>
@@ -215,7 +215,7 @@ export function BudgetDashboard({
                 onClick={onLogExpenseClick}
                 className="w-full h-11 bg-[#313131] hover:bg-black text-white font-bold rounded-xl text-sm flex items-center gap-2"
             >
-                <IndianRupee className="w-4 h-4" />
+                <DollarSign className="w-4 h-4" />
                 {todayBudget?.hasExpenseLogged
                     ? "Update Today's Spending"
                     : "Log Today's Spending"}

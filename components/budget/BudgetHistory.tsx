@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, IndianRupee, FileText } from "lucide-react";
+import { CalendarDays, DollarSign, FileText } from "lucide-react";
 import type { DailyBudgetWithExpense } from "@/services/budget/types/budget.types";
 
 interface BudgetHistoryProps {
@@ -90,20 +90,20 @@ export function BudgetHistory({
                                 <div
                                     key={entry.id}
                                     className={`grid grid-cols-4 gap-3 px-3 py-3 rounded-xl transition-colors ${isToday
-                                            ? "bg-[#F3F0FD] border border-[#7661d3]/20"
-                                            : "bg-gray-50 hover:bg-gray-100"
+                                        ? "bg-[#F3F0FD] border border-[#7661d3]/20"
+                                        : "bg-gray-50 hover:bg-gray-100"
                                         }`}
                                 >
                                     {/* Date */}
                                     <div>
                                         <p className="text-sm font-bold text-[#313131]">
-                                            {new Date(entry.date).toLocaleDateString("en-IN", {
+                                            {new Date(entry.date).toLocaleDateString("en-US", {
                                                 day: "numeric",
                                                 month: "short",
                                             })}
                                         </p>
                                         <p className="text-[10px] text-gray-400">
-                                            {new Date(entry.date).toLocaleDateString("en-IN", {
+                                            {new Date(entry.date).toLocaleDateString("en-US", {
                                                 weekday: "short",
                                             })}
                                             {isToday && (
@@ -116,20 +116,20 @@ export function BudgetHistory({
 
                                     {/* Budget */}
                                     <p className="text-sm font-bold text-[#7661d3] text-right self-center">
-                                        ₹{parseFloat(entry.allocatedAmount).toFixed(0)}
+                                        ${parseFloat(entry.allocatedAmount).toFixed(0)}
                                     </p>
 
                                     {/* Spent */}
                                     <p
                                         className={`text-sm font-bold text-right self-center ${hasExpense
-                                                ? isOverBudget
-                                                    ? "text-red-500"
-                                                    : "text-[#7dab4f]"
-                                                : "text-gray-300"
+                                            ? isOverBudget
+                                                ? "text-red-500"
+                                                : "text-[#7dab4f]"
+                                            : "text-gray-300"
                                             }`}
                                     >
                                         {hasExpense
-                                            ? `₹${parseFloat(entry.amountSpent!).toFixed(0)}`
+                                            ? `$${parseFloat(entry.amountSpent!).toFixed(0)}`
                                             : "—"}
                                     </p>
 
@@ -138,11 +138,11 @@ export function BudgetHistory({
                                         {hasExpense ? (
                                             <span
                                                 className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold ${isOverBudget
-                                                        ? "bg-red-100 text-red-600"
-                                                        : "bg-green-100 text-green-600"
+                                                    ? "bg-red-100 text-red-600"
+                                                    : "bg-green-100 text-green-600"
                                                     }`}
                                             >
-                                                {isOverBudget ? "-" : "+"}₹
+                                                {isOverBudget ? "-" : "+"}$
                                                 {Math.abs(entry.balance).toFixed(0)}
                                             </span>
                                         ) : (

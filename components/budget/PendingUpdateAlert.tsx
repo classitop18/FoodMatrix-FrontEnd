@@ -44,7 +44,7 @@ export function PendingUpdateAlert({
                                     month: "short",
                                 })}
                                 <span className="text-amber-400">
-                                    ₹{update.allocatedAmount}
+                                    ${update.allocatedAmount}
                                 </span>
                                 <ArrowRight className="w-3 h-3" />
                             </button>

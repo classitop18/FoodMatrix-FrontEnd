@@ -332,7 +332,7 @@ export default function EventRecipeSelectionPage() {
                 estimatedCost: r.costAnalysis?.totalCost,
                 costPerServing: r.costAnalysis?.costPerServing,
                 price: r.costAnalysis?.totalCost
-                    ? `₹${r.costAnalysis.totalCost}`
+                    ? `$${r.costAnalysis.totalCost}`
                     : undefined,
                 ingredients: r.ingredients,
                 instructions: r.instructions,
@@ -426,7 +426,7 @@ export default function EventRecipeSelectionPage() {
                     data: {
                         recipeId: recipe.id,
                         servings: event?.totalServings || recipe.servings || 4,
-                        notes: `AI Selected - Budget: ₹${mealBudgets.find(mb => mb.mealType === mr.mealType)?.budget || 0}`
+                        notes: `AI Selected - Budget: $${mealBudgets.find(mb => mb.mealType === mr.mealType)?.budget || 0}`
                     }
                 });
             }

@@ -115,7 +115,7 @@ export function BudgetSetupModal({
     const daysInMonth = getDaysInMonth(calendarMonth, calendarYear);
     const firstDay = getFirstDayOfMonth(calendarMonth, calendarYear);
     const monthName = new Date(calendarYear, calendarMonth).toLocaleString(
-        "en-IN",
+        "en-US",
         { month: "long", year: "numeric" },
     );
 
@@ -211,12 +211,12 @@ export function BudgetSetupModal({
                                         onClick={() => handleDateClick(day)}
                                         disabled={past}
                                         className={`h-9 rounded-lg text-xs font-semibold transition-all cursor-pointer ${selected
-                                                ? "bg-[#7661d3] text-white shadow-md shadow-[#7661d3]/30"
-                                                : todayDay
-                                                    ? "bg-[#F3F0FD] text-[#7661d3] border border-[#7661d3]/30"
-                                                    : past
-                                                        ? "text-gray-200 cursor-not-allowed"
-                                                        : "text-gray-600 hover:bg-gray-100"
+                                            ? "bg-[#7661d3] text-white shadow-md shadow-[#7661d3]/30"
+                                            : todayDay
+                                                ? "bg-[#F3F0FD] text-[#7661d3] border border-[#7661d3]/30"
+                                                : past
+                                                    ? "text-gray-200 cursor-not-allowed"
+                                                    : "text-gray-600 hover:bg-gray-100"
                                             }`}
                                     >
                                         {day}
@@ -232,7 +232,7 @@ export function BudgetSetupModal({
                             Selected Date
                         </span>
                         <span className="text-sm font-bold text-[#7661d3]">
-                            {selectedDate.toLocaleDateString("en-IN", {
+                            {selectedDate.toLocaleDateString("en-US", {
                                 weekday: "short",
                                 day: "numeric",
                                 month: "long",
@@ -248,7 +248,7 @@ export function BudgetSetupModal({
                         </label>
                         <div className="relative">
                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-bold text-[#7661d3]">
-                                ₹
+                                $
                             </span>
                             <Input
                                 type="number"

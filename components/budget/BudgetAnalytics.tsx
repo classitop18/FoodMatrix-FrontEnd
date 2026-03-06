@@ -40,7 +40,7 @@ export function BudgetAnalytics({
     }
 
     const chartData = analytics.dailyData.map((d) => ({
-        date: new Date(d.date).toLocaleDateString("en-IN", {
+        date: new Date(d.date).toLocaleDateString("en-US", {
             day: "numeric",
             month: "short",
         }),
@@ -68,8 +68,8 @@ export function BudgetAnalytics({
                         <button
                             onClick={() => onPeriodChange("weekly")}
                             className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${period === "weekly"
-                                    ? "bg-white text-[#7661d3] shadow-sm"
-                                    : "text-gray-500"
+                                ? "bg-white text-[#7661d3] shadow-sm"
+                                : "text-gray-500"
                                 }`}
                         >
                             Week
@@ -77,8 +77,8 @@ export function BudgetAnalytics({
                         <button
                             onClick={() => onPeriodChange("monthly")}
                             className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${period === "monthly"
-                                    ? "bg-white text-[#7661d3] shadow-sm"
-                                    : "text-gray-500"
+                                ? "bg-white text-[#7661d3] shadow-sm"
+                                : "text-gray-500"
                                 }`}
                         >
                             Month
@@ -90,8 +90,8 @@ export function BudgetAnalytics({
                         <button
                             onClick={() => setChartType("bar")}
                             className={`px-2 py-1.5 rounded-md text-xs transition-all cursor-pointer ${chartType === "bar"
-                                    ? "bg-white text-[#7661d3] shadow-sm"
-                                    : "text-gray-500"
+                                ? "bg-white text-[#7661d3] shadow-sm"
+                                : "text-gray-500"
                                 }`}
                         >
                             <BarChart3 className="w-3.5 h-3.5" />
@@ -99,8 +99,8 @@ export function BudgetAnalytics({
                         <button
                             onClick={() => setChartType("line")}
                             className={`px-2 py-1.5 rounded-md text-xs transition-all cursor-pointer ${chartType === "line"
-                                    ? "bg-white text-[#7661d3] shadow-sm"
-                                    : "text-gray-500"
+                                ? "bg-white text-[#7661d3] shadow-sm"
+                                : "text-gray-500"
                                 }`}
                         >
                             <TrendingUp className="w-3.5 h-3.5" />
@@ -116,7 +116,7 @@ export function BudgetAnalytics({
                         Total Budget
                     </p>
                     <p className="text-lg font-extrabold text-[#7661d3]">
-                        ₹{analytics.totalBudget.toFixed(0)}
+                        ${analytics.totalBudget.toFixed(0)}
                     </p>
                 </div>
                 <div className="bg-gradient-to-br from-[#e8f5e0] to-white rounded-xl p-3">
@@ -124,7 +124,7 @@ export function BudgetAnalytics({
                         Total Spent
                     </p>
                     <p className="text-lg font-extrabold text-[#7dab4f]">
-                        ₹{analytics.totalSpent.toFixed(0)}
+                        ${analytics.totalSpent.toFixed(0)}
                     </p>
                 </div>
                 <div
@@ -134,7 +134,7 @@ export function BudgetAnalytics({
                         {analytics.totalBalance >= 0 ? "Saved" : "Over Budget"}
                     </p>
                     <p className="text-lg font-extrabold text-white">
-                        ₹{Math.abs(analytics.totalBalance).toFixed(0)}
+                        ${Math.abs(analytics.totalBalance).toFixed(0)}
                     </p>
                 </div>
                 <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-3">
@@ -142,7 +142,7 @@ export function BudgetAnalytics({
                         Avg/Day
                     </p>
                     <p className="text-lg font-extrabold text-[#313131]">
-                        ₹{analytics.averageDailySpending.toFixed(0)}
+                        ${analytics.averageDailySpending.toFixed(0)}
                     </p>
                 </div>
             </div>
@@ -187,7 +187,7 @@ export function BudgetAnalytics({
                                 axisLine={false}
                                 tickLine={false}
                                 tick={{ fontSize: 11, fill: "#9ca3af" }}
-                                tickFormatter={(value) => `₹${value}`}
+                                tickFormatter={(value) => `$${value}`}
                             />
                             <Tooltip
                                 contentStyle={{
@@ -197,7 +197,7 @@ export function BudgetAnalytics({
                                     fontSize: "12px",
                                 }}
                                 formatter={(value: number, name: string) => [
-                                    `₹${value}`,
+                                    `$${value}`,
                                     name === "budget" ? "Budget" : "Spent",
                                 ]}
                             />
@@ -235,7 +235,7 @@ export function BudgetAnalytics({
                                 axisLine={false}
                                 tickLine={false}
                                 tick={{ fontSize: 11, fill: "#9ca3af" }}
-                                tickFormatter={(value) => `₹${value}`}
+                                tickFormatter={(value) => `$${value}`}
                             />
                             <Tooltip
                                 contentStyle={{
@@ -245,7 +245,7 @@ export function BudgetAnalytics({
                                     fontSize: "12px",
                                 }}
                                 formatter={(value: number, name: string) => [
-                                    `₹${value}`,
+                                    `$${value}`,
                                     name === "budget" ? "Budget" : "Spent",
                                 ]}
                             />

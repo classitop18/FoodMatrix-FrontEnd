@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, IndianRupee, CalendarDays, FileText } from "lucide-react";
+import { X, DollarSign, CalendarDays, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLogExpenseMutation } from "@/services/budget/budget.mutation";
@@ -60,8 +60,8 @@ export function ExpenseUpdateModal({
                     ? "⚠ Over Budget!"
                     : "✅ Expense Logged",
                 description: result.isOverBudget
-                    ? `You overspent by ₹${Math.abs(result.balance).toFixed(2)}`
-                    : `₹${result.balance.toFixed(2)} remaining for this day`,
+                    ? `You overspent by $${Math.abs(result.balance).toFixed(2)}`
+                    : `$${result.balance.toFixed(2)} remaining for this day`,
                 variant: result.isOverBudget ? "destructive" : "default",
             });
 
@@ -95,7 +95,7 @@ export function ExpenseUpdateModal({
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-                                <IndianRupee className="w-5 h-5 text-white" />
+                                <DollarSign className="w-5 h-5 text-white" />
                             </div>
                             <div>
                                 <h2 className="text-lg font-bold text-white">
@@ -139,7 +139,7 @@ export function ExpenseUpdateModal({
                                 Day's Budget
                             </span>
                             <span className="text-sm font-bold text-[#7661d3]">
-                                ₹{prefillBudget.toFixed(2)}
+                                ${prefillBudget.toFixed(2)}
                             </span>
                         </div>
                     )}
@@ -151,7 +151,7 @@ export function ExpenseUpdateModal({
                         </label>
                         <div className="relative">
                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-bold text-[#7dab4f]">
-                                ₹
+                                $
                             </span>
                             <Input
                                 type="number"
@@ -167,12 +167,12 @@ export function ExpenseUpdateModal({
                             <div className="mt-2">
                                 {parseFloat(amountSpent) > prefillBudget ? (
                                     <p className="text-xs font-bold text-red-500">
-                                        ⚠ Over budget by ₹
+                                        ⚠ Over budget by $
                                         {(parseFloat(amountSpent) - prefillBudget).toFixed(2)}
                                     </p>
                                 ) : (
                                     <p className="text-xs font-bold text-[#7dab4f]">
-                                        ✓ ₹
+                                        ✓ $
                                         {(prefillBudget - parseFloat(amountSpent)).toFixed(2)}{" "}
                                         will remain
                                     </p>

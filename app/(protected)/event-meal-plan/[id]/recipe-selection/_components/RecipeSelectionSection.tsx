@@ -155,7 +155,7 @@ const RecipeCard: React.FC<{
                             <DollarSign className="w-3.5 h-3.5" />
                             <span>
                                 {recipe.estimatedCost
-                                    ? `₹${recipe.estimatedCost}`
+                                    ? `$${recipe.estimatedCost}`
                                     : recipe.price || 'Budget Friendly'
                                 }
                             </span>
@@ -623,7 +623,7 @@ export const RecipeSelectionSection: React.FC<RecipeSelectionSectionProps> = ({
                                                             <div>
                                                                 <span className="text-xs text-gray-500 block">Budget</span>
                                                                 <span className="font-bold text-indigo-700">
-                                                                    ₹{mealBudget.budget}
+                                                                    ${mealBudget.budget}
                                                                 </span>
                                                             </div>
                                                         </div>

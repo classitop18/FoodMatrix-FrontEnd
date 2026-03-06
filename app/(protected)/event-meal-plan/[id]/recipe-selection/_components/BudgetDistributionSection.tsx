@@ -189,7 +189,7 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                             </Label>
                             <div className="relative max-w-md">
                                 <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-lg font-medium text-gray-500">
-                                    ₹
+                                    $
                                 </span>
                                 <Input
                                     id="total-budget"
@@ -251,7 +251,7 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                                                 <div className="flex-1">
                                                     <div className="relative">
                                                         <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-400">
-                                                            ₹
+                                                            $
                                                         </span>
                                                         <Input
                                                             type="number"
@@ -303,7 +303,7 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                                                             variant="secondary"
                                                             className="bg-white text-indigo-700 font-bold"
                                                         >
-                                                            ₹{mb.budget}
+                                                            ${mb.budget}
                                                         </Badge>
                                                         <span className="text-sm font-semibold text-indigo-600 tabular-nums">
                                                             {mb.percentage}%
@@ -343,7 +343,7 @@ export const BudgetDistributionSection: React.FC<BudgetDistributionSectionProps>
                                                     {config.label}
                                                 </p>
                                                 <p className="text-xl font-bold text-indigo-600 mt-1">
-                                                    ₹{mb.budget}
+                                                    ${mb.budget}
                                                 </p>
                                                 <p className="text-xs text-gray-500">
                                                     {mb.percentage}%
