@@ -98,20 +98,20 @@ export function ReceiptTagDialog({ receipt, open, onClose }: ReceiptTagDialogPro
 
     return (
         <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-md rounded-2xl">
+            <DialogContent className="sm:max-w-md bg-white rounded-2xl p-6 border border-gray-100 shadow-xl">
                 <DialogHeader className="pb-2">
                     <div className="flex items-center gap-3 mb-1">
-                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#F3F0FD] to-[#e8f5e0] flex items-center justify-center flex-shrink-0">
-                            <Store className="w-4 h-4 text-[#7661d3]" />
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F3F0FD] to-[#e8f5e0] flex items-center justify-center flex-shrink-0">
+                            <Store className="w-5 h-5 text-[#7661d3]" />
                         </div>
                         <div>
-                            <DialogTitle className="text-base font-bold text-[#313131]">
+                            <DialogTitle className="text-xl font-extrabold text-[#313131]">
                                 Annotate Receipt
                             </DialogTitle>
-                            <p className="text-xs text-gray-400 mt-0.5">{storeName}</p>
+                            <p className="text-xs text-gray-500 mt-0.5 font-medium">{storeName}</p>
                         </div>
                     </div>
-                    <p className="text-xs text-gray-500 leading-relaxed">
+                    <p className="text-sm text-gray-500 mt-2 font-medium">
                         Add a description and tags to help identify what this shopping was for.
                     </p>
                 </DialogHeader>
@@ -126,10 +126,10 @@ export function ReceiptTagDialog({ receipt, open, onClose }: ReceiptTagDialogPro
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             placeholder="e.g. Weekly groceries for family, Diwali party supplies, Birthday dinner..."
-                            className="resize-none h-20 text-sm border-gray-200 rounded-xl focus:border-[#7661d3] bg-gray-50/50"
+                            className="resize-none h-20 text-sm border-gray-200 rounded-xl focus-visible:ring-1 focus-visible:ring-[#7661d3] focus-visible:border-[#7661d3] bg-gray-50/50 shadow-none font-medium text-[#313131]"
                             maxLength={300}
                         />
-                        <p className="text-right text-[11px] text-gray-400">{description.length}/300</p>
+                        <p className="text-right text-[11px] text-gray-400 font-medium">{description.length}/300</p>
                     </div>
 
                     {/* Tags */}
@@ -138,19 +138,19 @@ export function ReceiptTagDialog({ receipt, open, onClose }: ReceiptTagDialogPro
                             Tags
                         </Label>
 
-                        <div className="min-h-[52px] px-3 py-2 border border-gray-200 rounded-xl bg-gray-50/50 focus-within:border-[#7661d3] focus-within:ring-1 focus-within:ring-[#7661d3]/20 transition-all flex flex-wrap gap-1.5 items-center">
+                        <div className="min-h-[52px] px-3 py-2 border border-gray-200 rounded-xl bg-gray-50/50 focus-within:border-[#7661d3] focus-within:ring-1 focus-within:ring-[#7661d3] transition-all flex flex-wrap gap-1.5 items-center">
                             {tags.map((tag, i) => (
                                 <span
                                     key={i}
-                                    className="inline-flex items-center gap-1 bg-[#F3F0FD] text-[#7661d3] text-[11px] font-semibold px-2 py-1 rounded-full"
+                                    className="inline-flex items-center gap-1 bg-[#F3F0FD] text-[#7661d3] text-xs font-bold px-2.5 py-1 rounded-full border border-[#7661d3]/10"
                                 >
-                                    <Tag className="w-2.5 h-2.5" />
+                                    <Tag className="w-3 h-3" />
                                     {tag}
                                     <button
                                         onClick={() => removeTag(i)}
-                                        className="ml-0.5 hover:text-red-500 transition-colors"
+                                        className="ml-0.5 hover:text-red-500 hover:bg-red-50 rounded-full p-0.5 transition-colors"
                                     >
-                                        <X className="w-2.5 h-2.5" />
+                                        <X className="w-3 h-3" />
                                     </button>
                                 </span>
                             ))}
@@ -160,32 +160,32 @@ export function ReceiptTagDialog({ receipt, open, onClose }: ReceiptTagDialogPro
                                 onKeyDown={handleTagKeyDown}
                                 onBlur={addTag}
                                 placeholder={tags.length === 0 ? "Type a tag and press Enter..." : "Add more..."}
-                                className="flex-1 min-w-[120px] bg-transparent text-xs text-gray-700 outline-none placeholder:text-gray-400"
+                                className="flex-1 min-w-[120px] bg-transparent text-sm font-medium text-[#313131] outline-none placeholder:text-gray-400"
                             />
                         </div>
-                        <p className="text-[11px] text-gray-400">
-                            Press <kbd className="bg-gray-100 px-1 rounded text-[10px]">Enter</kbd> or <kbd className="bg-gray-100 px-1 rounded text-[10px]">,</kbd> to add a tag
+                        <p className="text-[11px] text-gray-400 font-medium">
+                            Press <kbd className="bg-gray-100 px-1 py-0.5 border border-gray-200 shadow-sm rounded text-[10px] font-mono text-gray-600">Enter</kbd> or <kbd className="bg-gray-100 px-1 py-0.5 border border-gray-200 shadow-sm rounded text-[10px] font-mono text-gray-600">,</kbd> to add a tag
                         </p>
                     </div>
                 </div>
 
-                <DialogFooter className="gap-2 pt-2">
+                <DialogFooter className="mt-6 gap-3 sm:gap-2">
                     <Button
                         variant="ghost"
                         onClick={onClose}
-                        className="rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                        className="rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 font-bold px-6 py-2.5 h-auto m-0"
                         disabled={updateMutation.isPending}
                     >
                         Cancel
                     </Button>
                     <Button
                         onClick={handleSave}
-                        className="rounded-xl bg-gradient-to-r from-[#7661d3] to-[#3d326d] hover:from-[#6450c2] hover:to-[#2c2352] text-white shadow-md"
+                        className="rounded-xl bg-gradient-to-r from-[#7661d3] to-[#5a468a] hover:from-[#6450c2] hover:to-[#4a3878] text-white font-bold border-0 px-6 py-2.5 h-auto m-0 shadow-sm shadow-[#7661d3]/20 flex items-center"
                         disabled={updateMutation.isPending}
                     >
                         {updateMutation.isPending ? (
                             <>
-                                <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                                 Saving...
                             </>
                         ) : (

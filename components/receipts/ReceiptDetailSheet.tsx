@@ -674,21 +674,28 @@ export function ReceiptDetailSheet({ receipt, open, onClose }: ReceiptDetailShee
             )}
             {/* Delete Confirmation Alert */}
             <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-                <AlertDialogContent className="rounded-2xl max-w-[400px]">
+                <AlertDialogContent className="bg-white rounded-2xl max-w-[400px] p-6 border border-gray-100 shadow-xl">
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Receipt?</AlertDialogTitle>
-                        <AlertDialogDescription>
+                        <AlertDialogTitle className="text-xl font-extrabold text-[#313131] flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0">
+                                <Trash2 className="w-5 h-5 text-red-500" />
+                            </div>
+                            Delete Receipt?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-sm text-gray-500 mt-2 font-medium">
                             This will permanently delete this receipt and all its extracted data. This action cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
-                    <AlertDialogFooter className="mt-2">
-                        <AlertDialogCancel className="rounded-xl border-gray-200">Cancel</AlertDialogCancel>
+                    <AlertDialogFooter className="mt-6 gap-3 sm:gap-2">
+                        <AlertDialogCancel className="rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 font-bold px-6 py-2.5 h-auto m-0">
+                            Cancel
+                        </AlertDialogCancel>
                         <AlertDialogAction
                             onClick={(e) => { e.preventDefault(); handleDelete(); }}
                             disabled={deleteMutation.isPending}
-                            className="bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold border-0"
+                            className="bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold border-0 px-6 py-2.5 h-auto m-0 shadow-sm shadow-red-500/20 flex items-center"
                         >
-                            {deleteMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Trash2 className="w-3.5 h-3.5 mr-2" />}
+                            {deleteMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                             Delete Receipt
                         </AlertDialogAction>
                     </AlertDialogFooter>
