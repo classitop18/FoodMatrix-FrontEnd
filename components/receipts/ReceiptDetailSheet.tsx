@@ -8,6 +8,7 @@ import {
     SheetHeader,
     SheetTitle,
 } from "@/components/ui/sheet";
+
 import {
     Table,
     TableBody,
@@ -135,6 +136,13 @@ export function ReceiptDetailSheet({ receipt, open, onClose }: ReceiptDetailShee
     const tags = Array.isArray(receipt.tags) ? receipt.tags : [];
     const rawItems = Array.isArray(receipt.items) ? receipt.items : [];
     const aiItems: AuditedReceiptItem[] = Array.isArray(receipt.aiAuditedItems) ? receipt.aiAuditedItems : [];
+
+    // items specifically suited for the pantry
+    const foodItems = aiItems.filter(item =>
+        !["household", "other"].includes(item.category)
+    );
+    const hasFoodItems = foodItems.length > 0;
+
     const hasAIItems = aiItems.length > 0;
     const displayItems = hasAIItems ? aiItems : [];
     const groupedItems = groupItemsByCategory(displayItems);
@@ -439,7 +447,7 @@ export function ReceiptDetailSheet({ receipt, open, onClose }: ReceiptDetailShee
                                         </div>
 
                                         {/* Add to Pantry Button */}
-                                        {!receipt.addedToPantry && (
+                                        {!receipt.addedToPantry && hasFoodItems && (
                                             <Button
                                                 onClick={() => setPantryModalOpen(true)}
                                                 className="w-full bg-gradient-to-r from-[#7dab4f] to-[#5a8c3e] hover:from-[#6a9a40] hover:to-[#4a7a2e] text-white font-extrabold shadow-md rounded-xl gap-2 py-6"
@@ -653,12 +661,12 @@ export function ReceiptDetailSheet({ receipt, open, onClose }: ReceiptDetailShee
             </Sheet>
 
             {/* Add to Pantry Modal */}
-            {receipt && hasAIItems && (
+            {receipt && hasFoodItems && (
                 <AddToPantryModal
                     open={pantryModalOpen}
                     onClose={() => setPantryModalOpen(false)}
                     receiptId={receipt.id}
-                    items={aiItems}
+                    items={foodItems}
                     onSuccess={() => {
                         setPantryModalOpen(false);
                     }}

@@ -241,7 +241,9 @@ export default function ReceiptsPage() {
                     open={pantryModalOpen}
                     onClose={() => setPantryModalOpen(false)}
                     receiptId={pantryReceipt.id}
-                    items={Array.isArray(pantryReceipt.aiAuditedItems) ? pantryReceipt.aiAuditedItems : []}
+                    items={(Array.isArray(pantryReceipt.aiAuditedItems) ? pantryReceipt.aiAuditedItems : []).filter(
+                        (item) => !["household", "other"].includes(item.category)
+                    )}
                     onSuccess={() => setPantryModalOpen(false)}
                 />
             )}

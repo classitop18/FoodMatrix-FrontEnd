@@ -54,6 +54,7 @@ export function ReceiptCard({ receipt, onClick, onTag, onAddToPantry }: ReceiptC
     const rawItems = Array.isArray(receipt.items) ? receipt.items : [];
     const aiItems: AuditedReceiptItem[] = Array.isArray(receipt.aiAuditedItems) ? receipt.aiAuditedItems : [];
     const hasAIItems = aiItems.length > 0;
+    const hasFoodItems = aiItems.some(item => !["household", "other"].includes(item.category));
     const totalItems = hasAIItems ? aiItems.length : rawItems.length;
 
     const storeName =
@@ -234,8 +235,8 @@ export function ReceiptCard({ receipt, onClick, onTag, onAddToPantry }: ReceiptC
                         {receipt.description || tags.length > 0 ? "Edit" : "Add tags"}
                     </button>
 
-                    {/* Add to Pantry shortcut — only if AI items exist and not already added */}
-                    {hasAIItems && !receipt.addedToPantry && onAddToPantry && (
+                    {/* Add to Pantry shortcut — only if food AI items exist and not already added */}
+                    {hasFoodItems && !receipt.addedToPantry && onAddToPantry && (
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
