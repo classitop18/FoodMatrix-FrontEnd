@@ -26,6 +26,7 @@ import {
   MenuIcon,
   X,
   ScanLine,
+  Wallet,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -70,6 +71,7 @@ const navigationItems = [
       { path: "/event-meal-plan/list", icon: BookOpen, label: "Event Meal Plans" },
       { path: "/nearby-shops", icon: Store, label: "Nearby Shops" },
       { path: "/receipts", icon: ScanLine, label: "Receipts" },
+      { path: "/budget", icon: Wallet, label: "Budget" },
     ],
   },
   {

@@ -104,7 +104,7 @@ export function ReceiptUploadButton({ onSuccess, variant = "default" }: ReceiptU
         <>
             <Button
                 onClick={() => setOpen(true)}
-                className="bg-gradient-to-r from-[#7dab4f] to-[#5a8c3e] hover:from-[#6a9a40] hover:to-[#4a7a2e] text-white font-bold shadow-md rounded-xl gap-2"
+                className="bg-gradient-to-r from-[#7661d3] to-[#5a468a] hover:from-[#6450c2] hover:to-[#4a3878] text-white font-extrabold shadow-md rounded-xl gap-2 px-5"
             >
                 <ScanLine className="w-4 h-4" />
                 {variant !== "compact" && "Scan Receipt"}
@@ -113,10 +113,10 @@ export function ReceiptUploadButton({ onSuccess, variant = "default" }: ReceiptU
             <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); else setOpen(true); }}>
                 <DialogContent className="sm:max-w-[480px] rounded-2xl p-0 overflow-hidden gap-0">
                     {/* Header */}
-                    <DialogHeader className="px-6 pt-5 pb-4 bg-gradient-to-r from-[#3d326d] to-[#7661d3]">
+                    <DialogHeader className="px-6 pt-5 pb-4 bg-gradient-to-br from-[#3d326d] via-[#5a468a] to-[#7661d3]">
                         <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
-                                <ScanLine className="w-4 h-4 text-white" />
+                            <div className="w-10 h-10 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center flex-shrink-0">
+                                <ScanLine className="w-5 h-5 text-white" />
                             </div>
                             <div>
                                 <DialogTitle className="text-white font-extrabold text-base leading-tight">
@@ -150,12 +150,15 @@ export function ReceiptUploadButton({ onSuccess, variant = "default" }: ReceiptU
                     <div className="px-6 py-5 bg-white">
                         {/* ── Step 1: File ── */}
                         {step === "file" && (
-                            <label className="cursor-pointer w-full flex flex-col items-center border-2 border-dashed border-gray-200 hover:border-[#7661d3]/50 rounded-xl p-8 bg-gray-50/50 hover:bg-[#F3F0FD]/20 transition-all group">
-                                <div className="w-16 h-16 bg-white rounded-full shadow-sm border border-gray-100 flex items-center justify-center mb-4 text-[#7661d3] group-hover:scale-110 transition-transform group-hover:shadow-md">
+                            <label className="cursor-pointer w-full flex flex-col items-center border-[1.5px] border-dashed border-[#7661d3]/30 hover:border-[#7661d3] rounded-2xl p-10 bg-[#f8f7fc] hover:bg-[#F3F0FD]/80 transition-all group">
+                                <div className="w-16 h-16 bg-white rounded-full shadow-sm border border-[#7661d3]/15 flex items-center justify-center mb-4 text-[#7661d3] group-hover:scale-110 transition-transform group-hover:shadow-md">
                                     <Upload className="w-7 h-7" />
                                 </div>
-                                <p className="text-sm font-extrabold text-[#313131]">Click to upload receipt</p>
-                                <p className="text-xs text-gray-400 mt-1">JPG, PNG, PDF · up to 10MB</p>
+                                <p className="text-sm font-extrabold text-[#313131]">Click to select a document</p>
+                                <p className="text-[11px] text-gray-500 mt-1 font-medium">JPEG, PNG, or PDF format</p>
+                                <div className="mt-4 px-3 py-1 bg-white border border-[#7661d3]/20 text-[#7661d3] text-[10px] font-bold rounded-full">
+                                    Up to 10MB
+                                </div>
                                 <input type="file" className="hidden" accept="image/*,application/pdf" onChange={handleFileChange} />
                             </label>
                         )}
@@ -249,7 +252,7 @@ export function ReceiptUploadButton({ onSuccess, variant = "default" }: ReceiptU
                                 />
 
                                 <div className="relative z-20 flex flex-col items-center justify-center">
-                                    <div className="bg-white/95 backdrop-blur-md px-5 py-3 rounded-full shadow-lg flex items-center gap-3 border border-white/50">
+                                    <div className="bg-white/95 backdrop-blur-md px-5 py-3 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center gap-3 border border-white/50">
                                         <Loader2 className="w-5 h-5 text-[#7dab4f] animate-spin" />
                                         <span className="text-sm font-extrabold text-[#313131] tracking-tight">Extracting Data...</span>
                                     </div>

@@ -156,6 +156,19 @@ export const API_ENDPOINTS = {
     SEND: "/notifications/send",
   },
 
+  // Budget Tracking
+  BUDGET: {
+    SET_DAILY: (accountId: string) => `/budget/${accountId}/set-daily`,
+    UPDATE_CONFIG: (accountId: string) => `/budget/${accountId}/config`,
+    LOG_EXPENSE: (accountId: string) => `/budget/${accountId}/expense`,
+    TODAY: (accountId: string) => `/budget/${accountId}/today`,
+    WEEKLY: (accountId: string) => `/budget/${accountId}/weekly`,
+    HISTORY: (accountId: string) => `/budget/${accountId}/history`,
+    ANALYTICS: (accountId: string) => `/budget/${accountId}/analytics`,
+    PENDING: (accountId: string) => `/budget/${accountId}/pending`,
+    VERSIONS: (accountId: string) => `/budget/${accountId}/versions`,
+  },
+
   // Places
   PLACES: {
     NEARBY_GROCERY_SHOPS: "/places/nearby-grocery-shops",

@@ -2,20 +2,21 @@
 
 import { useState, useCallback } from "react";
 import { useReceiptsQuery } from "@/services/receipt/receipt.query";
-import { ReceiptListParams, Receipt } from "@/services/receipt/types/receipt.types";
+import { ReceiptListParams, Receipt, AuditedReceiptItem } from "@/services/receipt/types/receipt.types";
 import { ReceiptCard } from "@/components/receipts/ReceiptCard";
 import { ReceiptFilters } from "@/components/receipts/ReceiptFilters";
 import { ReceiptDetailSheet } from "@/components/receipts/ReceiptDetailSheet";
 import { ReceiptTagDialog } from "@/components/receipts/ReceiptTagDialog";
 import { ReceiptPagination } from "@/components/receipts/ReceiptPagination";
 import { ReceiptUploadButton } from "@/components/receipts/ReceiptUploadButton";
+import { AddToPantryModal } from "@/components/receipts/AddToPantryModal";
 import {
     ScanLine,
     ReceiptText,
     Loader2,
     FolderOpen,
     TrendingUp,
-    IndianRupee,
+    DollarSign,
     CalendarDays,
     FileStack,
 } from "lucide-react";
@@ -55,8 +56,10 @@ export default function ReceiptsPage() {
     const [params, setParams] = useState<ReceiptListParams>(DEFAULT_PARAMS);
     const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
     const [tagReceipt, setTagReceipt] = useState<Receipt | null>(null);
+    const [pantryReceipt, setPantryReceipt] = useState<Receipt | null>(null);
     const [detailOpen, setDetailOpen] = useState(false);
     const [tagOpen, setTagOpen] = useState(false);
+    const [pantryModalOpen, setPantryModalOpen] = useState(false);
 
     const { data, isLoading, isError, isFetching } = useReceiptsQuery(params);
 
@@ -72,6 +75,11 @@ export default function ReceiptsPage() {
     const handleOpenTag = (receipt: Receipt) => {
         setTagReceipt(receipt);
         setTagOpen(true);
+    };
+
+    const handleAddToPantry = (receipt: Receipt) => {
+        setPantryReceipt(receipt);
+        setPantryModalOpen(true);
     };
 
     const receipts = data?.data ?? [];
@@ -122,9 +130,9 @@ export default function ReceiptsPage() {
                         gradient="bg-[#F3F0FD]"
                     />
                     <StatCard
-                        icon={<IndianRupee className="w-4 h-4 text-[#7dab4f]" />}
+                        icon={<DollarSign className="w-4 h-4 text-[#7dab4f]" />}
                         label="Amount (this page)"
-                        value={totalAmount > 0 ? `₹${totalAmount.toFixed(0)}` : "—"}
+                        value={totalAmount > 0 ? `$${totalAmount.toFixed(2)}` : "—"}
                         gradient="bg-[#e8f5e0]"
                     />
                     <StatCard
@@ -196,6 +204,7 @@ export default function ReceiptsPage() {
                                     receipt={receipt}
                                     onClick={handleOpenDetail}
                                     onTag={handleOpenTag}
+                                    onAddToPantry={handleAddToPantry}
                                 />
                             ))}
                         </div>
@@ -225,6 +234,17 @@ export default function ReceiptsPage() {
                 open={tagOpen}
                 onClose={() => setTagOpen(false)}
             />
+
+            {/* Add to Pantry Modal */}
+            {pantryReceipt && (
+                <AddToPantryModal
+                    open={pantryModalOpen}
+                    onClose={() => setPantryModalOpen(false)}
+                    receiptId={pantryReceipt.id}
+                    items={Array.isArray(pantryReceipt.aiAuditedItems) ? pantryReceipt.aiAuditedItems : []}
+                    onSuccess={() => setPantryModalOpen(false)}
+                />
+            )}
         </div>
     );
 }

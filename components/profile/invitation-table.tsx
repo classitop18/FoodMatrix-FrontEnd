@@ -27,7 +27,7 @@ interface InvitationTableProps {
   onRemove: (id: string) => void;
   onEdit: (id: string) => void;
 }
-
+0
 const InvitationTable: React.FC<InvitationTableProps> = ({
   data,
   onRemove,

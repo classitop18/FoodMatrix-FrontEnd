@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ReceiptService } from "./receipt.service";
-import type { UpdateReceiptPayload } from "./types/receipt.types";
+import type { UpdateReceiptPayload, AddToPantryPayload } from "./types/receipt.types";
 
 const receiptService = new ReceiptService();
 
@@ -23,6 +23,29 @@ export const useUpdateReceiptMutation = () => {
         onSuccess: (_, { id }) => {
             queryClient.invalidateQueries({ queryKey: ["receipts"] });
             queryClient.invalidateQueries({ queryKey: ["receipts", id] });
+        },
+    });
+};
+
+export const useDeleteReceiptMutation = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (id: string) => receiptService.deleteReceipt(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["receipts"] });
+        },
+    });
+};
+
+export const useAddToPantryMutation = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ receiptId, payload }: { receiptId: string; payload: AddToPantryPayload }) =>
+            receiptService.addReceiptItemsToPantry(receiptId, payload),
+        onSuccess: (_, { receiptId }) => {
+            queryClient.invalidateQueries({ queryKey: ["receipts"] });
+            queryClient.invalidateQueries({ queryKey: ["receipts", receiptId] });
+            queryClient.invalidateQueries({ queryKey: ["pantry"] });
         },
     });
 };

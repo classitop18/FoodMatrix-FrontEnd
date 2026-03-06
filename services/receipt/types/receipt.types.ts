@@ -1,3 +1,24 @@
+export interface AuditedReceiptItem {
+    name: string;
+    quantity: number;
+    unit: string;
+    price: number;
+    category:
+    | "food"
+    | "snacks"
+    | "beverages"
+    | "dairy"
+    | "produce"
+    | "meat"
+    | "bakery"
+    | "spices"
+    | "frozen"
+    | "household"
+    | "other";
+    brand?: string;
+    confidence: number;
+}
+
 export interface ReceiptItem {
     name: string;
     quantity?: number;
@@ -15,6 +36,10 @@ export interface Receipt {
     taxAmount?: string | null;
     purchaseDate?: string | null;
     items: ReceiptItem[];
+    aiAuditedItems: AuditedReceiptItem[];
+    aiProcessingStatus?: "pending" | "processing" | "completed" | "failed" | null;
+    currency?: string | null;
+    addedToPantry: boolean;
     rawText?: string | null;
     imageUrl?: string | null;
     description?: string | null;
@@ -57,4 +82,24 @@ export interface UpdateReceiptPayload {
     tags?: string[];
     eventId?: string | null;
     shoppingListId?: string | null;
+}
+
+export interface PantryItemFromReceipt {
+    name: string;
+    quantity: number;
+    unit: string;
+    price?: number;
+    category: string;
+    location: string;
+    expirationDate?: string | null;
+}
+
+export interface AddToPantryPayload {
+    items: PantryItemFromReceipt[];
+}
+
+export interface ExpirySuggestion {
+    name: string;
+    suggestedExpiryDays: number;
+    storageLocation: string;
 }

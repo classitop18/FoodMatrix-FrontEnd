@@ -123,7 +123,6 @@ export function ReceiptPagination({
                         </Button>
                     )
                 )}
-
                 <Button
                     variant="ghost"
                     size="icon"

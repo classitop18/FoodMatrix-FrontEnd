@@ -1,26 +1,45 @@
 "use client";
 
-import { Receipt } from "@/services/receipt/types/receipt.types";
+import { useState } from "react";
+import { Receipt, AuditedReceiptItem } from "@/services/receipt/types/receipt.types";
 import { format } from "date-fns";
 import {
     Store,
     FileText,
     ImageIcon,
     Calendar,
-    IndianRupee,
+    DollarSign,
     Tag,
     Pencil,
     Eye,
     ShoppingBag,
     User,
+    PackagePlus,
+    CheckCircle2,
+    Sparkles,
+    Trash2,
+    Loader2
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useDeleteReceiptMutation } from "@/services/receipt/receipt.mutation";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 interface ReceiptCardProps {
     receipt: Receipt;
     onClick: (receipt: Receipt) => void;
     onTag: (receipt: Receipt) => void;
+    onAddToPantry?: (receipt: Receipt) => void;
 }
 
 function getFileType(imageUrl?: string | null): "pdf" | "image" | "none" {
@@ -29,10 +48,13 @@ function getFileType(imageUrl?: string | null): "pdf" | "image" | "none" {
     return "image";
 }
 
-export function ReceiptCard({ receipt, onClick, onTag }: ReceiptCardProps) {
+export function ReceiptCard({ receipt, onClick, onTag, onAddToPantry }: ReceiptCardProps) {
     const fileType = getFileType(receipt.imageUrl);
     const tags = Array.isArray(receipt.tags) ? receipt.tags : [];
-    const items = Array.isArray(receipt.items) ? receipt.items : [];
+    const rawItems = Array.isArray(receipt.items) ? receipt.items : [];
+    const aiItems: AuditedReceiptItem[] = Array.isArray(receipt.aiAuditedItems) ? receipt.aiAuditedItems : [];
+    const hasAIItems = aiItems.length > 0;
+    const totalItems = hasAIItems ? aiItems.length : rawItems.length;
 
     const storeName =
         receipt.storeName && receipt.storeName !== "Unknown Store"
@@ -46,6 +68,26 @@ export function ReceiptCard({ receipt, onClick, onTag }: ReceiptCardProps) {
             : "—";
 
     const isPdf = fileType === "pdf";
+
+    // Count categories for AI items
+    const categoryCount = hasAIItems
+        ? new Set(aiItems.map((i) => i.category)).size
+        : 0;
+
+    const [deleteOpen, setDeleteOpen] = useState(false);
+    const deleteMutation = useDeleteReceiptMutation();
+
+    const handleDelete = () => {
+        deleteMutation.mutate(receipt.id, {
+            onSuccess: () => {
+                toast.success("Receipt deleted successfully");
+                setDeleteOpen(false);
+            },
+            onError: (err: any) => {
+                toast.error(err?.response?.data?.message || "Failed to delete receipt");
+            }
+        });
+    };
 
     return (
         <div
@@ -83,16 +125,24 @@ export function ReceiptCard({ receipt, onClick, onTag }: ReceiptCardProps) {
                         </div>
                     </div>
 
-                    <Badge
-                        className={`text-[10px] font-bold px-2 py-0.5 flex-shrink-0 border-0 ${isPdf
-                            ? "bg-[#F3F0FD] text-[#7661d3] hover:bg-[#F3F0FD]"
-                            : fileType === "image"
-                                ? "bg-[#e8f5e0] text-[#7dab4f] hover:bg-[#e8f5e0]"
-                                : "bg-gray-100 text-gray-500"
-                            }`}
-                    >
-                        {isPdf ? "PDF" : fileType === "image" ? "IMAGE" : "TEXT"}
-                    </Badge>
+                    <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                        <Badge
+                            className={`text-[10px] font-bold px-2 py-0.5 border-0 ${isPdf
+                                ? "bg-[#F3F0FD] text-[#7661d3] hover:bg-[#F3F0FD]"
+                                : fileType === "image"
+                                    ? "bg-[#e8f5e0] text-[#7dab4f] hover:bg-[#e8f5e0]"
+                                    : "bg-gray-100 text-gray-500"
+                                }`}
+                        >
+                            {isPdf ? "PDF" : fileType === "image" ? "IMAGE" : "TEXT"}
+                        </Badge>
+                        {hasAIItems && (
+                            <Badge className="text-[9px] font-bold px-1.5 py-0.5 border-0 bg-[#e8f5e0] text-[#7dab4f] hover:bg-[#e8f5e0] gap-0.5">
+                                <Sparkles className="w-2.5 h-2.5" />
+                                AI
+                            </Badge>
+                        )}
+                    </div>
                 </div>
 
                 {/* Row 2: Amount (prominent) */}
@@ -100,7 +150,7 @@ export function ReceiptCard({ receipt, onClick, onTag }: ReceiptCardProps) {
                     <div className="bg-gradient-to-r from-[#f8f7fc] to-[#f0fdf4] rounded-xl px-3 py-2.5 flex items-center justify-between">
                         <span className="text-xs text-gray-500 font-semibold">Total Amount</span>
                         <div className="flex items-center gap-0.5 font-extrabold text-[#313131] text-base">
-                            <IndianRupee className="w-3.5 h-3.5 text-[#7dab4f]" />
+                            <DollarSign className="w-3.5 h-3.5 text-[#7dab4f]" />
                             {Number(receipt.totalAmount).toFixed(2)}
                         </div>
                     </div>
@@ -112,11 +162,18 @@ export function ReceiptCard({ receipt, onClick, onTag }: ReceiptCardProps) {
                         <Calendar className="w-3.5 h-3.5 text-gray-400" />
                         <span className="font-medium">{dateStr}</span>
                     </div>
-                    {items.length > 0 && (
-                        <span className="bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full text-[10px] font-bold">
-                            {items.length} items
-                        </span>
-                    )}
+                    <div className="flex items-center gap-2">
+                        {totalItems > 0 && (
+                            <span className="bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full text-[10px] font-bold">
+                                {totalItems} items
+                            </span>
+                        )}
+                        {categoryCount > 0 && (
+                            <span className="bg-[#F3F0FD] text-[#7661d3] px-2 py-0.5 rounded-full text-[10px] font-bold">
+                                {categoryCount} categories
+                            </span>
+                        )}
+                    </div>
                 </div>
 
                 {/* Row 4: Tags (if any) */}
@@ -139,6 +196,14 @@ export function ReceiptCard({ receipt, onClick, onTag }: ReceiptCardProps) {
                     </div>
                 )}
 
+                {/* Pantry Status */}
+                {receipt.addedToPantry && (
+                    <div className="flex items-center gap-1.5 bg-[#e8f5e0] border border-[#7dab4f]/20 rounded-lg px-2.5 py-1.5">
+                        <CheckCircle2 className="w-3 h-3 text-[#7dab4f]" />
+                        <span className="text-[10px] font-bold text-[#5a8c3e]">Added to Pantry</span>
+                    </div>
+                )}
+
                 {/* Submitter Info */}
                 {receipt.submittedBy && (
                     <div className="flex items-center gap-2 mt-auto pt-2 border-t border-gray-50">
@@ -157,16 +222,42 @@ export function ReceiptCard({ receipt, onClick, onTag }: ReceiptCardProps) {
 
             {/* Card Footer / Actions */}
             <div className="px-4 pb-3 pt-0 flex items-center justify-between border-t border-gray-50 mt-auto">
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onTag(receipt);
-                    }}
-                    className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-[#7661d3] font-semibold transition-colors py-1.5 px-2 rounded-lg hover:bg-[#F3F0FD]"
-                >
-                    <Pencil className="w-3 h-3" />
-                    {receipt.description || tags.length > 0 ? "Edit" : "Add tags"}
-                </button>
+                <div className="flex items-center gap-1">
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onTag(receipt);
+                        }}
+                        className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-[#7661d3] font-semibold transition-colors py-1.5 px-2 rounded-lg hover:bg-[#F3F0FD]"
+                    >
+                        <Pencil className="w-3 h-3" />
+                        {receipt.description || tags.length > 0 ? "Edit" : "Add tags"}
+                    </button>
+
+                    {/* Add to Pantry shortcut — only if AI items exist and not already added */}
+                    {hasAIItems && !receipt.addedToPantry && onAddToPantry && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onAddToPantry(receipt);
+                            }}
+                            className="flex items-center gap-1.5 text-xs text-[#7dab4f] hover:text-[#5a8c3e] font-semibold transition-colors py-1.5 px-2 rounded-lg hover:bg-[#e8f5e0]"
+                        >
+                            <PackagePlus className="w-3 h-3" />
+                            <span className="hidden sm:inline">Pantry</span>
+                        </button>
+                    )}
+
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteOpen(true);
+                        }}
+                        className="flex items-center gap-1.5 text-xs text-red-400 hover:text-red-600 font-semibold transition-colors py-1.5 px-2 rounded-lg hover:bg-red-50 ml-1"
+                    >
+                        <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                </div>
 
                 <button
                     onClick={(e) => {
@@ -175,10 +266,48 @@ export function ReceiptCard({ receipt, onClick, onTag }: ReceiptCardProps) {
                     }}
                     className="flex items-center gap-1.5 text-xs text-white bg-gradient-to-r from-[#7661d3] to-[#5a468a] hover:from-[#6450c2] hover:to-[#4a3878] font-bold transition-all py-1.5 px-3 rounded-lg shadow-sm group-hover:shadow-[#7661d3]/30 group-hover:shadow-md"
                 >
-                    <Eye className="w-3 h-3" />
+                    <Eye className="w-3.5 h-3.5" />
                     View
                 </button>
             </div>
+
+            {/* Delete Confirmation Alert */}
+            <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+                <AlertDialogContent
+                    className="rounded-2xl max-w-[400px]"
+                    onClick={(e) => e.stopPropagation()} // Prevent click from bubbling to card
+                >
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Receipt?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will permanently delete "{storeName}" receipt and all its extracted data. This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="mt-2">
+                        <AlertDialogCancel
+                            className="rounded-xl border-gray-200"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setDeleteOpen(false);
+                            }}
+                        >
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleDelete();
+                            }}
+                            disabled={deleteMutation.isPending}
+                            className="bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold border-0"
+                        >
+                            {deleteMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Trash2 className="w-3.5 h-3.5 mr-2" />}
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

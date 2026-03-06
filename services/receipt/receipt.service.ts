@@ -1,4 +1,4 @@
-import { Receipt, ReceiptListParams, PaginatedReceiptsResponse, UpdateReceiptPayload } from "./types/receipt.types";
+import { Receipt, ReceiptListParams, PaginatedReceiptsResponse, UpdateReceiptPayload, AddToPantryPayload, ExpirySuggestion } from "./types/receipt.types";
 import { apiClient } from "@/lib/api";
 
 const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000/api/v1/";
@@ -39,6 +39,24 @@ export class ReceiptService {
 
     async updateReceipt(id: string, data: UpdateReceiptPayload): Promise<Receipt> {
         const response = await apiClient.patch(`${API_URL}/receipts/${id}`, data);
+        return response.data.data;
+    }
+
+    async deleteReceipt(id: string): Promise<void> {
+        await apiClient.delete(`${API_URL}/receipts/${id}`);
+    }
+
+    async addReceiptItemsToPantry(receiptId: string, payload: AddToPantryPayload): Promise<{
+        addedCount: number;
+        totalItems: number;
+        errors?: string[];
+    }> {
+        const response = await apiClient.post(`${API_URL}/receipts/${receiptId}/add-to-pantry`, payload);
+        return response.data.data;
+    }
+
+    async getExpirySuggestions(receiptId: string): Promise<ExpirySuggestion[]> {
+        const response = await apiClient.get(`${API_URL}/receipts/${receiptId}/expiry-suggestions`);
         return response.data.data;
     }
 }
