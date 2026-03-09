@@ -118,3 +118,51 @@ export const useMarkAllAsRead = () => {
         },
     });
 };
+
+export const useClearAllNotifications = () => {
+    return useMutation({
+        mutationFn: () => notificationService.clearAllNotifications(),
+        onMutate: async () => {
+            await queryClient.cancelQueries({ queryKey: ["notifications"] });
+
+            const previousHistory = queryClient.getQueryData(["notifications", "history"]);
+            const previousUnread = queryClient.getQueryData(["notifications", "unreadCount"]);
+
+            queryClient.setQueriesData(
+                { queryKey: ["notifications", "history"] },
+                (old: any) => {
+                    if (!old?.data) return old;
+                    return {
+                        ...old,
+                        data: [],
+                        unreadCount: 0,
+                    };
+                }
+            );
+
+            queryClient.setQueryData(
+                ["notifications", "unreadCount"],
+                (old: any) => ({ ...old, unreadCount: 0 })
+            );
+
+            return { previousHistory, previousUnread };
+        },
+        onError: (_error, _vars, context) => {
+            if (context?.previousHistory) {
+                queryClient.setQueriesData(
+                    { queryKey: ["notifications", "history"] },
+                    context.previousHistory
+                );
+            }
+            if (context?.previousUnread) {
+                queryClient.setQueryData(
+                    ["notifications", "unreadCount"],
+                    context.previousUnread
+                );
+            }
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["notifications"] });
+        },
+    });
+};

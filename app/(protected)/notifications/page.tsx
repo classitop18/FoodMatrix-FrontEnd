@@ -3,6 +3,7 @@
 import React, { useState, useCallback } from "react";
 import { useNotificationContext, AppNotification } from "../../../providers/NotificationContext";
 import { useFCM } from "../../../hooks/useFCM";
+import ConfirmationModal from "@/components/common/ConfirmationModal";
 import {
   Bell,
   Check,
@@ -13,6 +14,7 @@ import {
   AlertTriangle,
   Loader2,
   ChevronDown,
+  Trash2,
 } from "lucide-react";
 
 function getRelativeTime(dateStr: string): string {
@@ -72,12 +74,19 @@ export default function NotificationPage() {
     unreadCount,
     markAsRead,
     markAllAsRead,
+    clearAllNotifications,
     refreshNotifications,
     isLoading,
   } = useNotificationContext();
   const { permission, requestPermission } = useFCM();
   const [filter, setFilter] = useState<"all" | "unread">("all");
   const [visibleCount, setVisibleCount] = useState(20);
+  const [isClearAllModalOpen, setIsClearAllModalOpen] = useState(false);
+
+  const handleClearAll = () => {
+    clearAllNotifications();
+    setIsClearAllModalOpen(false);
+  };
 
   const filteredNotifications =
     filter === "unread"
@@ -150,6 +159,14 @@ export default function NotificationPage() {
           >
             <CheckCheck size={15} />
             Mark all read
+          </button>
+          <button
+            onClick={() => setIsClearAllModalOpen(true)}
+            disabled={notifications.length === 0}
+            className="text-sm px-4 py-2 rounded-lg font-medium border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2"
+          >
+            <Trash2 size={15} />
+            Clear All
           </button>
         </div>
       </div>
@@ -318,6 +335,17 @@ export default function NotificationPage() {
           </>
         )}
       </div>
+
+      <ConfirmationModal
+        isOpen={isClearAllModalOpen}
+        onClose={() => setIsClearAllModalOpen(false)}
+        onConfirm={handleClearAll}
+        title="Clear All Notifications"
+        message="Are you sure you want to clear all notifications? This action cannot be undone."
+        confirmText="Clear All"
+        cancelText="Cancel"
+        variant="danger"
+      />
     </div>
   );
 }

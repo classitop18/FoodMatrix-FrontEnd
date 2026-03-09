@@ -151,6 +151,7 @@ export const API_ENDPOINTS = {
     UNREAD_COUNT: "/notifications/unread-count",
     MARK_READ: (id: string) => `/notifications/${id}/read`,
     MARK_ALL_READ: "/notifications/read-all",
+    CLEAR_ALL: "/notifications/clear-all",
     SUBSCRIBE_TOPIC: "/notifications/topic/subscribe",
     UNSUBSCRIBE_TOPIC: "/notifications/topic/unsubscribe",
     SEND: "/notifications/send",

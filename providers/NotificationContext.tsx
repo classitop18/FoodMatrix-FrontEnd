@@ -30,6 +30,7 @@ interface NotificationContextType {
     addNotification: (notification: AppNotification, showToast?: boolean) => void;
     markAsRead: (id: string) => void;
     markAllAsRead: () => void;
+    clearAllNotifications: () => void;
     removeToast: (id: string) => void;
     refreshNotifications: () => Promise<void>;
     isLoading: boolean;
@@ -212,6 +213,33 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
         });
     }, []);
 
+    // ─── Optimistic clear all notifications ────────────────────────
+    const clearAllNotifications = useCallback(() => {
+        // 1. Snapshot
+        let previousNotifications: AppNotification[] = [];
+        let previousUnreadCount = 0;
+
+        setNotifications((prev) => {
+            previousNotifications = prev;
+            return [];
+        });
+
+        setUnreadCount((prev) => {
+            previousUnreadCount = prev;
+            return 0;
+        });
+
+        // 2. Fire API in background
+        notificationService.clearAllNotifications().catch((err) => {
+            console.error(
+                "Failed to clear all notifications, rolling back:",
+                err
+            );
+            setNotifications(previousNotifications);
+            setUnreadCount(previousUnreadCount);
+        });
+    }, []);
+
     // ─── Refresh ───────────────────────────────────────────────────
     const refreshNotifications = useCallback(async () => {
         await fetchNotifications();
@@ -226,6 +254,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
                 addNotification,
                 markAsRead,
                 markAllAsRead,
+                clearAllNotifications,
                 removeToast,
                 refreshNotifications,
                 isLoading,

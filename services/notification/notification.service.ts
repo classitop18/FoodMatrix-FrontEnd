@@ -45,4 +45,11 @@ export class NotificationService {
         );
         return response?.data;
     }
+
+    async clearAllNotifications() {
+        const response = await apiClient.delete(
+            API_ENDPOINTS.NOTIFICATION.CLEAR_ALL
+        );
+        return response?.data;
+    }
 }
