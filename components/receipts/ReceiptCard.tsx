@@ -149,7 +149,7 @@ export function ReceiptCard({ receipt, onClick, onTag, onAddToPantry }: ReceiptC
                 {/* Row 2: Amount (prominent) */}
                 {receipt.totalAmount && (
                     <div className="bg-gradient-to-r from-[#f8f7fc] to-[#f0fdf4] rounded-xl px-3 py-2.5 flex items-center justify-between">
-                        <span className="text-xs text-gray-500 font-semibold">Total Amount</span>
+                        <span className="text-xs text-gray-500 font-semibold">Food Total</span>
                         <div className="flex items-center gap-0.5 font-extrabold text-[#313131] text-base">
                             <DollarSign className="w-3.5 h-3.5 text-[#7dab4f]" />
                             {Number(receipt.totalAmount).toFixed(2)}

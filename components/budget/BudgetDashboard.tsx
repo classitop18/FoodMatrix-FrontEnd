@@ -16,6 +16,7 @@ interface BudgetDashboardProps {
     isLoading: boolean;
     onSetupClick: () => void;
     onLogExpenseClick: () => void;
+    hasPendingUpdates?: boolean;
 }
 
 export function BudgetDashboard({
@@ -23,6 +24,7 @@ export function BudgetDashboard({
     isLoading,
     onSetupClick,
     onLogExpenseClick,
+    hasPendingUpdates = false,
 }: BudgetDashboardProps) {
     const hasConfig = todayBudget?.configId;
     const hasBudget = todayBudget && todayBudget.allocatedAmount > 0;
@@ -65,15 +67,15 @@ export function BudgetDashboard({
                     </div>
                     <h2 className="text-xl font-bold mb-2">Set Up Your Budget</h2>
                     <p className="text-white/60 text-sm mb-6 max-w-xs mx-auto">
-                        Pick a date from the calendar and set your daily budget.
+                        Configure your daily budget or set a total amount for the upcoming week.
                         If you miss a day, the previous day's budget carries forward automatically.
                     </p>
                     <Button
                         onClick={onSetupClick}
-                        className="bg-white text-[#3d326d] hover:bg-white/90 font-bold px-6 h-11 rounded-xl"
+                        className={`font-bold px-6 h-11 rounded-xl bg-white text-[#3d326d] hover:bg-white/90`}
                     >
                         <Plus className="w-4 h-4 mr-2" />
-                        Set Today's Budget
+                        Set Daily/Weekly Budget
                     </Button>
                 </div>
             </div>
@@ -100,9 +102,9 @@ export function BudgetDashboard({
                 </div>
                 <button
                     onClick={onSetupClick}
-                    className="px-3 py-1.5 rounded-lg bg-[#F3F0FD] text-xs font-bold text-[#7661d3] hover:bg-[#e6e0f9] transition-colors cursor-pointer"
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors bg-[#F3F0FD] text-[#7661d3] hover:bg-[#e6e0f9] cursor-pointer`}
                 >
-                    + Set Budget
+                    + Daily/Weekly Budget
                 </button>
             </div>
 
@@ -213,12 +215,18 @@ export function BudgetDashboard({
             {/* Quick Action */}
             <Button
                 onClick={onLogExpenseClick}
-                className="w-full h-11 bg-[#313131] hover:bg-black text-white font-bold rounded-xl text-sm flex items-center gap-2"
+                disabled={hasPendingUpdates}
+                className={`w-full h-11 font-bold rounded-xl text-sm flex items-center gap-2 ${hasPendingUpdates
+                    ? "bg-gray-200 text-gray-500 cursor-not-allowed opacity-70"
+                    : "bg-[#313131] hover:bg-black text-white"
+                    }`}
             >
                 <DollarSign className="w-4 h-4" />
-                {todayBudget?.hasExpenseLogged
-                    ? "Update Today's Spending"
-                    : "Log Today's Spending"}
+                {hasPendingUpdates
+                    ? "Pending Updates Block Access"
+                    : todayBudget?.hasExpenseLogged
+                        ? "Update Today's Spending"
+                        : "Log Today's Spending"}
             </Button>
         </div>
     );

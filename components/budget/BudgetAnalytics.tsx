@@ -13,7 +13,16 @@ import {
     CartesianGrid,
     Tooltip,
     ResponsiveContainer,
+    PieChart,
+    Pie,
+    Cell,
+    Legend,
 } from "recharts";
+
+const COLORS = [
+    "#7661d3", "#7dab4f", "#f59e0b", "#ef4444",
+    "#3b82f6", "#8b5cf6", "#ec4899", "#14b8a6"
+];
 
 interface BudgetAnalyticsProps {
     analytics: BudgetAnalyticsType | null;
@@ -47,6 +56,13 @@ export function BudgetAnalytics({
         budget: d.budget,
         spent: d.spent,
     }));
+
+    const categoryData = analytics.categoriesBreakdown
+        ? Object.entries(analytics.categoriesBreakdown)
+            .map(([name, value]) => ({ name, value }))
+            .filter((item) => item.value > 0)
+            .sort((a, b) => b.value - a.value)
+        : [];
 
     return (
         <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
@@ -269,7 +285,7 @@ export function BudgetAnalytics({
                 )}
             </div>
 
-            {/* Legend */}
+            {/* Legend for Spending Trend */}
             <div className="flex items-center justify-center gap-6 mt-4">
                 <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-[#7661d3] opacity-50" />
@@ -280,6 +296,71 @@ export function BudgetAnalytics({
                     <span className="text-xs font-medium text-gray-500">Spent</span>
                 </div>
             </div>
+
+            {/* Spending by Category Section */}
+            {categoryData.length > 0 && (
+                <div className="mt-8 pt-6 border-t border-gray-100">
+                    <h3 className="text-sm font-bold text-[#313131] mb-5 flex items-center gap-2">
+                        <BarChart3 className="w-4 h-4 text-[#7661d3]" />
+                        Spending by Category
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                        <div className="h-[220px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={categoryData}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={60}
+                                        outerRadius={80}
+                                        paddingAngle={5}
+                                        dataKey="value"
+                                        stroke="none"
+                                    >
+                                        {categoryData.map((entry, index) => (
+                                            <Cell
+                                                key={`cell-${index}`}
+                                                fill={COLORS[index % COLORS.length]}
+                                            />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip
+                                        contentStyle={{
+                                            borderRadius: "12px",
+                                            border: "1px solid #e5e7eb",
+                                            boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                                            fontSize: "12px",
+                                        }}
+                                        formatter={(value: number) => `$${value.toFixed(2)}`}
+                                    />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
+                        <div className="flex flex-col gap-3 justify-center">
+                            {categoryData.map((cat, idx) => (
+                                <div key={cat.name} className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <div
+                                            className="w-3 h-3 rounded-full"
+                                            style={{ backgroundColor: COLORS[idx % COLORS.length] }}
+                                        />
+                                        <span className="text-sm font-semibold capitalize text-gray-700">
+                                            {cat.name.replace(/_/g, " ")}
+                                        </span>
+                                    </div>
+                                    <div className="text-sm font-bold text-[#313131]">
+                                        ${cat.value.toFixed(2)}
+                                        <span className="ml-2 text-xs font-medium text-gray-400">
+                                            ({Math.round((cat.value / analytics.totalSpent) * 100)}%)
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

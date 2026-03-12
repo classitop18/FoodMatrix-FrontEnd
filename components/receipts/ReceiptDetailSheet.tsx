@@ -380,6 +380,9 @@ export function ReceiptDetailSheet({ receipt, open, onClose }: ReceiptDetailShee
                                                                 <TableHead className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wide h-8 text-center w-20">
                                                                     Qty
                                                                 </TableHead>
+                                                                <TableHead className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wide h-8 text-right w-20">
+                                                                    Tax
+                                                                </TableHead>
                                                                 <TableHead className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wide h-8 text-right w-24">
                                                                     Price
                                                                 </TableHead>
@@ -409,6 +412,9 @@ export function ReceiptDetailSheet({ receipt, open, onClose }: ReceiptDetailShee
                                                                     <TableCell className="text-xs text-center text-gray-500 py-2.5 font-medium">
                                                                         {item.quantity} {item.unit}
                                                                     </TableCell>
+                                                                    <TableCell className="text-xs text-right py-2.5 font-medium text-gray-500">
+                                                                        {item.taxable ? `${currencySymbol}${Number(item.calculatedTax || 0).toFixed(2)}` : "—"}
+                                                                    </TableCell>
                                                                     <TableCell className="text-xs text-right py-2.5 font-bold text-[#313131]">
                                                                         {currencySymbol}{Number(item.price).toFixed(2)}
                                                                     </TableCell>
@@ -424,21 +430,21 @@ export function ReceiptDetailSheet({ receipt, open, onClose }: ReceiptDetailShee
                                         <div className="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 space-y-2">
                                             {receipt.taxAmount && (
                                                 <div className="flex justify-between text-xs">
-                                                    <span className="text-gray-500 font-medium">Tax</span>
+                                                    <span className="text-gray-500 font-medium">Food Tax</span>
                                                     <span className="text-gray-600 font-semibold">
                                                         {currencySymbol}{Number(receipt.taxAmount).toFixed(2)}
                                                     </span>
                                                 </div>
                                             )}
                                             <div className="flex justify-between text-xs">
-                                                <span className="text-gray-500 font-medium">Items Total</span>
+                                                <span className="text-gray-500 font-medium">Food Items Total</span>
                                                 <span className="text-gray-600 font-semibold">
                                                     {currencySymbol}{totalItemsCost.toFixed(2)}
                                                 </span>
                                             </div>
                                             {receipt.totalAmount && (
                                                 <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-                                                    <span className="text-sm font-extrabold text-[#313131]">Grand Total</span>
+                                                    <span className="text-sm font-extrabold text-[#313131]">Food Grand Total</span>
                                                     <span className="text-lg font-extrabold text-[#7661d3]">
                                                         {currencySymbol}{Number(receipt.totalAmount).toFixed(2)}
                                                     </span>

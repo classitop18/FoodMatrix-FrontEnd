@@ -17,6 +17,8 @@ export interface AuditedReceiptItem {
     | "other";
     brand?: string;
     confidence: number;
+    taxable?: boolean;
+    calculatedTax?: number;
 }
 
 export interface ReceiptItem {

@@ -87,6 +87,7 @@ export interface BudgetAnalytics {
         spent: number;
         balance: number;
     }[];
+    categoriesBreakdown?: Record<string, number>;
 }
 
 // ================== Pending Updates ==================
@@ -134,6 +135,7 @@ export interface LogExpensePayload {
     date: string;
     amountSpent: number;
     notes?: string;
+    categoriesBreakdown?: Record<string, number>;
 }
 
 export interface BudgetHistoryParams {

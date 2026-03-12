@@ -28,9 +28,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import pattern1 from "@/public/hero-pattern-1.svg";
 import pattern2 from "@/public/hero-pattern-2.svg";
-import foodBanner from "@/public/food-banner.svg";
-import ThemeButton from "@/components/common/buttons/theme-button-arrow";
-import BorderButton from "@/components/common/buttons/border-button";
 
 export const usernameRegex = /^[A-Za-z][A-Za-z0-9_]{2,19}$/;
 

@@ -114,7 +114,6 @@ export default function BudgetPage() {
 
             {/* ─── Main Content (overlaps hero) ─── */}
             <div className="max-w-8xl mx-auto px-4 sm:px-6 -mt-10 pb-8 space-y-5">
-                {/* Pending Updates Alert */}
                 <PendingUpdateAlert
                     pendingUpdates={pendingQuery.data || []}
                     onUpdateClick={handlePendingUpdateClick}
@@ -129,6 +128,7 @@ export default function BudgetPage() {
                             isLoading={todayQuery.isLoading}
                             onSetupClick={handleSetupClick}
                             onLogExpenseClick={handleLogExpenseClick}
+                            hasPendingUpdates={(pendingQuery.data || []).length > 0}
                         />
                     </div>
 
