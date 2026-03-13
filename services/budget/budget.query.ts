@@ -67,3 +67,12 @@ export const useBudgetVersionsQuery = (accountId: string) => {
         enabled: !!accountId,
     });
 };
+
+export const useExpenseDetailsQuery = (accountId: string, dailyBudgetId: string | null) => {
+    return useQuery({
+        queryKey: ["budget", "expense-details", accountId, dailyBudgetId],
+        queryFn: () => budgetService.getExpenseDetails(accountId, dailyBudgetId!),
+        staleTime: 30 * 1000,
+        enabled: !!accountId && !!dailyBudgetId,
+    });
+};

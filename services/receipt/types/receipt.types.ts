@@ -42,6 +42,7 @@ export interface Receipt {
     aiProcessingStatus?: "pending" | "processing" | "completed" | "failed" | null;
     currency?: string | null;
     addedToPantry: boolean;
+    isBudgetDeducted?: boolean;
     rawText?: string | null;
     imageUrl?: string | null;
     description?: string | null;

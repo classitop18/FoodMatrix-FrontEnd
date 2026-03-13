@@ -149,3 +149,37 @@ export interface BudgetHistoryResponse {
     data: DailyBudgetWithExpense[];
     total: number;
 }
+
+// ================== Receipt-Budget Linking ==================
+
+export interface LogExpenseFromReceiptPayload {
+    receiptId: string;
+    date: string;
+    note?: string;
+}
+
+export interface ReceiptExpenseDetail {
+    id: string;
+    receiptId: string;
+    amount: string;
+    itemsSnapshot: {
+        name: string;
+        quantity: number;
+        unit: string;
+        price: number;
+        category: string;
+        brand?: string;
+    }[];
+    note: string | null;
+    linkedAt: string;
+    storeName?: string | null;
+}
+
+export interface ExpenseDetailsResponse {
+    dailyBudgetId: string;
+    date: string;
+    allocatedAmount: string;
+    amountSpent: string;
+    balance: number;
+    receiptExpenses: ReceiptExpenseDetail[];
+}

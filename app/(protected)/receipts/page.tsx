@@ -100,7 +100,7 @@ export default function ReceiptsPage() {
                                 <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center">
                                     <ReceiptText className="w-4 h-4 text-white" />
                                 </div>
-                                <span className="text-white/60 text-xs font-semibold uppercase tracking-widest">Module</span>
+                                {/* <span className="text-white/60 text-xs font-semibold uppercase tracking-widest">Module</span> */}
                             </div>
                             <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
                                 Scanned Receipts

@@ -66,6 +66,7 @@ export default function BudgetPage() {
     const historyQuery = useBudgetHistoryQuery(activeAccountId || "", {
         page: historyPage,
         limit: historyLimit,
+        endDate: new Date().toISOString().split("T")[0],
     });
     const analyticsQuery = useBudgetAnalyticsQuery(
         activeAccountId || "",
@@ -131,9 +132,9 @@ export default function BudgetPage() {
                                 <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center">
                                     <Wallet className="w-4 h-4 text-white" />
                                 </div>
-                                <span className="text-white/60 text-xs font-semibold uppercase tracking-widest">
-                                    Module
-                                </span>
+                                {/* <span className="text-white/60 text-xs font-semibold uppercase tracking-widest">
+                                      Module
+                                </span> */}
                             </div>
                             <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
                                 Budget Tracker
@@ -197,6 +198,7 @@ export default function BudgetPage() {
                     page={historyPage}
                     limit={historyLimit}
                     onPageChange={setHistoryPage}
+                    accountId={activeAccountId}
                 />
             </div>
 

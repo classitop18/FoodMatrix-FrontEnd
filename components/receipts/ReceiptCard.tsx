@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Receipt, AuditedReceiptItem } from "@/services/receipt/types/receipt.types";
 import { format } from "date-fns";
 import {
@@ -23,6 +23,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useDeleteReceiptMutation } from "@/services/receipt/receipt.mutation";
+import { useLogExpenseFromReceiptMutation } from "@/services/budget/budget.mutation";
+import { useSelector } from "react-redux";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -90,9 +92,19 @@ export function ReceiptCard({ receipt, onClick, onTag, onAddToPantry }: ReceiptC
     const [updateBudgetOpen, setUpdateBudgetOpen] = useState(false);
     const [budgetDate, setBudgetDate] = useState(() => new Date().toISOString().split('T')[0]);
     const [budgetNote, setBudgetNote] = useState("");
-    const [isUpdatingBudget, setIsUpdatingBudget] = useState(false);
 
     const deleteMutation = useDeleteReceiptMutation();
+    const logExpenseFromReceiptMutation = useLogExpenseFromReceiptMutation();
+
+    // Get accountId from Redux store
+    const accountId = useSelector((state: any) => state?.account?.activeAccountId);
+
+    // Calculate food items total for preview
+    const foodItemsPreview = useMemo(() => {
+        const foodItems = aiItems.filter(item => !["household", "other"].includes(item.category));
+        const total = foodItems.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
+        return { count: foodItems.length, total };
+    }, [aiItems]);
 
     const handleDelete = () => {
         deleteMutation.mutate(receipt.id, {
@@ -104,6 +116,38 @@ export function ReceiptCard({ receipt, onClick, onTag, onAddToPantry }: ReceiptC
                 toast.error(err?.response?.data?.message || "Failed to delete receipt");
             }
         });
+    };
+
+    const handleUpdateBudget = () => {
+        if (!accountId) {
+            toast.error("No active account found");
+            return;
+        }
+
+        logExpenseFromReceiptMutation.mutate(
+            {
+                accountId,
+                payload: {
+                    receiptId: receipt.id,
+                    date: budgetDate,
+                    note: budgetNote || undefined,
+                },
+            },
+            {
+                onSuccess: (data: any) => {
+                    toast.success(
+                        `$${data.foodTotal?.toFixed(2) || "0.00"} deducted from budget for ${budgetDate}`,
+                    );
+                    setUpdateBudgetOpen(false);
+                    setBudgetNote("");
+                },
+                onError: (err: any) => {
+                    toast.error(
+                        err?.response?.data?.message || "Failed to update budget",
+                    );
+                },
+            },
+        );
     };
 
     return (
@@ -182,8 +226,14 @@ export function ReceiptCard({ receipt, onClick, onTag, onAddToPantry }: ReceiptC
                         </div>
                     )}
                     {receipt.addedToPantry && (
-                        <div className="flex items-center justify-center bg-green-50 w-[26px] h-[26px] rounded-full border border-green-200 shadow-sm ml-auto" title="Items in Pantry">
+                        <div className="flex items-center justify-center bg-green-50 w-[26px] h-[26px] rounded-full border border-green-200 shadow-sm" title="Items in Pantry">
                             <CheckCircle2 className="w-4 h-4 text-green-500" />
+                        </div>
+                    )}
+                    {receipt.isBudgetDeducted && (
+                        <div className="flex items-center gap-1.5 text-[11px] text-emerald-600 font-bold bg-emerald-50/80 px-2 py-1 rounded-md border border-emerald-200 ml-auto">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            Budget Deducted
                         </div>
                     )}
                 </div>
@@ -231,12 +281,19 @@ export function ReceiptCard({ receipt, onClick, onTag, onAddToPantry }: ReceiptC
 
                 {/* Right: Actions Row */}
                 <div className="flex items-center gap-1.5">
-                    <button
-                        onClick={(e) => { e.stopPropagation(); setUpdateBudgetOpen(true); }}
-                        className="flex items-center bg-gradient-to-br from-[#7661d3] to-[#5a468a] text-white hover:from-[#6450c2] hover:to-[#4a3878] px-3 h-8 rounded-lg text-[10px] font-bold shadow-sm shadow-[#7661d3]/30 transition-all mr-1"
-                    >
-                        Update Budget
-                    </button>
+                    {receipt.isBudgetDeducted ? (
+                        <div className="flex items-center bg-emerald-50 text-emerald-600 px-3 h-8 rounded-lg text-[10px] font-bold border border-emerald-200 mr-1 cursor-default">
+                            <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
+                            Deducted
+                        </div>
+                    ) : (
+                        <button
+                            onClick={(e) => { e.stopPropagation(); setUpdateBudgetOpen(true); }}
+                            className="flex items-center bg-gradient-to-br from-[#7661d3] to-[#5a468a] text-white hover:from-[#6450c2] hover:to-[#4a3878] px-3 h-8 rounded-lg text-[10px] font-bold shadow-sm shadow-[#7661d3]/30 transition-all mr-1"
+                        >
+                            Update Budget
+                        </button>
+                    )}
 
                     <div className="flex items-center bg-gray-50 p-0.5 rounded-[10px] border border-gray-100">
                         <button
@@ -334,6 +391,20 @@ export function ReceiptCard({ receipt, onClick, onTag, onAddToPantry }: ReceiptC
                     </DialogHeader>
 
                     <div className="flex flex-col gap-4 py-4">
+                        {/* Food items preview */}
+                        {foodItemsPreview.count > 0 && (
+                            <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-[#F3F0FD] to-[#f8f7ff] rounded-xl border border-[#7661d3]/10">
+                                <div>
+                                    <p className="text-[10px] text-[#7661d3]/60 font-bold uppercase tracking-wider">Food Items</p>
+                                    <p className="text-sm font-bold text-[#7661d3]">{foodItemsPreview.count} items</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-[10px] text-[#7661d3]/60 font-bold uppercase tracking-wider">Amount</p>
+                                    <p className="text-lg font-extrabold text-[#7661d3]">${foodItemsPreview.total.toFixed(2)}</p>
+                                </div>
+                            </div>
+                        )}
+
                         <div className="grid gap-2">
                             <Label htmlFor="date" className="text-sm font-bold text-gray-700">Date</Label>
                             <Input
@@ -369,21 +440,15 @@ export function ReceiptCard({ receipt, onClick, onTag, onAddToPantry }: ReceiptC
                         </button>
                         <button
                             type="button"
-                            disabled={isUpdatingBudget || !budgetDate}
+                            disabled={logExpenseFromReceiptMutation.isPending || !budgetDate || foodItemsPreview.count === 0}
                             className="bg-gradient-to-br from-[#7661d3] to-[#5a468a] hover:from-[#6450c2] hover:to-[#4a3878] text-white rounded-xl font-bold px-6 py-2.5 shadow-sm shadow-[#7661d3]/30 flex items-center justify-center transition-all disabled:opacity-70 disabled:cursor-not-allowed"
-                            onClick={async (e) => {
+                            onClick={(e) => {
                                 e.stopPropagation();
-                                setIsUpdatingBudget(true);
-                                // For now, just simulate an API call
-                                await new Promise(resolve => setTimeout(resolve, 800));
-                                toast.success("Budget updated successfully!");
-                                setIsUpdatingBudget(false);
-                                setUpdateBudgetOpen(false);
-                                setBudgetNote("");
+                                handleUpdateBudget();
                             }}
                         >
-                            {isUpdatingBudget ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                            Update Budget
+                            {logExpenseFromReceiptMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                            Deduct ${foodItemsPreview.total.toFixed(2)}
                         </button>
                     </DialogFooter>
                 </DialogContent>

@@ -1,7 +1,9 @@
 "use client";
 
-import { CalendarDays, DollarSign, FileText } from "lucide-react";
+import { useState } from "react";
+import { CalendarDays, DollarSign, FileText, Eye } from "lucide-react";
 import type { DailyBudgetWithExpense } from "@/services/budget/types/budget.types";
+import { SpentDetailSheet } from "./SpentDetailSheet";
 
 interface BudgetHistoryProps {
     data: DailyBudgetWithExpense[];
@@ -10,6 +12,7 @@ interface BudgetHistoryProps {
     page: number;
     limit: number;
     onPageChange: (page: number) => void;
+    accountId: string;
 }
 
 export function BudgetHistory({
@@ -19,8 +22,11 @@ export function BudgetHistory({
     page,
     limit,
     onPageChange,
+    accountId,
 }: BudgetHistoryProps) {
     const totalPages = Math.ceil(total / limit);
+    const [selectedBudgetId, setSelectedBudgetId] = useState<string | null>(null);
+    const [sheetOpen, setSheetOpen] = useState(false);
 
     if (isLoading) {
         return (
@@ -62,7 +68,7 @@ export function BudgetHistory({
             ) : (
                 <>
                     {/* Table Header */}
-                    <div className="grid grid-cols-4 gap-3 px-3 py-2 border-b border-gray-100 mb-2">
+                    <div className="grid grid-cols-5 gap-3 px-3 py-2 border-b border-gray-100 mb-2">
                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
                             Date
                         </span>
@@ -74,6 +80,9 @@ export function BudgetHistory({
                         </span>
                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">
                             Balance
+                        </span>
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">
+                            Details
                         </span>
                     </div>
 
@@ -89,7 +98,7 @@ export function BudgetHistory({
                             return (
                                 <div
                                     key={entry.id}
-                                    className={`grid grid-cols-4 gap-3 px-3 py-3 rounded-xl transition-colors ${isToday
+                                    className={`grid grid-cols-5 gap-3 px-3 py-3 rounded-xl transition-colors ${isToday
                                         ? "bg-[#F3F0FD] border border-[#7661d3]/20"
                                         : "bg-gray-50 hover:bg-gray-100"
                                         }`}
@@ -119,19 +128,26 @@ export function BudgetHistory({
                                         ${parseFloat(entry.allocatedAmount).toFixed(0)}
                                     </p>
 
-                                    {/* Spent */}
-                                    <p
-                                        className={`text-sm font-bold text-right self-center ${hasExpense
+                                    {/* Spent — clickable */}
+                                    <button
+                                        onClick={() => {
+                                            if (hasExpense) {
+                                                setSelectedBudgetId(entry.id);
+                                                setSheetOpen(true);
+                                            }
+                                        }}
+                                        className={`text-sm font-bold text-right self-center transition-colors ${hasExpense
                                             ? isOverBudget
-                                                ? "text-red-500"
-                                                : "text-[#7dab4f]"
-                                            : "text-gray-300"
+                                                ? "text-red-500 hover:underline cursor-pointer"
+                                                : "text-[#7dab4f] hover:underline cursor-pointer"
+                                            : "text-gray-300 cursor-default"
                                             }`}
+                                        disabled={!hasExpense}
                                     >
                                         {hasExpense
                                             ? `$${parseFloat(entry.amountSpent!).toFixed(0)}`
                                             : "—"}
-                                    </p>
+                                    </button>
 
                                     {/* Balance */}
                                     <div className="text-right self-center">
@@ -145,6 +161,24 @@ export function BudgetHistory({
                                                 {isOverBudget ? "-" : "+"}$
                                                 {Math.abs(entry.balance).toFixed(0)}
                                             </span>
+                                        ) : (
+                                            <span className="text-xs text-gray-300">—</span>
+                                        )}
+                                    </div>
+
+                                    {/* View Details Button */}
+                                    <div className="flex justify-center self-center">
+                                        {hasExpense ? (
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedBudgetId(entry.id);
+                                                    setSheetOpen(true);
+                                                }}
+                                                className="w-7 h-7 flex items-center justify-center rounded-lg bg-[#F3F0FD] text-[#7661d3] hover:bg-[#e6e0f9] transition-colors"
+                                                title="View spending details"
+                                            >
+                                                <Eye className="w-3.5 h-3.5" />
+                                            </button>
                                         ) : (
                                             <span className="text-xs text-gray-300">—</span>
                                         )}
@@ -178,6 +212,14 @@ export function BudgetHistory({
                     )}
                 </>
             )}
+
+            {/* Spent Detail Sheet */}
+            <SpentDetailSheet
+                open={sheetOpen}
+                onOpenChange={setSheetOpen}
+                accountId={accountId}
+                dailyBudgetId={selectedBudgetId}
+            />
         </div>
     );
 }

@@ -12,6 +12,8 @@ import type {
     SetDailyBudgetResult,
     UpdateBudgetPayload,
     LogExpensePayload,
+    LogExpenseFromReceiptPayload,
+    ExpenseDetailsResponse,
     WeeklySummary,
     BudgetConfig,
 } from "./types/budget.types";
@@ -46,6 +48,27 @@ export class BudgetService {
         const response = await apiClient.post(
             API_ENDPOINTS.BUDGET.LOG_EXPENSE(accountId),
             payload,
+        );
+        return response.data.data;
+    }
+
+    async logExpenseFromReceipt(
+        accountId: string,
+        payload: LogExpenseFromReceiptPayload,
+    ): Promise<any> {
+        const response = await apiClient.post(
+            API_ENDPOINTS.BUDGET.EXPENSE_FROM_RECEIPT(accountId),
+            payload,
+        );
+        return response.data.data;
+    }
+
+    async getExpenseDetails(
+        accountId: string,
+        dailyBudgetId: string,
+    ): Promise<ExpenseDetailsResponse> {
+        const response = await apiClient.get(
+            API_ENDPOINTS.BUDGET.EXPENSE_DETAILS(accountId, dailyBudgetId),
         );
         return response.data.data;
     }

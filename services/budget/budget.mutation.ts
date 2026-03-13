@@ -4,6 +4,7 @@ import type {
     SetDailyBudgetPayload,
     UpdateBudgetPayload,
     LogExpensePayload,
+    LogExpenseFromReceiptPayload,
 } from "./types/budget.types";
 
 const budgetService = new BudgetService();
@@ -65,6 +66,29 @@ export const useLogExpenseMutation = () => {
             queryClient.invalidateQueries({ queryKey: ["budget", "history", accountId] });
             queryClient.invalidateQueries({ queryKey: ["budget", "analytics", accountId] });
             queryClient.invalidateQueries({ queryKey: ["budget", "pending", accountId] });
+        },
+    });
+};
+
+export const useLogExpenseFromReceiptMutation = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({
+            accountId,
+            payload,
+        }: {
+            accountId: string;
+            payload: LogExpenseFromReceiptPayload;
+        }) => budgetService.logExpenseFromReceipt(accountId, payload),
+        onSuccess: (_, { accountId }) => {
+            queryClient.invalidateQueries({ queryKey: ["budget", "today", accountId] });
+            queryClient.invalidateQueries({ queryKey: ["budget", "weekly", accountId] });
+            queryClient.invalidateQueries({ queryKey: ["budget", "history", accountId] });
+            queryClient.invalidateQueries({ queryKey: ["budget", "analytics", accountId] });
+            queryClient.invalidateQueries({ queryKey: ["budget", "pending", accountId] });
+            queryClient.invalidateQueries({ queryKey: ["budget", "expense-details"] });
+            // Invalidate receipt queries so ReceiptCard updates isBudgetDeducted status
+            queryClient.invalidateQueries({ queryKey: ["receipts"] });
         },
     });
 };
