@@ -14,10 +14,10 @@ export const useTodayBudgetQuery = (accountId: string) => {
     });
 };
 
-export const useWeeklySummaryQuery = (accountId: string) => {
+export const useWeeklySummaryQuery = (accountId: string, date?: string) => {
     return useQuery({
-        queryKey: ["budget", "weekly", accountId],
-        queryFn: () => budgetService.getWeeklySummary(accountId),
+        queryKey: ["budget", "weekly", accountId, date],
+        queryFn: () => budgetService.getWeeklySummary(accountId, date),
         staleTime: 60 * 1000,
         refetchOnWindowFocus: true,
         enabled: !!accountId,
@@ -38,11 +38,12 @@ export const useBudgetHistoryQuery = (
 
 export const useBudgetAnalyticsQuery = (
     accountId: string,
-    period: "weekly" | "monthly" = "weekly",
+    period: "weekly" | "monthly" | "yearly" | "custom" = "weekly",
+    filters?: { year?: string; month?: string; weekDate?: string }
 ) => {
     return useQuery({
-        queryKey: ["budget", "analytics", accountId, period],
-        queryFn: () => budgetService.getAnalytics(accountId, period),
+        queryKey: ["budget", "analytics", accountId, period, filters?.year, filters?.month, filters?.weekDate],
+        queryFn: () => budgetService.getAnalytics(accountId, period, filters),
         staleTime: 60 * 1000,
         enabled: !!accountId,
     });

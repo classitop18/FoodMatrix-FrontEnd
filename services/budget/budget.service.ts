@@ -57,10 +57,12 @@ export class BudgetService {
         return response.data.data;
     }
 
-    async getWeeklySummary(accountId: string): Promise<WeeklySummary> {
-        const response = await apiClient.get(
-            API_ENDPOINTS.BUDGET.WEEKLY(accountId),
-        );
+    async getWeeklySummary(accountId: string, date?: string): Promise<WeeklySummary> {
+        let url = API_ENDPOINTS.BUDGET.WEEKLY(accountId);
+        if (date) {
+            url += `?date=${encodeURIComponent(date)}`;
+        }
+        const response = await apiClient.get(url);
         return response.data.data;
     }
 
@@ -81,11 +83,15 @@ export class BudgetService {
 
     async getAnalytics(
         accountId: string,
-        period: "weekly" | "monthly" = "weekly",
+        period: "weekly" | "monthly" | "yearly" | "custom" = "weekly",
+        filters?: { year?: string; month?: string; weekDate?: string }
     ): Promise<BudgetAnalytics> {
-        const response = await apiClient.get(
-            `${API_ENDPOINTS.BUDGET.ANALYTICS(accountId)}?period=${period}`,
-        );
+        let url = `${API_ENDPOINTS.BUDGET.ANALYTICS(accountId)}?period=${period}`;
+        if (filters?.year) url += `&year=${filters.year}`;
+        if (filters?.month) url += `&month=${filters.month}`;
+        if (filters?.weekDate) url += `&weekDate=${filters.weekDate}`;
+
+        const response = await apiClient.get(url);
         return response.data.data;
     }
 

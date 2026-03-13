@@ -46,7 +46,7 @@ interface AccountState {
   activeBudget: ActiveBudget | null;
   spent: number;
   usagePercent: number;
-  resetInDays: number;
+  resetText: string;
   location: string;
   loading: boolean;
   error: string | null;
@@ -89,18 +89,28 @@ const initialState: AccountState = {
   activeBudget: null,
   spent: 0,
   usagePercent: 0,
-  resetInDays: 0,
+  resetText: "",
   location: "",
   loading: false,
   error: null,
 };
 
 /* -------------------------------- */
-const calculateResetInDays = (lastReset?: string) => {
-  if (!lastReset) return 0;
+const calculateResetText = (lastReset?: string, budgetType?: BudgetType) => {
+  if (!lastReset) return "soon";
   const diff = Date.now() - new Date(lastReset).getTime();
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  return Math.max(7 - days, 0);
+  const daysPassed = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+  let totalDaysInPeriod = 7; // default weekly
+  if (budgetType === "daily") totalDaysInPeriod = 1;
+  else if (budgetType === "monthly") totalDaysInPeriod = 30; // Approximation
+  else if (budgetType === "annual") totalDaysInPeriod = 365;
+
+  const daysLeft = Math.max(totalDaysInPeriod - daysPassed, 0);
+
+  if (daysLeft === 0) return "today";
+  if (daysLeft === 1) return "tomorrow";
+  return `in ${daysLeft} days`;
 };
 
 const getActiveBudget = (account: any): ActiveBudget | null => {
@@ -140,12 +150,12 @@ const getActiveBudget = (account: any): ActiveBudget | null => {
     }
   }
 
-  // 2. Fallback: Find first available budget (precedence: weekly > daily > monthly > annual)
-  // Reordered to prioritize weekly as it's the default required field
+  // 2. Fallback: Find first available budget (precedence: daily > weekly > monthly > annual)
+  // Reordered to prioritize daily as requested by the user
 
   const budgets = [
-    { type: "weekly", label: "Weekly Budget", value: account?.weeklyBudget },
     { type: "daily", label: "Daily Budget", value: account?.dailyBudget },
+    { type: "weekly", label: "Weekly Budget", value: account?.weeklyBudget },
     { type: "monthly", label: "Monthly Budget", value: account?.monthlyBudget },
     { type: "annual", label: "Annual Budget", value: account?.annualBudget },
   ];
@@ -187,7 +197,7 @@ const calculateAccountDerived = (account: any) => {
       activeBudget && activeBudget.amount > 0
         ? Math.min((spent / activeBudget.amount) * 100, 100)
         : 0,
-    resetInDays: calculateResetInDays(account?.lastFoodBudgetReset),
+    resetText: calculateResetText(account?.lastFoodBudgetReset, activeBudget?.type),
     location:
       [account?.city, account?.state, account?.country]
         .filter(Boolean)
@@ -306,7 +316,7 @@ export const accountSlice = createSlice({
         state.activeBudget = derived.activeBudget;
         state.spent = derived.spent;
         state.usagePercent = derived.usagePercent;
-        state.resetInDays = derived.resetInDays;
+        state.resetText = derived.resetText;
         state.location = derived.location;
         state.loading = false;
       })

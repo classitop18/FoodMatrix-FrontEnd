@@ -165,7 +165,7 @@ const healthChartConfig = {
 };
 
 export default function DashboardPage() {
-  const { account, activeBudget, spent, usagePercent, resetInDays } = useSelector(
+  const { account, activeBudget, spent, usagePercent, resetText } = useSelector(
     (state: RootState) => state.account
   );
   const user = useSelector((state: RootState) => state.auth.user);

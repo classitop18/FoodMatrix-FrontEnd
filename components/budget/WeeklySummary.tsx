@@ -1,14 +1,30 @@
 "use client";
 
-import { CalendarDays, DollarSign, Info } from "lucide-react";
+import { useState } from "react";
+import { CalendarDays, DollarSign, Info, ChevronLeft, ChevronRight, X, Wallet, ArrowRight } from "lucide-react";
 import type { WeeklySummary as WeeklySummaryType } from "@/services/budget/types/budget.types";
+import { useSetDailyBudgetMutation } from "@/services/budget/budget.mutation";
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store.redux";
 
 interface WeeklySummaryProps {
     data: WeeklySummaryType | null;
     isLoading: boolean;
+    onPrevWeek?: () => void;
+    onNextWeek?: () => void;
+    onCurrentWeek?: () => void;
+    currentDate?: string;
 }
 
-export function WeeklySummary({ data, isLoading }: WeeklySummaryProps) {
+export function WeeklySummary({ data, isLoading, onPrevWeek, onNextWeek, onCurrentWeek, currentDate }: WeeklySummaryProps) {
+    const [selectedDateToUpdate, setSelectedDateToUpdate] = useState<{ date: string; currentAmount: number } | null>(null);
+    const [updateAmount, setUpdateAmount] = useState("");
+    const { toast } = useToast();
+    const activeAccountId = useSelector((state: RootState) => state.account.activeAccountId);
+    const setDailyBudgetMutation = useSetDailyBudgetMutation();
     if (isLoading) {
         return (
             <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
@@ -25,21 +41,107 @@ export function WeeklySummary({ data, isLoading }: WeeklySummaryProps) {
         );
     }
 
-    if (!data || data.days.every((d) => !d.hasBudget && !d.isFallback)) {
+    if (!data) {
         return null;
     }
 
     const isOverBudgetWeek = data.totalBalance < 0;
+
+    const handleUpdateBudget = async () => {
+        if (!selectedDateToUpdate || !activeAccountId) return;
+        const parsedAmount = parseFloat(updateAmount);
+        if (isNaN(parsedAmount) || parsedAmount <= 0) {
+            toast({
+                title: "Invalid Amount",
+                description: "Please enter a valid positive amount",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        try {
+            await setDailyBudgetMutation.mutateAsync({
+                accountId: activeAccountId,
+                payload: {
+                    date: selectedDateToUpdate.date,
+                    amount: parsedAmount,
+                },
+            });
+
+            toast({
+                title: "✅ Budget Updated",
+                description: `Successfully updated budget for ${new Date(selectedDateToUpdate.date).toLocaleDateString()}`,
+            });
+            
+            setSelectedDateToUpdate(null);
+            setUpdateAmount("");
+        } catch (error: any) {
+            toast({
+                title: "Error",
+                description: error?.response?.data?.message || "Failed to update budget",
+                variant: "destructive",
+            });
+        }
+    };
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const isCurrentWeek = currentDate ? (() => {
+        const _currentDate = new Date(currentDate);
+        _currentDate.setHours(0, 0, 0, 0);
+        
+        const dayOfWeek = today.getDay(); // 0 = Sunday
+        const weekStart = new Date(today);
+        weekStart.setDate(today.getDate() - dayOfWeek);
+        weekStart.setHours(0, 0, 0, 0);
+        
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 6);
+        weekEnd.setHours(23, 59, 59, 999);
+        
+        return _currentDate >= weekStart && _currentDate <= weekEnd;
+    })() : true;
 
     return (
         <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
             {/* Header */}
             <div className="flex items-center justify-between mb-5">
                 <div>
-                    <h2 className="text-lg font-bold text-[#313131] flex items-center gap-2">
-                        <CalendarDays className="w-5 h-5 text-[#7661d3]" />
-                        This Week
-                    </h2>
+                    <div className="flex items-center gap-3 mb-1">
+                        <h2 className="text-lg font-bold text-[#313131] flex items-center gap-2">
+                            <CalendarDays className="w-5 h-5 text-[#7661d3]" />
+                            {isCurrentWeek ? "This Week" : "Week of"}
+                        </h2>
+                        
+                        <div className="flex items-center gap-2">
+                            {onPrevWeek && onNextWeek && (
+                                <div className="flex items-center gap-1 bg-gray-50 rounded-lg p-1 border border-gray-100">
+                                    <button
+                                        onClick={onPrevWeek}
+                                        className="p-1 rounded hover:bg-white hover:shadow-sm text-gray-500 transition-all"
+                                    >
+                                        <ChevronLeft className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        onClick={onNextWeek}
+                                        className="p-1 rounded hover:bg-white hover:shadow-sm text-gray-500 transition-all"
+                                    >
+                                        <ChevronRight className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            )}
+
+                            {!isCurrentWeek && onCurrentWeek && (
+                                <button
+                                    onClick={onCurrentWeek}
+                                    className="text-[10px] font-bold uppercase tracking-wider text-[#7661d3] bg-[#7661d3]/10 hover:bg-[#7661d3]/20 px-2 py-1.5 rounded-lg transition-colors"
+                                >
+                                    Current Week
+                                </button>
+                            )}
+                        </div>
+                    </div>
                     <p className="text-xs text-gray-400">
                         {new Date(data.weekStart).toLocaleDateString("en-US", {
                             day: "numeric",
@@ -60,7 +162,7 @@ export function WeeklySummary({ data, isLoading }: WeeklySummaryProps) {
                             Budget
                         </p>
                         <p className="text-sm font-extrabold text-[#7661d3]">
-                            ${data.totalBudget.toFixed(0)}
+                            ${(data.totalBudget || 0).toFixed(0)}
                         </p>
                     </div>
                     <div className="w-px h-8 bg-gray-200" />
@@ -69,7 +171,7 @@ export function WeeklySummary({ data, isLoading }: WeeklySummaryProps) {
                             Spent
                         </p>
                         <p className="text-sm font-extrabold text-[#7dab4f]">
-                            ${data.totalSpent.toFixed(0)}
+                            ${(data.totalSpent || 0).toFixed(0)}
                         </p>
                     </div>
                     <div className="w-px h-8 bg-gray-200" />
@@ -81,7 +183,7 @@ export function WeeklySummary({ data, isLoading }: WeeklySummaryProps) {
                             className={`text-sm font-extrabold ${isOverBudgetWeek ? "text-red-500" : "text-[#313131]"}`}
                         >
                             {isOverBudgetWeek ? "-" : ""}$
-                            {Math.abs(data.totalBalance).toFixed(0)}
+                            {Math.abs(data.totalBalance || 0).toFixed(0)}
                         </p>
                     </div>
                 </div>
@@ -100,11 +202,25 @@ export function WeeklySummary({ data, isLoading }: WeeklySummaryProps) {
                     return (
                         <div
                             key={day.date}
-                            className={`rounded-xl p-3 text-center transition-all ${isToday
+                            onClick={() => {
+                                // Only allow updating today and future dates
+                                const dayDate = new Date(day.date);
+                                dayDate.setHours(0, 0, 0, 0);
+                                if (dayDate >= today) {
+                                    setSelectedDateToUpdate({ date: day.date, currentAmount: day.allocatedAmount || 0 });
+                                    setUpdateAmount((day.allocatedAmount || 0).toString());
+                                }
+                            }}
+                            className={`rounded-xl p-3 text-center transition-all ${(() => {
+                                const dayDate = new Date(day.date);
+                                dayDate.setHours(0, 0, 0, 0);
+                                const isPast = dayDate < today;
+                                return isPast ? '' : 'cursor-pointer hover:-translate-y-0.5';
+                            })()} shadow-sm hover:shadow-md ${isToday
                                 ? "bg-[#F3F0FD] border-2 border-[#7661d3]/30 ring-2 ring-[#7661d3]/10"
                                 : isFuture
                                     ? "bg-gray-50/50 border border-dashed border-gray-200"
-                                    : "bg-gray-50 border border-gray-100"
+                                    : "bg-gray-50 border border-gray-100 dark:bg-gray-50 hover:bg-white"
                                 }`}
                         >
                             {/* Day Name */}
@@ -123,7 +239,7 @@ export function WeeklySummary({ data, isLoading }: WeeklySummaryProps) {
                                 {new Date(day.date).getDate()}
                             </p>
 
-                            {hasBudgetData && !isFuture ? (
+                            {hasBudgetData ? (
                                 <>
                                     {/* Budget */}
                                     <p className="text-[10px] text-gray-400 font-medium">
@@ -132,28 +248,32 @@ export function WeeklySummary({ data, isLoading }: WeeklySummaryProps) {
                                     <p
                                         className={`text-xs font-bold mb-1 ${day.isFallback ? "text-blue-500" : "text-[#7661d3]"}`}
                                     >
-                                        ${day.allocatedAmount.toFixed(0)}
+                                        ${(day.allocatedAmount || 0).toFixed(0)}
                                     </p>
 
                                     {/* Spent */}
-                                    <p className="text-[10px] text-gray-400 font-medium">
-                                        Spent
-                                    </p>
-                                    <p
-                                        className={`text-xs font-bold ${day.hasExpense
-                                            ? dayOverBudget
-                                                ? "text-red-500"
-                                                : "text-[#7dab4f]"
-                                            : "text-gray-300"
-                                            }`}
-                                    >
-                                        {day.hasExpense
-                                            ? `$${day.amountSpent.toFixed(0)}`
-                                            : "—"}
-                                    </p>
+                                    {!isFuture && (
+                                        <>
+                                            <p className="text-[10px] text-gray-400 font-medium">
+                                                Spent
+                                            </p>
+                                            <p
+                                                className={`text-xs font-bold ${day.hasExpense
+                                                    ? dayOverBudget
+                                                        ? "text-red-500"
+                                                        : "text-[#7dab4f]"
+                                                    : "text-gray-300"
+                                                    }`}
+                                            >
+                                                {day.hasExpense
+                                                    ? `$${(day.amountSpent || 0).toFixed(0)}`
+                                                    : "—"}
+                                            </p>
+                                        </>
+                                    )}
 
                                     {/* Fallback indicator */}
-                                    {day.isFallback && (
+                                    {day.isFallback && !isFuture && (
                                         <div className="mt-1" title="Using previous day's budget">
                                             <Info className="w-3 h-3 text-blue-400 mx-auto" />
                                         </div>
@@ -161,13 +281,82 @@ export function WeeklySummary({ data, isLoading }: WeeklySummaryProps) {
                                 </>
                             ) : (
                                 <p className="text-[10px] text-gray-300 mt-2">
-                                    {isFuture ? "Future" : "No data"}
+                                    No data
                                 </p>
                             )}
                         </div>
                     );
                 })}
             </div>
+
+            {/* Update Daily Budget Modal */}
+            {selectedDateToUpdate && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center">
+                    <div
+                        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                        onClick={() => setSelectedDateToUpdate(null)}
+                    />
+
+                    <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 animate-scale-in overflow-hidden">
+                        {/* Header */}
+                        <div className="bg-gradient-to-r from-[#3d326d] to-[#7661d3] p-5">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                                        <CalendarDays className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-lg font-bold text-white">
+                                            Update Budget
+                                        </h2>
+                                        <p className="text-xs text-white/60">
+                                            {new Date(selectedDateToUpdate.date).toLocaleDateString("en-US", { weekday: 'long', month: 'short', day: 'numeric' })}
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setSelectedDateToUpdate(null)}
+                                    className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="p-5 space-y-4">
+                            <div>
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">
+                                    New Daily Budget
+                                </label>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-bold text-[#7661d3]">
+                                        $
+                                    </span>
+                                    <Input
+                                        type="number"
+                                        placeholder="0"
+                                        value={updateAmount}
+                                        onChange={(e) => setUpdateAmount(e.target.value)}
+                                        className="pl-8 h-12 text-lg font-bold border-gray-200 focus:border-[#7661d3] focus:ring-[#7661d3]/20 rounded-xl"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="px-5 pb-5 mt-1">
+                            <Button
+                                onClick={handleUpdateBudget}
+                                disabled={!updateAmount || setDailyBudgetMutation.isPending}
+                                className="w-full h-12 bg-[#313131] hover:bg-black text-white font-bold rounded-xl text-sm flex items-center gap-2"
+                            >
+                                {setDailyBudgetMutation.isPending ? "Updating..." : "Update Budget"}
+                                {!setDailyBudgetMutation.isPending && <ArrowRight className="w-4 h-4" />}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

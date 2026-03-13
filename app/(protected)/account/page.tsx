@@ -72,7 +72,7 @@ export default function AccountPage() {
     activeBudget,
     spent,
     usagePercent,
-    resetInDays,
+    resetText,
     loading,
   } = useSelector((state: RootState) => state.account);
 
@@ -297,7 +297,7 @@ export default function AccountPage() {
                 </span>
 
                 <span className="text-white/70 text-xs font-medium">
-                  Resets in {resetInDays} days
+                  Resets {resetText}
                 </span>
               </div>
             </div>
@@ -358,7 +358,7 @@ export default function AccountPage() {
               activeBudget={activeBudget}
               spent={spent}
               usagePercent={usagePercent}
-              resetInDays={resetInDays}
+              resetText={resetText}
               activeAccountId={activeAccountId!}
               loading={loading}
               onRefetch={handleRefetch}

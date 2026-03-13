@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { X, Wallet, ChevronLeft, ChevronRight, ArrowRight, CalendarDays, CalendarClock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSetDailyBudgetMutation, useUpdateBudgetMutation } from "@/services/budget/budget.mutation";
+import { useBudgetVersionsQuery } from "@/services/budget/budget.query";
 import { useToast } from "@/hooks/use-toast";
 
 interface BudgetSetupModalProps {
@@ -26,9 +27,10 @@ export function BudgetSetupModal({
     const [amount, setAmount] = useState("");
     const [calendarMonth, setCalendarMonth] = useState(today.getMonth());
     const [calendarYear, setCalendarYear] = useState(today.getFullYear());
-
+    const [nextWeekRange, setNextWeekRange] = useState<{ start: Date; end: Date }>(null as any);
     const setDailyBudgetMutation = useSetDailyBudgetMutation();
     const updateBudgetMutation = useUpdateBudgetMutation();
+    const versionsQuery = useBudgetVersionsQuery(accountId);
     const { toast } = useToast();
 
     // Calendar helpers
@@ -119,6 +121,27 @@ export function BudgetSetupModal({
         }
     };
 
+    const getNextWeekDate = (currentDate: Date) => {
+        const dayOfWeek = currentDate.getDay();
+        const curentDate = currentDate.getDate();
+        const daysUntilNextWeek = (7 - dayOfWeek) % 7 || 7;
+
+        const nextWeekSunday = new Date(currentDate);
+        const nextWeekSaturday = new Date(currentDate);
+
+        nextWeekSunday.setDate(curentDate + daysUntilNextWeek);
+        nextWeekSaturday.setDate(nextWeekSunday.getDate() + 6);
+
+        return {
+            start: nextWeekSunday,
+            end: nextWeekSaturday,
+        }
+    }
+
+    useEffect(() => {
+        setNextWeekRange(getNextWeekDate(today));
+    }, []);
+
     if (!open) return null;
 
     const daysInMonth = getDaysInMonth(calendarMonth, calendarYear);
@@ -128,6 +151,7 @@ export function BudgetSetupModal({
         { month: "long", year: "numeric" },
     );
     const isPending = setDailyBudgetMutation.isPending || updateBudgetMutation.isPending;
+
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -249,8 +273,8 @@ export function BudgetSetupModal({
                                                 }}
                                                 disabled={isPastDate}
                                                 className={`h-9 rounded-lg text-xs font-semibold transition-all ${isPastDate
-                                                        ? "text-gray-300 cursor-not-allowed"
-                                                        : "cursor-pointer hover:bg-gray-100"
+                                                    ? "text-gray-300 cursor-not-allowed"
+                                                    : "cursor-pointer hover:bg-gray-100"
                                                     } ${selected && !isPastDate
                                                         ? "bg-[#7661d3] hover:bg-[#7661d3] text-white shadow-md shadow-[#7661d3]/30"
                                                         : todayDay
@@ -286,11 +310,30 @@ export function BudgetSetupModal({
                         <div className="bg-[#F3F0FD] rounded-xl p-4 text-center border border-[#7661d3]/20">
                             <CalendarClock className="w-8 h-8 text-[#7661d3] mx-auto mb-2" />
                             <h3 className="text-sm font-bold text-[#3d326d] mb-1">
-                                Upcoming Week Configuration
+                                Upcoming Week Configuration <span className="text-xs text-gray-500 font-normal">(Next Sunday  - Saturday)</span>
                             </h3>
-                            <p className="text-xs text-gray-600">
+                            <h4 className="text-xs text-gray-600 mb-2 font-medium">
+                                {
+                                    nextWeekRange
+                                        ? `This will set a total budget for the week of ${nextWeekRange.start.toLocaleDateString("en-US", {
+                                            month: "short",
+                                            day: "numeric",
+                                        })} - ${nextWeekRange.end.toLocaleDateString("en-US", {
+                                            month: "short",
+                                            day: "numeric",
+                                        })}.`
+                                        : "Calculating next week's date range..."
+                                }
+                            </h4>
+                            {versionsQuery.data && versionsQuery.data.length > 0 && versionsQuery.data[0].mode === "weekly" && (
+                                <div className="mt-2 mb-3 bg-white p-2.5 rounded-xl border border-[#7661d3]/10 flex items-center justify-between">
+                                    <span className="text-xs font-semibold text-gray-500">Current Next Week's Budget:</span>
+                                    <span className="text-sm font-bold text-[#7661d3]">${parseFloat(versionsQuery.data[0].weeklyAmount || "0").toFixed(0)}</span>
+                                </div>
+                            )}
+                            <p className="text-[10px] text-gray-500 text-left bg-white/50 p-2 rounded-lg">
                                 Setting a weekly budget assigns a total expected spend for the week, divided over 7 days.
-                                It will take effect starting next Monday so that your current week's tracker remains accurate.
+                                It will take effect starting next Sunday so that your current week's tracker remains accurate.
                             </p>
                         </div>
                     )}

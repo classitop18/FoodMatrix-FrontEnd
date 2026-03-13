@@ -27,8 +27,10 @@ const COLORS = [
 interface BudgetAnalyticsProps {
     analytics: BudgetAnalyticsType | null;
     isLoading: boolean;
-    period: "weekly" | "monthly";
-    onPeriodChange: (period: "weekly" | "monthly") => void;
+    period: "weekly" | "monthly" | "yearly" | "custom";
+    onPeriodChange: (period: "weekly" | "monthly" | "yearly" | "custom") => void;
+    filters?: { year?: string; month?: string; weekDate?: string };
+    onFilterChange?: (filters: { year?: string; month?: string; weekDate?: string }) => void;
 }
 
 export function BudgetAnalytics({
@@ -36,6 +38,8 @@ export function BudgetAnalytics({
     isLoading,
     period,
     onPeriodChange,
+    filters,
+    onFilterChange,
 }: BudgetAnalyticsProps) {
     const [chartType, setChartType] = useState<"bar" | "line">("bar");
 
@@ -48,14 +52,25 @@ export function BudgetAnalytics({
         );
     }
 
-    const chartData = analytics.dailyData.map((d) => ({
-        date: new Date(d.date).toLocaleDateString("en-US", {
-            day: "numeric",
-            month: "short",
-        }),
-        budget: d.budget,
-        spent: d.spent,
-    }));
+    // Format chart data date axis depending on period (yearly = months, otherwise = days)
+    const chartData = (analytics.dailyData || []).map((d) => {
+        let dateLabel = "";
+        if (period === "yearly") {
+            dateLabel = new Date(d.date).toLocaleDateString("en-US", { month: "short" });
+        } else {
+            dateLabel = new Date(d.date).toLocaleDateString("en-US", {
+                day: "numeric",
+                month: "short",
+            });
+        }
+        
+        return {
+            date: dateLabel,
+            budget: d.budget,
+            spent: d.spent,
+            origDate: d.date,
+        };
+    });
 
     const categoryData = analytics.categoriesBreakdown
         ? Object.entries(analytics.categoriesBreakdown)
@@ -79,26 +94,43 @@ export function BudgetAnalytics({
                 </div>
 
                 <div className="flex items-center gap-2">
-                    {/* Period Toggle */}
-                    <div className="flex bg-gray-100 rounded-lg p-0.5">
-                        <button
-                            onClick={() => onPeriodChange("weekly")}
-                            className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${period === "weekly"
-                                ? "bg-white text-[#7661d3] shadow-sm"
-                                : "text-gray-500"
-                                }`}
+                    {/* Custom Dropdown Filters */}
+                    <div className="flex items-center gap-2 mr-2">
+                        <select
+                            value={period}
+                            onChange={(e) => onPeriodChange(e.target.value as any)}
+                            className="bg-gray-50 border border-gray-200 text-[#313131] text-xs font-semibold rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#7661d3]"
                         >
-                            Week
-                        </button>
-                        <button
-                            onClick={() => onPeriodChange("monthly")}
-                            className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${period === "monthly"
-                                ? "bg-white text-[#7661d3] shadow-sm"
-                                : "text-gray-500"
-                                }`}
-                        >
-                            Month
-                        </button>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                            <option value="yearly">Yearly</option>
+                        </select>
+
+                        {(period === "monthly" || period === "yearly") && filters && onFilterChange && (
+                            <select
+                                value={filters.year || new Date().getFullYear().toString()}
+                                onChange={(e) => onFilterChange({ ...filters, year: e.target.value })}
+                                className="bg-gray-50 border border-gray-200 text-[#313131] text-xs font-semibold rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#7661d3]"
+                            >
+                                {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(year => (
+                                    <option key={year} value={year}>{year}</option>
+                                ))}
+                            </select>
+                        )}
+
+                        {period === "monthly" && filters && onFilterChange && (
+                            <select
+                                value={filters.month || (new Date().getMonth() + 1).toString()}
+                                onChange={(e) => onFilterChange({ ...filters, month: e.target.value })}
+                                className="bg-gray-50 border border-gray-200 text-[#313131] text-xs font-semibold rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#7661d3]"
+                            >
+                                {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
+                                    <option key={month} value={month}>
+                                        {new Date(2000, month - 1, 1).toLocaleDateString("en-US", { month: "short" })}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
                     </div>
 
                     {/* Chart Toggle */}
@@ -132,7 +164,7 @@ export function BudgetAnalytics({
                         Total Budget
                     </p>
                     <p className="text-lg font-extrabold text-[#7661d3]">
-                        ${analytics.totalBudget.toFixed(0)}
+                        ${(analytics.totalBudget || 0).toFixed(0)}
                     </p>
                 </div>
                 <div className="bg-gradient-to-br from-[#e8f5e0] to-white rounded-xl p-3">
@@ -140,7 +172,7 @@ export function BudgetAnalytics({
                         Total Spent
                     </p>
                     <p className="text-lg font-extrabold text-[#7dab4f]">
-                        ${analytics.totalSpent.toFixed(0)}
+                        ${(analytics.totalSpent || 0).toFixed(0)}
                     </p>
                 </div>
                 <div
@@ -150,7 +182,7 @@ export function BudgetAnalytics({
                         {analytics.totalBalance >= 0 ? "Saved" : "Over Budget"}
                     </p>
                     <p className="text-lg font-extrabold text-white">
-                        ${Math.abs(analytics.totalBalance).toFixed(0)}
+                        ${Math.abs(analytics.totalBalance || 0).toFixed(0)}
                     </p>
                 </div>
                 <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-3">
@@ -158,18 +190,18 @@ export function BudgetAnalytics({
                         Avg/Day
                     </p>
                     <p className="text-lg font-extrabold text-[#313131]">
-                        ${analytics.averageDailySpending.toFixed(0)}
+                        ${(analytics.averageDailySpending || 0).toFixed(0)}
                     </p>
                 </div>
             </div>
 
             {/* Over-spending indicator */}
-            {analytics.daysOverBudget > 0 && (
+            {(analytics.daysOverBudget || 0) > 0 && (
                 <div className="flex items-center gap-2 px-3 py-2 bg-red-50 border border-red-100 rounded-xl mb-4">
                     <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
                     <p className="text-xs font-semibold text-red-600">
-                        Over budget on {analytics.daysOverBudget} day
-                        {analytics.daysOverBudget > 1 ? "s" : ""} this {period === "weekly" ? "week" : "month"}
+                        Over budget on {analytics.daysOverBudget} {period === "yearly" ? "month" : "day"}
+                        {analytics.daysOverBudget > 1 ? "s" : ""} this {period === "weekly" ? "week" : period === "yearly" ? "year" : "month"}
                     </p>
                 </div>
             )}

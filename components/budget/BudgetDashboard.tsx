@@ -176,7 +176,7 @@ export function BudgetDashboard({
                             Budget
                         </p>
                         <p className="text-xl font-extrabold text-[#7661d3]">
-                            ${todayBudget?.allocatedAmount.toFixed(2)}
+                            ${(todayBudget?.allocatedAmount ?? 0).toFixed(2)}
                         </p>
                     </div>
                     <div
@@ -189,7 +189,7 @@ export function BudgetDashboard({
                             <p
                                 className={`text-xl font-extrabold ${isOverBudget ? "text-red-500" : "text-[#7dab4f]"}`}
                             >
-                                ${todayBudget?.amountSpent.toFixed(2)}
+                                ${(todayBudget?.amountSpent ?? 0).toFixed(2)}
                             </p>
                             {isOverBudget ? (
                                 <TrendingUp className="w-4 h-4 text-red-500" />

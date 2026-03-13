@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store.redux";
 import { Wallet, Loader2 } from "lucide-react";
@@ -24,6 +24,12 @@ import {
 import type { PendingUpdate } from "@/services/budget/types/budget.types";
 
 export default function BudgetPage() {
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
     const activeAccountId = useSelector(
         (state: RootState) => state.account.activeAccountId,
     );
@@ -36,8 +42,19 @@ export default function BudgetPage() {
 
     // Analytics period
     const [analyticsPeriod, setAnalyticsPeriod] = useState<
-        "weekly" | "monthly"
+        "weekly" | "monthly" | "yearly" | "custom"
     >("weekly");
+
+    // Analytics filters (Custom Year/Month)
+    const [analyticsFilters, setAnalyticsFilters] = useState<{ year?: string; month?: string; weekDate?: string }>({
+        year: new Date().getFullYear().toString(),
+        month: (new Date().getMonth() + 1).toString()
+    });
+
+    // Weekly Summary navigation
+    const [currentWeeklySummaryDate, setCurrentWeeklySummaryDate] = useState<string>(
+        new Date().toISOString()
+    );
 
     // History pagination
     const [historyPage, setHistoryPage] = useState(1);
@@ -45,7 +62,7 @@ export default function BudgetPage() {
 
     // Queries
     const todayQuery = useTodayBudgetQuery(activeAccountId || "");
-    const weeklyQuery = useWeeklySummaryQuery(activeAccountId || "");
+    const weeklyQuery = useWeeklySummaryQuery(activeAccountId || "", currentWeeklySummaryDate);
     const historyQuery = useBudgetHistoryQuery(activeAccountId || "", {
         page: historyPage,
         limit: historyLimit,
@@ -53,6 +70,7 @@ export default function BudgetPage() {
     const analyticsQuery = useBudgetAnalyticsQuery(
         activeAccountId || "",
         analyticsPeriod,
+        analyticsFilters
     );
     const pendingQuery = usePendingUpdatesQuery(activeAccountId || "");
 
@@ -73,7 +91,23 @@ export default function BudgetPage() {
         setExpenseModalOpen(true);
     };
 
-    if (!activeAccountId) {
+    const handlePrevWeek = () => {
+        const date = new Date(currentWeeklySummaryDate);
+        date.setDate(date.getDate() - 7);
+        setCurrentWeeklySummaryDate(date.toISOString());
+    };
+
+    const handleNextWeek = () => {
+        const date = new Date(currentWeeklySummaryDate);
+        date.setDate(date.getDate() + 7);
+        setCurrentWeeklySummaryDate(date.toISOString());
+    };
+
+    const handleCurrentWeek = () => {
+        setCurrentWeeklySummaryDate(new Date().toISOString());
+    };
+
+    if (!mounted || !activeAccountId) {
         return (
             <div className="min-h-screen bg-[#f8f7fc] flex items-center justify-center">
                 <div className="text-center">
@@ -137,6 +171,10 @@ export default function BudgetPage() {
                         <WeeklySummary
                             data={weeklyQuery.data || null}
                             isLoading={weeklyQuery.isLoading}
+                            onPrevWeek={handlePrevWeek}
+                            onNextWeek={handleNextWeek}
+                            onCurrentWeek={handleCurrentWeek}
+                            currentDate={currentWeeklySummaryDate}
                         />
                     </div>
                 </div>
@@ -147,6 +185,8 @@ export default function BudgetPage() {
                     isLoading={analyticsQuery.isLoading}
                     period={analyticsPeriod}
                     onPeriodChange={setAnalyticsPeriod}
+                    filters={analyticsFilters}
+                    onFilterChange={setAnalyticsFilters}
                 />
 
                 {/* History (full width) */}

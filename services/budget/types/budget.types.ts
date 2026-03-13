@@ -74,7 +74,7 @@ export interface WeeklySummary {
 // ================== Analytics ==================
 
 export interface BudgetAnalytics {
-    period: "weekly" | "monthly";
+    period: "weekly" | "monthly" | "yearly" | "custom";
     totalBudget: number;
     totalSpent: number;
     totalBalance: number;

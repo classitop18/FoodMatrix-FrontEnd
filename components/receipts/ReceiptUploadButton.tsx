@@ -275,7 +275,7 @@ export function ReceiptUploadButton({ onSuccess, variant = "default" }: ReceiptU
 
                     {/* Footer */}
                     {step === "details" && !uploadMutation.isPending && (
-                        <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex items-center gap-3">
+                        <div className="px-6 py-4  bg-white/95  border-t border-gray-100 flex items-center gap-3">
                             <Button
                                 variant="ghost"
                                 onClick={() => setStep("file")}

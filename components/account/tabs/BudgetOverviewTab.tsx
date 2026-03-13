@@ -6,7 +6,7 @@ interface BudgetOverviewTabProps {
   activeBudget: any;
   spent: number;
   usagePercent: number;
-  resetInDays: number;
+  resetText: string;
   activeAccountId: string;
   loading: boolean;
   onRefetch: () => void;
@@ -17,7 +17,7 @@ export const BudgetOverviewTab: React.FC<BudgetOverviewTabProps> = ({
   activeBudget,
   spent,
   usagePercent,
-  resetInDays,
+  resetText,
   activeAccountId,
   loading,
   onRefetch,
@@ -102,9 +102,9 @@ export const BudgetOverviewTab: React.FC<BudgetOverviewTabProps> = ({
                   />
                 </div>
 
-                {resetInDays !== null && (
+                {resetText && (
                   <p className="text-[11px] text-gray-400 mt-2">
-                    Resets in {resetInDays} days
+                    Resets {resetText}
                   </p>
                 )}
               </div>
