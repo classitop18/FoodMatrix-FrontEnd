@@ -55,10 +55,13 @@ export function BudgetAnalytics({
     // Format chart data date axis depending on period (yearly = months, otherwise = days)
     const chartData = (analytics.dailyData || []).map((d) => {
         let dateLabel = "";
+        const safeDateString = typeof d.date === 'string' && d.date.includes('T') ? d.date.split('T')[0] : d.date;
+        const localDate = new Date(safeDateString + "T00:00:00");
+
         if (period === "yearly") {
-            dateLabel = new Date(d.date).toLocaleDateString("en-US", { month: "short" });
+            dateLabel = localDate.toLocaleDateString("en-US", { month: "short" });
         } else {
-            dateLabel = new Date(d.date).toLocaleDateString("en-US", {
+            dateLabel = localDate.toLocaleDateString("en-US", {
                 day: "numeric",
                 month: "short",
             });

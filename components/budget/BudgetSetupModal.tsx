@@ -82,10 +82,15 @@ export function BudgetSetupModal({
 
         try {
             if (budgetMode === "daily") {
+                const year = selectedDate.getFullYear();
+                const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+                const day = String(selectedDate.getDate()).padStart(2, '0');
+                const safeDateString = `${year}-${month}-${day}`;
+
                 const result = await setDailyBudgetMutation.mutateAsync({
                     accountId,
                     payload: {
-                        date: selectedDate.toISOString(),
+                        date: safeDateString,
                         amount: parsedAmount,
                     },
                 });

@@ -60,10 +60,14 @@ export function WeeklySummary({ data, isLoading, onPrevWeek, onNextWeek, onCurre
         }
 
         try {
+            const safeDateString = typeof selectedDateToUpdate.date === 'string' && selectedDateToUpdate.date.includes('T') 
+                ? selectedDateToUpdate.date.split('T')[0] 
+                : selectedDateToUpdate.date;
+
             await setDailyBudgetMutation.mutateAsync({
                 accountId: activeAccountId,
                 payload: {
-                    date: selectedDateToUpdate.date,
+                    date: safeDateString,
                     amount: parsedAmount,
                 },
             });
@@ -143,15 +147,17 @@ export function WeeklySummary({ data, isLoading, onPrevWeek, onNextWeek, onCurre
                         </div>
                     </div>
                     <p className="text-xs text-gray-400">
-                        {new Date(data.weekStart).toLocaleDateString("en-US", {
-                            day: "numeric",
-                            month: "short",
-                        })}{" "}
-                        –{" "}
-                        {new Date(data.weekEnd).toLocaleDateString("en-US", {
-                            day: "numeric",
-                            month: "short",
-                        })}
+                        {(() => {
+                            const ws = typeof data.weekStart === 'string' && data.weekStart.includes('T') ? data.weekStart.split('T')[0] : data.weekStart;
+                            const we = typeof data.weekEnd === 'string' && data.weekEnd.includes('T') ? data.weekEnd.split('T')[0] : data.weekEnd;
+                            return `${new Date(ws + "T00:00:00").toLocaleDateString("en-US", {
+                                day: "numeric",
+                                month: "short",
+                            })} – ${new Date(we + "T00:00:00").toLocaleDateString("en-US", {
+                                day: "numeric",
+                                month: "short",
+                            })}`;
+                        })()}
                     </p>
                 </div>
 
@@ -192,10 +198,12 @@ export function WeeklySummary({ data, isLoading, onPrevWeek, onNextWeek, onCurre
             {/* Days Grid */}
             <div className="grid grid-cols-7 gap-2">
                 {data.days.map((day) => {
+                    const safeDateString = typeof day.date === 'string' && day.date.includes('T') ? day.date.split('T')[0] : day.date;
+                    const localDayDate = new Date(safeDateString + "T00:00:00");
                     const isToday =
-                        new Date(day.date).toDateString() ===
+                        localDayDate.toDateString() ===
                         new Date().toDateString();
-                    const isFuture = new Date(day.date) > new Date();
+                    const isFuture = localDayDate > new Date();
                     const dayOverBudget = day.balance < 0 && day.hasExpense;
                     const hasBudgetData = day.hasBudget || day.isFallback;
 
@@ -204,17 +212,13 @@ export function WeeklySummary({ data, isLoading, onPrevWeek, onNextWeek, onCurre
                             key={day.date}
                             onClick={() => {
                                 // Only allow updating today and future dates
-                                const dayDate = new Date(day.date);
-                                dayDate.setHours(0, 0, 0, 0);
-                                if (dayDate >= today) {
+                                if (localDayDate >= today || isToday) {
                                     setSelectedDateToUpdate({ date: day.date, currentAmount: day.allocatedAmount || 0 });
                                     setUpdateAmount((day.allocatedAmount || 0).toString());
                                 }
                             }}
                             className={`rounded-xl p-3 text-center transition-all ${(() => {
-                                const dayDate = new Date(day.date);
-                                dayDate.setHours(0, 0, 0, 0);
-                                const isPast = dayDate < today;
+                                const isPast = localDayDate < today && !isToday;
                                 return isPast ? '' : 'cursor-pointer hover:-translate-y-0.5';
                             })()} shadow-sm hover:shadow-md ${isToday
                                 ? "bg-[#F3F0FD] border-2 border-[#7661d3]/30 ring-2 ring-[#7661d3]/10"
@@ -236,7 +240,7 @@ export function WeeklySummary({ data, isLoading, onPrevWeek, onNextWeek, onCurre
                                 className={`text-xs font-bold mb-2 ${isToday ? "text-[#7661d3]" : "text-gray-500"
                                     }`}
                             >
-                                {new Date(day.date).getDate()}
+                                {localDayDate.getDate()}
                             </p>
 
                             {hasBudgetData ? (
@@ -310,7 +314,10 @@ export function WeeklySummary({ data, isLoading, onPrevWeek, onNextWeek, onCurre
                                             Update Budget
                                         </h2>
                                         <p className="text-xs text-white/60">
-                                            {new Date(selectedDateToUpdate.date).toLocaleDateString("en-US", { weekday: 'long', month: 'short', day: 'numeric' })}
+                                            {(() => {
+                                                const sDateStr = typeof selectedDateToUpdate.date === 'string' && selectedDateToUpdate.date.includes('T') ? selectedDateToUpdate.date.split('T')[0] : selectedDateToUpdate.date;
+                                                return new Date(sDateStr + "T00:00:00").toLocaleDateString("en-US", { weekday: 'long', month: 'short', day: 'numeric' });
+                                            })()}
                                         </p>
                                     </div>
                                 </div>

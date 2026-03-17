@@ -91,14 +91,19 @@ export function BudgetHistory({
                         {data.map((entry) => {
                             const isOverBudget = entry.balance < 0;
                             const hasExpense = entry.amountSpent !== null;
+                            const dateObj = new Date(entry.date);
                             const isToday =
-                                new Date(entry.date).toDateString() ===
-                                new Date().toDateString();
+                                dateObj.toLocaleDateString("en-US", { timeZone: "UTC" }) ===
+                                new Date().toLocaleDateString("en-US", { timeZone: "UTC" }); // Or local? Today is relative to local, but budget dates are midnight UTC.
+                            // To be absolutely safe, we extract the YYYY-MM-DD string
+                            const dateString = typeof entry.date === 'string' && entry.date.includes('T') ? entry.date.split('T')[0] : entry.date;
+                            const localDateObj = new Date(dateString + "T00:00:00");
+                            const isTodaySafe = localDateObj.toDateString() === new Date().toDateString();
 
                             return (
                                 <div
                                     key={entry.id}
-                                    className={`grid grid-cols-5 gap-3 px-3 py-3 rounded-xl transition-colors ${isToday
+                                    className={`grid grid-cols-5 gap-3 px-3 py-3 rounded-xl transition-colors ${isTodaySafe
                                         ? "bg-[#F3F0FD] border border-[#7661d3]/20"
                                         : "bg-gray-50 hover:bg-gray-100"
                                         }`}
@@ -106,16 +111,16 @@ export function BudgetHistory({
                                     {/* Date */}
                                     <div>
                                         <p className="text-sm font-bold text-[#313131]">
-                                            {new Date(entry.date).toLocaleDateString("en-US", {
+                                            {localDateObj.toLocaleDateString("en-US", {
                                                 day: "numeric",
                                                 month: "short",
                                             })}
                                         </p>
                                         <p className="text-[10px] text-gray-400">
-                                            {new Date(entry.date).toLocaleDateString("en-US", {
+                                            {localDateObj.toLocaleDateString("en-US", {
                                                 weekday: "short",
                                             })}
-                                            {isToday && (
+                                            {isTodaySafe && (
                                                 <span className="ml-1 text-[#7661d3] font-bold">
                                                     Today
                                                 </span>
