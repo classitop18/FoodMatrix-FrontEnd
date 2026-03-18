@@ -14,6 +14,7 @@ import type {
     LogExpensePayload,
     LogExpenseFromReceiptPayload,
     ExpenseDetailsResponse,
+    CurrentWeekStatusResponse,
     WeeklySummary,
     BudgetConfig,
 } from "./types/budget.types";
@@ -130,6 +131,15 @@ export class BudgetService {
     ): Promise<BudgetConfigVersion[]> {
         const response = await apiClient.get(
             API_ENDPOINTS.BUDGET.VERSIONS(accountId),
+        );
+        return response.data.data;
+    }
+
+    async getCurrentWeekStatus(
+        accountId: string,
+    ): Promise<CurrentWeekStatusResponse> {
+        const response = await apiClient.get(
+            API_ENDPOINTS.BUDGET.CURRENT_WEEK_STATUS(accountId),
         );
         return response.data.data;
     }

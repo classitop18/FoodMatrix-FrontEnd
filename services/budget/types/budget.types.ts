@@ -71,6 +71,22 @@ export interface WeeklySummary {
     }[];
 }
 
+// ================== Current Week Status ==================
+
+export interface CurrentWeekStatusHistoryItem {
+    version: number;
+    amount: number;
+    changeReason: string | null;
+    changedAt: string;
+}
+
+export interface CurrentWeekStatusResponse {
+    attemptsUsed: number;
+    attemptsLeft: number;
+    maxAttempts: number;
+    history: CurrentWeekStatusHistoryItem[];
+}
+
 // ================== Analytics ==================
 
 export interface BudgetAnalytics {
@@ -129,6 +145,7 @@ export interface UpdateBudgetPayload {
     dailyAmount?: number;
     weeklyAmount?: number;
     changeReason?: string;
+    overrideCurrentWeek?: boolean;
 }
 
 export interface LogExpensePayload {

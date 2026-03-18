@@ -170,6 +170,7 @@ export const API_ENDPOINTS = {
     ANALYTICS: (accountId: string) => `/budget/${accountId}/analytics`,
     PENDING: (accountId: string) => `/budget/${accountId}/pending`,
     VERSIONS: (accountId: string) => `/budget/${accountId}/versions`,
+    CURRENT_WEEK_STATUS: (accountId: string) => `/budget/${accountId}/current-week-status`,
   },
 
   // Places

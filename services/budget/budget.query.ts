@@ -76,3 +76,12 @@ export const useExpenseDetailsQuery = (accountId: string, dailyBudgetId: string 
         enabled: !!accountId && !!dailyBudgetId,
     });
 };
+
+export const useCurrentWeekStatusQuery = (accountId: string) => {
+    return useQuery({
+        queryKey: ["budget", "current-week-status", accountId],
+        queryFn: () => budgetService.getCurrentWeekStatus(accountId),
+        staleTime: 30 * 1000,
+        enabled: !!accountId,
+    });
+};
