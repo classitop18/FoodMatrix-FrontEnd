@@ -39,10 +39,13 @@ export function PendingUpdateAlert({
                                 onClick={() => onUpdateClick(update)}
                                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-amber-200 rounded-lg text-xs font-semibold text-amber-700 hover:bg-amber-50 hover:border-amber-300 transition-all cursor-pointer"
                             >
-                                {new Date(update.date).toLocaleDateString("en-IN", {
-                                    day: "numeric",
-                                    month: "short",
-                                })}
+                                {(() => {
+                                    const [y, m, d] = update.date.split("T")[0].split("-").map(Number);
+                                    return new Date(y, m - 1, d).toLocaleDateString("en-IN", {
+                                        day: "numeric",
+                                        month: "short",
+                                    });
+                                })()}
                                 <span className="text-amber-400">
                                     ${update.allocatedAmount}
                                 </span>

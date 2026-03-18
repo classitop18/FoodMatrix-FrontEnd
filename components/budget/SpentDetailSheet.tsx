@@ -51,7 +51,10 @@ export function SpentDetailSheet({
     const { data, isLoading } = useExpenseDetailsQuery(accountId, open ? dailyBudgetId : null);
 
     const dateStr = data?.date
-        ? format(new Date(data.date), "EEEE, dd MMM yyyy")
+        ? (() => {
+            const [y, m, d] = data.date.split("T")[0].split("-").map(Number);
+            return format(new Date(y, m - 1, d), "EEEE, dd MMM yyyy");
+        })()
         : "";
 
     const allocatedAmount = parseFloat(data?.allocatedAmount || "0");

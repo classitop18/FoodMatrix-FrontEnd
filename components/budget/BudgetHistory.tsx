@@ -95,9 +95,9 @@ export function BudgetHistory({
                             const isToday =
                                 dateObj.toLocaleDateString("en-US", { timeZone: "UTC" }) ===
                                 new Date().toLocaleDateString("en-US", { timeZone: "UTC" }); // Or local? Today is relative to local, but budget dates are midnight UTC.
-                            // To be absolutely safe, we extract the YYYY-MM-DD string
                             const dateString = typeof entry.date === 'string' && entry.date.includes('T') ? entry.date.split('T')[0] : entry.date;
-                            const localDateObj = new Date(dateString + "T00:00:00");
+                            const [year, month, day] = dateString.split('-').map(Number);
+                            const localDateObj = new Date(year, month - 1, day);
                             const isTodaySafe = localDateObj.toDateString() === new Date().toDateString();
 
                             return (

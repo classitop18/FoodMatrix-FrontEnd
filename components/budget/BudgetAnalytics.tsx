@@ -56,7 +56,8 @@ export function BudgetAnalytics({
     const chartData = (analytics.dailyData || []).map((d) => {
         let dateLabel = "";
         const safeDateString = typeof d.date === 'string' && d.date.includes('T') ? d.date.split('T')[0] : d.date;
-        const localDate = new Date(safeDateString + "T00:00:00");
+        const [year, month, day] = safeDateString.split("-").map(Number);
+        const localDate = new Date(year, month - 1, day);
 
         if (period === "yearly") {
             dateLabel = localDate.toLocaleDateString("en-US", { month: "short" });
@@ -66,7 +67,7 @@ export function BudgetAnalytics({
                 month: "short",
             });
         }
-        
+
         return {
             date: dateLabel,
             budget: d.budget,
