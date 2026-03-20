@@ -35,10 +35,11 @@ export function ReceiptUpload({ onUploadSuccess, eventId, shoppingListId }: Rece
     const handleUpload = () => {
         if (!file) return;
 
-        uploadMutation.mutate({ file, eventId, shoppingListId }, {
+        uploadMutation.mutate({ files: [file], billType: "single", eventId, shoppingListId }, {
             onSuccess: (receipt) => {
                 toast.success("Receipt scanned successfully!");
-                onUploadSuccess(receipt);
+                const singleReceipt = Array.isArray(receipt) ? receipt[0] : receipt;
+                onUploadSuccess(singleReceipt);
                 setFile(null);
                 setPreviewUrl(null);
             },
