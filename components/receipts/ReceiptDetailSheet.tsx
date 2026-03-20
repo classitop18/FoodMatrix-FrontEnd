@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Receipt, AuditedReceiptItem } from "@/services/receipt/types/receipt.types";
 import {
     Sheet,
@@ -39,7 +39,9 @@ import {
     Sparkles,
     ShoppingBag,
     Trash2,
-    Loader2
+    Loader2,
+    ChevronLeft,
+    ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -114,6 +116,12 @@ export function ReceiptDetailSheet({ receipt, open, onClose }: ReceiptDetailShee
     const [activeTab, setActiveTab] = useState<Tab>("document");
     const [pantryModalOpen, setPantryModalOpen] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
+    const [currentDocIndex, setCurrentDocIndex] = useState(0);
+
+    // Reset doc index when changing receipts
+    useEffect(() => {
+        setCurrentDocIndex(0);
+    }, [receipt?.id]);
 
     const deleteMutation = useDeleteReceiptMutation();
 
@@ -146,8 +154,10 @@ export function ReceiptDetailSheet({ receipt, open, onClose }: ReceiptDetailShee
     const hasAIItems = aiItems.length > 0;
     const displayItems = hasAIItems ? aiItems : [];
     const groupedItems = groupItemsByCategory(displayItems);
-    const isImage = receipt.imageUrl && !receipt.imageUrl.toLowerCase().includes(".pdf");
-    const isPdf = receipt.imageUrl && receipt.imageUrl.toLowerCase().includes(".pdf");
+    const imageUrls = receipt.imageUrl ? receipt.imageUrl.split(",").filter(Boolean) : [];
+    const currentUrl = imageUrls[currentDocIndex] || "";
+    const isImage = currentUrl && !currentUrl.toLowerCase().includes(".pdf");
+    const isPdf = currentUrl && currentUrl.toLowerCase().includes(".pdf");
     const currency = receipt.currency || "USD";
     const currencySymbol = currency === "USD" ? "$" : currency === "EUR" ? "€" : currency === "INR" ? "$" : "$";
 
@@ -264,27 +274,56 @@ export function ReceiptDetailSheet({ receipt, open, onClose }: ReceiptDetailShee
                         {/* Document Tab */}
                         {activeTab === "document" && (
                             <div className="p-4 h-full">
-                                {receipt.imageUrl ? (
+                                {imageUrls.length > 0 ? (
                                     <div className="flex flex-col gap-3 h-full">
-                                        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex-1 min-h-[350px]">
+                                        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex-1 min-h-[350px] relative">
                                             {isPdf ? (
                                                 <iframe
-                                                    src={getImageUrl(receipt.imageUrl)}
+                                                    src={getImageUrl(currentUrl)}
                                                     className="w-full h-full min-h-[350px]"
-                                                    title="Receipt PDF"
+                                                    title={`Receipt PDF ${currentDocIndex + 1}`}
                                                 />
                                             ) : (
                                                 <div className="flex items-center justify-center h-full bg-gray-50/50 p-4 min-h-[300px]">
                                                     <img
-                                                        src={getImageUrl(receipt.imageUrl)}
-                                                        alt="Receipt"
+                                                        src={getImageUrl(currentUrl)}
+                                                        alt={`Receipt ${currentDocIndex + 1}`}
                                                         className="max-w-full max-h-[480px] object-contain rounded-lg shadow-sm"
                                                     />
                                                 </div>
                                             )}
                                         </div>
+                                        
+                                        {imageUrls.length > 1 && (
+                                            <div className="flex items-center justify-between bg-white border border-gray-100 rounded-xl p-2 shadow-sm">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => setCurrentDocIndex((prev) => Math.max(0, prev - 1))}
+                                                    disabled={currentDocIndex === 0}
+                                                    className="text-gray-500 hover:text-[#7661d3] hover:bg-[#F3F0FD]"
+                                                >
+                                                    <ChevronLeft className="w-4 h-4 mr-1" />
+                                                    Previous
+                                                </Button>
+                                                <span className="text-xs font-bold text-gray-500">
+                                                    {currentDocIndex + 1} of {imageUrls.length}
+                                                </span>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => setCurrentDocIndex((prev) => Math.min(imageUrls.length - 1, prev + 1))}
+                                                    disabled={currentDocIndex === imageUrls.length - 1}
+                                                    className="text-gray-500 hover:text-[#7661d3] hover:bg-[#F3F0FD]"
+                                                >
+                                                    Next
+                                                    <ChevronRight className="w-4 h-4 ml-1" />
+                                                </Button>
+                                            </div>
+                                        )}
+
                                         <a
-                                            href={getImageUrl(receipt.imageUrl)}
+                                            href={getImageUrl(currentUrl)}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="flex items-center justify-center gap-2 text-xs text-[#7661d3] hover:text-[#5a468a] font-bold bg-white border border-[#7661d3]/20 rounded-xl py-2.5 hover:bg-[#F3F0FD] transition-colors"

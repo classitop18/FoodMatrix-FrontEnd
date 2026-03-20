@@ -168,13 +168,12 @@ export function BudgetSetupModal({
 
     const getNextWeekDate = (currentDate: Date) => {
         const dayOfWeek = currentDate.getDay();
-        const curentDate = currentDate.getDate();
         const daysUntilNextWeek = (7 - dayOfWeek) % 7 || 7;
 
         const nextWeekSunday = new Date(currentDate);
-        const nextWeekSaturday = new Date(currentDate);
-
-        nextWeekSunday.setDate(curentDate + daysUntilNextWeek);
+        nextWeekSunday.setDate(currentDate.getDate() + daysUntilNextWeek);
+        
+        const nextWeekSaturday = new Date(nextWeekSunday);
         nextWeekSaturday.setDate(nextWeekSunday.getDate() + 6);
 
         return {
@@ -185,12 +184,11 @@ export function BudgetSetupModal({
 
     const getCurrentWeekDate = (currentDate: Date) => {
         const dayOfWeek = currentDate.getDay(); // 0 = Sunday
-        const curentDate = currentDate.getDate();
 
         const currentWeekSunday = new Date(currentDate);
-        const currentWeekSaturday = new Date(currentDate);
-
-        currentWeekSunday.setDate(curentDate - dayOfWeek);
+        currentWeekSunday.setDate(currentDate.getDate() - dayOfWeek);
+        
+        const currentWeekSaturday = new Date(currentWeekSunday);
         currentWeekSaturday.setDate(currentWeekSunday.getDate() + 6);
 
         return {
@@ -218,7 +216,7 @@ export function BudgetSetupModal({
     const isOutOfAttempts = budgetMode === "weekly_current" && attemptsLeft <= 0;
     
     const renderHistoryTracker = () => {
-        if (!currentWeekStatus || currentWeekStatus.history.length === 0) return null;
+        if (!currentWeekStatus || !currentWeekStatus.history || currentWeekStatus.history.length === 0) return null;
         
         // Ensure chronological order
         const historySorted = [...currentWeekStatus.history].sort((a, b) => new Date(a.changedAt).getTime() - new Date(b.changedAt).getTime());
