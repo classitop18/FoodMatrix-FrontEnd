@@ -7,8 +7,8 @@ const receiptService = new ReceiptService();
 export const useUploadReceiptMutation = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (data: { file: File; eventId?: string; shoppingListId?: string; description?: string; tags?: string[] }) =>
-            receiptService.uploadReceipt(data.file, data.eventId, data.shoppingListId, data.description, data.tags),
+        mutationFn: (data: { files: File[]; billType: "single" | "multiple"; eventId?: string; shoppingListId?: string; description?: string; tags?: string[] }) =>
+            receiptService.uploadReceipt(data.files, data.billType, data.eventId, data.shoppingListId, data.description, data.tags),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["receipts"] });
         },

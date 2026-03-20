@@ -4,9 +4,10 @@ import { apiClient } from "@/lib/api";
 const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000/api/v1/";
 
 export class ReceiptService {
-    async uploadReceipt(file: File, eventId?: string, shoppingListId?: string, description?: string, tags?: string[]): Promise<Receipt> {
+    async uploadReceipt(files: File[], billType: "single" | "multiple", eventId?: string, shoppingListId?: string, description?: string, tags?: string[]): Promise<Receipt | Receipt[]> {
         const formData = new FormData();
-        formData.append("file", file);
+        files.forEach((file) => formData.append("files", file));
+        formData.append("billType", billType);
         if (eventId) formData.append("eventId", eventId);
         if (shoppingListId) formData.append("shoppingListId", shoppingListId);
         if (description) formData.append("description", description);
