@@ -27,6 +27,7 @@ import {
   X,
   ScanLine,
   Wallet,
+  UserPlus,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -79,6 +80,7 @@ const navigationItems = [
     items: [
       { path: "/profile", icon: Users, label: "Profile" },
       { path: "/account", icon: Wrench, label: "Account" },
+      { path: "/invitations", icon: UserPlus, label: "Invitation" },
       { path: "/notifications", icon: MessageCircle, label: "Notifications" },
       { path: "/audit", icon: Copy, label: "Audit" },
       { path: "/activity", icon: Activity, label: "Activity" },

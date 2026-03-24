@@ -38,9 +38,9 @@ export default function SetupPage() {
       accountType: "family",
       weeklyBudget: 300,
       currentAllocation: "weekly" as const,
-      groceriesPercentage: 70,
-      diningPercentage: 20,
-      emergencyPercentage: 10,
+      groceriesPercentage: 100,
+      diningPercentage: 0,
+      emergencyPercentage: 0,
       conditions: [],
       allergies: [],
       dietaryRestrictions: [],
@@ -53,15 +53,13 @@ export default function SetupPage() {
   });
 
   // Watch budget values and percentages
-  const weeklyBudget = form.watch("weeklyBudget") || 0;
   const dailyBudget = form.watch("dailyBudget") || 0;
-  const monthlyBudget = form.watch("monthlyBudget") || 0;
-  const annualBudget = form.watch("annualBudget") || 0;
+  const weeklyBudget = form.watch("weeklyBudget") || 0;
   const currentAllocation = form.watch("currentAllocation");
 
-  const groceriesPercentage = Number(form.watch("groceriesPercentage"));
-  const diningPercentage = Number(form.watch("diningPercentage"));
-  const emergencyPercentage = Number(form.watch("emergencyPercentage"));
+  const groceriesPercentage = Number(form.watch("groceriesPercentage")) || 100;
+  const diningPercentage = Number(form.watch("diningPercentage")) || 0;
+  const emergencyPercentage = Number(form.watch("emergencyPercentage")) || 0;
 
   // Calculate current budget based on selected allocation
   const currentBudget =
@@ -69,24 +67,17 @@ export default function SetupPage() {
       ? dailyBudget
       : currentAllocation === "weekly"
         ? weeklyBudget
-        : currentAllocation === "monthly"
-          ? monthlyBudget
-          : currentAllocation === "annual"
-            ? annualBudget
-            : weeklyBudget;
+        : weeklyBudget;
 
   // Calculate category budgets based on user percentages
   const groceriesBudget = (currentBudget * groceriesPercentage) / 100;
   const diningBudget = (currentBudget * diningPercentage) / 100;
   const emergencyBudget = (currentBudget * emergencyPercentage) / 100;
 
-  // Validation: Check if percentages add up to 100% (allow small rounding tolerance)
-  const totalPercentage =
-    Number(groceriesPercentage) +
-    Number(diningPercentage) +
-    Number(emergencyPercentage);
-  const isPercentageValid = Math.abs(totalPercentage - 100) <= 1;
-  const correctedIsPercentageValid = Math.abs(totalPercentage - 100) <= 2;
+  // Validation: Check if percentages add up to 100%
+  const totalPercentage = Number(groceriesPercentage) + Number(diningPercentage) + Number(emergencyPercentage);
+  const isPercentageValid = totalPercentage === 100;
+  const correctedIsPercentageValid = totalPercentage === 100;
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -106,8 +97,6 @@ export default function SetupPage() {
         accountName: data.accountName,
         dailyBudget: data.dailyBudget?.toString(),
         weeklyBudget: data.weeklyBudget?.toString() || "300",
-        monthlyBudget: data.monthlyBudget?.toString(),
-        annualBudget: data.annualBudget?.toString(),
         currentAllocation: data.currentAllocation,
         groceriesPercentage: data.groceriesPercentage,
         diningPercentage: data.diningPercentage,
@@ -193,8 +182,6 @@ export default function SetupPage() {
       accountName: data.accountName,
       dailyBudget: data.dailyBudget?.toString(),
       weeklyBudget: data.weeklyBudget?.toString() || "300",
-      monthlyBudget: data.monthlyBudget?.toString(),
-      annualBudget: data.annualBudget?.toString(),
       currentAllocation: data.currentAllocation,
       groceriesPercentage: data.groceriesPercentage,
       diningPercentage: data.diningPercentage,
@@ -228,8 +215,13 @@ export default function SetupPage() {
     const errors: Record<string, string> = {};
 
     if (step === 1) {
-      if (!values.weeklyBudget || values.weeklyBudget < 10)
-        errors.weeklyBudget = "Weekly budget must be at least $10";
+      if (values.currentAllocation === "weekly") {
+        if (!values.weeklyBudget || values.weeklyBudget < 10)
+          errors.weeklyBudget = "Weekly budget must be at least $10";
+      } else if (values.currentAllocation === "daily") {
+        if (!values.dailyBudget || values.dailyBudget < 1)
+          errors.dailyBudget = "Daily budget must be at least $1";
+      }
       const totalPercent =
         Number(values.groceriesPercentage || 0) +
         Number(values.diningPercentage || 0) +

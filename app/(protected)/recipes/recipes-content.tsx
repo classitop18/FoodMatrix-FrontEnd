@@ -31,7 +31,7 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useInView } from "react-intersection-observer";
 import { RecipeCard } from "./components/recipe-card";
-import { RecipeDetailsDialog } from "./components/recipe-details-dialog";
+import { RecipeDetailsDialog } from "@/components/common/RecipeDetailsDialog";
 import { RecipeFiltersSidebar } from "./components/recipe-filters";
 import {
     Recipe,

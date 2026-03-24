@@ -49,6 +49,12 @@ export interface TodayBudgetSummary {
     isFallback: boolean;
     fallbackFromDate: string | null;
     configId: string | null;
+    totalBudgetAmount: number;
+    diningBudgetOffset: number;
+    emergencyBudgetOffset: number;
+    groceriesPercentage: number;
+    diningPercentage: number;
+    emergencyPercentage: number;
 }
 
 // ================== Weekly Summary ==================
@@ -68,6 +74,9 @@ export interface WeeklySummary {
         hasBudget: boolean;
         hasExpense: boolean;
         isFallback: boolean;
+        totalBudgetAmount: number;
+        diningBudgetOffset: number;
+        emergencyBudgetOffset: number;
     }[];
 }
 

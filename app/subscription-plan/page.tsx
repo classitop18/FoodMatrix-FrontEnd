@@ -181,9 +181,8 @@ export default function SubscriptionPage() {
               )}
 
               <Card
-                className={`border-0 shadow-2xl rounded-3xl overflow-hidden h-full transition-all duration-300 hover:scale-105 hover:shadow-3xl ${
-                  plan.popular ? "border-2 border-[var(--primary)]" : ""
-                } ${plan.current ? "ring-2 ring-[var(--green)]" : ""}`}
+                className={`border-0 shadow-2xl rounded-3xl overflow-hidden h-full transition-all duration-300 hover:scale-105 hover:shadow-3xl ${plan.popular ? "border-2 border-[var(--primary)]" : ""
+                  } ${plan.current ? "ring-2 ring-[var(--green)]" : ""}`}
               >
                 {/* Card Header with Gradient */}
                 <div
@@ -239,13 +238,12 @@ export default function SubscriptionPage() {
 
                   {/* CTA Button */}
                   <button
-                    className={`w-full py-3 rounded-full font-bold text-sm transition-all duration-300 ${
-                      plan.current
-                        ? "bg-gray-100 text-gray-500 cursor-not-allowed"
-                        : plan.popular
-                          ? "bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white hover:shadow-lg hover:scale-105"
-                          : "bg-white border-2 border-[var(--primary)] text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white"
-                    }`}
+                    className={`w-full py-3 rounded-full font-bold text-sm transition-all duration-300 ${plan.current
+                      ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+                      : plan.popular
+                        ? "bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white hover:shadow-lg hover:scale-105"
+                        : "bg-white border-2 border-[var(--primary)] text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white"
+                      }`}
                     disabled={plan.current}
                   >
                     {plan.current ? "Current Plan" : "Get Started"}

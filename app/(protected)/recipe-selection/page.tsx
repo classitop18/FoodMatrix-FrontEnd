@@ -83,7 +83,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-import { RecipeDetailsDialog } from "../recipes/components/recipe-details-dialog";
+import { RecipeDetailsDialog } from "@/components/common/RecipeDetailsDialog";
 import { Recipe as ApiRecipe } from "@/services/recipe";
 import { getRecipeImageUrl } from "@/lib/recipe-utils";
 

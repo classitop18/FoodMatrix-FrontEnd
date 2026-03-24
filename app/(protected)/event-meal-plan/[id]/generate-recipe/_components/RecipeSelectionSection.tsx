@@ -15,7 +15,7 @@ import { MEAL_TYPE_CONFIG, COURSE_TYPE_OPTIONS, BUDGET_CATEGORIES } from "./cons
 import { MealType } from "@/services/event/event.types";
 import { cuisineOptions } from "@/lib/recipe-constants";
 import { getRecipeImageUrl } from "@/lib/recipe-utils";
-import { RecipeDetailsDialog } from "../../../../recipes/components/recipe-details-dialog";
+import { RecipeDetailsDialog } from "@/components/common/RecipeDetailsDialog";
 import { STATIC_ITEMS } from "../../_components/StaticItems";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";

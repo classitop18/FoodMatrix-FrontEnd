@@ -103,7 +103,7 @@ export function RecipeDetailsDialog({
     }
 
     const mapping = {
-      calories: { name: "Calories", color: "#f97316", unit: "kcal" },
+      // calories: { name: "Calories", color: "#f97316", unit: "kcal" },
       protein_g: { name: "Protein", color: "#3d326d", unit: "g" },
       carbs_g: { name: "Carbs", color: "#f59e0b", unit: "g" },
       fat_g: { name: "Fat", color: "#ef4444", unit: "g" },

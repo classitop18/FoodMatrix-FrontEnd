@@ -170,44 +170,84 @@ export function BudgetDashboard({
                     </div>
                 </div>
 
-                <div className="flex-1 grid grid-cols-1 gap-3">
-                    <div className="bg-gradient-to-br from-[#F3F0FD] to-white rounded-xl p-3">
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
-                            Budget
-                        </p>
-                        <p className="text-xl font-extrabold text-[#7661d3]">
-                            ${(todayBudget?.allocatedAmount ?? 0).toFixed(2)}
-                        </p>
-                    </div>
-                    <div
-                        className={`rounded-xl p-3 ${isOverBudget ? "bg-gradient-to-br from-red-50 to-white" : "bg-gradient-to-br from-[#e8f5e0] to-white"}`}
-                    >
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
-                            Spent
-                        </p>
-                        <div className="flex items-center gap-1.5">
-                            <p
-                                className={`text-xl font-extrabold ${isOverBudget ? "text-red-500" : "text-[#7dab4f]"}`}
-                            >
-                                ${(todayBudget?.amountSpent ?? 0).toFixed(2)}
+                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Groceries Section */}
+                    <div className="flex flex-col gap-3">
+                        <div className="bg-gradient-to-br from-[#F3F0FD] to-white rounded-xl p-3 border border-[#7661d3]/20">
+                            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">
+                                Groceries Budget
                             </p>
-                            {isOverBudget ? (
-                                <TrendingUp className="w-4 h-4 text-red-500" />
-                            ) : (
-                                <TrendingDown className="w-4 h-4 text-[#7dab4f]" />
-                            )}
+                            <p className="text-xl font-extrabold text-[#7661d3]">
+                                ${(todayBudget?.allocatedAmount ?? 0).toFixed(2)}
+                            </p>
+                        </div>
+                        <div className={`rounded-xl p-3 border ${isOverBudget ? "bg-gradient-to-br from-red-50 to-white border-red-100" : "bg-gradient-to-br from-[#e8f5e0] to-white border-[#7dab4f]/20"}`}>
+                            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">
+                                Groceries Spent
+                            </p>
+                            <div className="flex items-center gap-1.5">
+                                <p className={`text-xl font-extrabold ${isOverBudget ? "text-red-500" : "text-[#7dab4f]"}`}>
+                                    ${(todayBudget?.amountSpent ?? 0).toFixed(2)}
+                                </p>
+                                {isOverBudget ? (
+                                    <TrendingUp className="w-4 h-4 text-red-500" />
+                                ) : (
+                                    <TrendingDown className="w-4 h-4 text-[#7dab4f]" />
+                                )}
+                            </div>
+                        </div>
+                        <div className={`rounded-xl p-3 ${isOverBudget ? "bg-gradient-to-br from-red-600 to-red-700 shadow-md shadow-red-500/20" : "bg-gradient-to-br from-[#3d326d] to-[#2d2454] shadow-md shadow-[#3d326d]/20"}`}>
+                            <p className="text-[10px] text-white/60 font-bold uppercase tracking-wider mb-1">
+                                {isOverBudget ? "Groceries Over" : "Groceries Remaining"}
+                            </p>
+                            <p className="text-xl font-extrabold text-white">
+                                {isOverBudget ? "-" : ""}$
+                                {Math.abs(todayBudget?.balance ?? 0).toFixed(2)}
+                            </p>
                         </div>
                     </div>
-                    <div
-                        className={`rounded-xl p-3 ${isOverBudget ? "bg-gradient-to-br from-red-600 to-red-700" : "bg-gradient-to-br from-[#3d326d] to-[#2d2454]"}`}
-                    >
-                        <p className="text-[10px] text-white/60 font-bold uppercase tracking-wider">
-                            {isOverBudget ? "Over Budget" : "Remaining"}
-                        </p>
-                        <p className="text-xl font-extrabold text-white">
-                            {isOverBudget ? "-" : ""}$
-                            {Math.abs(todayBudget?.balance ?? 0).toFixed(2)}
-                        </p>
+
+                    {/* Secondary Budgets Section */}
+                    <div className="flex flex-col gap-3">
+                        <div className="bg-white rounded-xl p-3 border border-orange-200/50 shadow-sm flex-1 flex flex-col justify-center hover:border-orange-300 transition-colors">
+                            <div className="flex justify-between items-start mb-1">
+                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">
+                                    Dining Budget
+                                </p>
+                                <span className="text-[10px] font-bold text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full">
+                                    {todayBudget?.diningPercentage ?? 0}%
+                                </span>
+                            </div>
+                            <p className="text-xl font-extrabold text-orange-500">
+                                ${(todayBudget?.diningBudgetOffset ?? 0).toFixed(2)}
+                            </p>
+                            <p className="text-[10px] text-gray-400 mt-1 font-medium">
+                                of ${(todayBudget?.totalBudgetAmount ?? 0).toFixed(2)} Total
+                            </p>
+                        </div>
+                        
+                        <div className="bg-white rounded-xl p-3 border border-yellow-200/50 shadow-sm flex-1 flex flex-col justify-center hover:border-yellow-300 transition-colors">
+                            <div className="flex justify-between items-start mb-1">
+                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">
+                                    Emergency Budget
+                                </p>
+                                <span className="text-[10px] font-bold text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded-full">
+                                    {todayBudget?.emergencyPercentage ?? 0}%
+                                </span>
+                            </div>
+                            <p className="text-xl font-extrabold text-yellow-600">
+                                ${(todayBudget?.emergencyBudgetOffset ?? 0).toFixed(2)}
+                            </p>
+                            <p className="text-[10px] text-gray-400 mt-1 font-medium">
+                                of ${(todayBudget?.totalBudgetAmount ?? 0).toFixed(2)} Total
+                            </p>
+                        </div>
+                        
+                        <div className="bg-gray-50 rounded-xl p-2.5 border border-gray-100 flex items-center justify-between mt-auto">
+                            <p className="text-[10px] text-gray-400 font-medium">
+                                All spending is tracked against the Groceries Budget.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>

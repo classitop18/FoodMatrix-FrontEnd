@@ -4,31 +4,31 @@ export const setupSchema = z.object({
   accountType: z.enum(["individual", "family", "group"]).default("family"),
   accountName: z.string(),
   description: z.string(),
-  // Budget Periods (Only weekly is required)
-  dailyBudget: z.coerce
-    .number()
-    .max(10000000, "Maximum daily budget is $10,000,000")
-    .optional(),
-  weeklyBudget: z.coerce
-    .number()
-    .min(10, "Minimum weekly budget is $10")
-    .max(10000000, "Maximum weekly budget is $10,000,000")
-    .default(300),
-  monthlyBudget: z.coerce
-    .number()
-    .max(10000000, "Maximum monthly budget is $10,000,000")
-    .optional(),
-  annualBudget: z.coerce
-    .number()
-    .max(10000000, "Maximum annual budget is $10,000,000")
-    .optional(),
+  // Budget Periods
+  dailyBudget: z.preprocess(
+    (val) => (val === "" ? undefined : val),
+    z.coerce
+      .number()
+      .min(1, "Minimum daily budget is $1")
+      .max(10000000, "Maximum daily budget is $10,000,000")
+      .optional()
+  ),
+  weeklyBudget: z.preprocess(
+    (val) => (val === "" ? undefined : val),
+    z.coerce
+      .number()
+      .min(10, "Minimum weekly budget is $10")
+      .max(10000000, "Maximum weekly budget is $10,000,000")
+      .optional()
+      .default(300)
+  ),
   currentAllocation: z
-    .enum(["daily", "weekly", "monthly", "annual"])
+    .enum(["daily", "weekly"])
     .default("weekly"),
   // Food Category Percentages (User Configurable)
-  groceriesPercentage: z.coerce.number().min(0).max(100).default(70),
-  diningPercentage: z.coerce.number().min(0).max(100).default(20),
-  emergencyPercentage: z.coerce.number().min(0).max(100).default(10),
+  groceriesPercentage: z.coerce.number().min(0).max(100).default(100),
+  diningPercentage: z.coerce.number().min(0).max(100).default(0),
+  emergencyPercentage: z.coerce.number().min(0).max(100).default(0),
 
   // All other fields are optional
   height: z.coerce

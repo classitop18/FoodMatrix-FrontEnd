@@ -49,7 +49,7 @@ export default function Step1ProfileBudget({
       className="space-y-6 sm:space-y-8"
     >
       {/* Profile Section */}
-      <div className="bg-white border-2 border-[#7661d3]/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-[#7661d3]/20">
+      <div className="rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-[#7661d3]/20">
         <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 flex items-center text-[#3d326d]">
           <div className="bg-gradient-to-br from-[#7661d3] to-[#3d326d] p-2 sm:p-3 rounded-lg sm:rounded-xl mr-2 sm:mr-3 shadow-md">
             <UserCog className="text-white w-5 h-5 sm:w-6 sm:h-6" />
@@ -164,8 +164,6 @@ export default function Step1ProfileBudget({
               <SelectContent>
                 <SelectItem value="daily">Daily Budget</SelectItem>
                 <SelectItem value="weekly">Weekly Budget</SelectItem>
-                <SelectItem value="monthly">Monthly Budget</SelectItem>
-                <SelectItem value="annual">Annual Budget</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -190,24 +188,6 @@ export default function Step1ProfileBudget({
                 min: "10",
                 step: "10",
                 allocation: "weekly",
-              },
-              {
-                id: "monthly-budget",
-                label: "Monthly Budget",
-                field: "monthlyBudget",
-                placeholder: "1200",
-                min: "50",
-                step: "50",
-                allocation: "monthly",
-              },
-              {
-                id: "annual-budget",
-                label: "Annual Budget",
-                field: "annualBudget",
-                placeholder: "15000",
-                min: "500",
-                step: "100",
-                allocation: "annual",
               },
             ]
               .filter((budget) => budget.allocation === currentAllocation)

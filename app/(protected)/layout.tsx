@@ -18,17 +18,14 @@ export default function ProtectedLayout({
           {/* Root */}
           <div className="min-h-screen flex overflow-hidden">
             <Sidebar />
-
             {/* Main content (only this scrolls) */}
             <main className="flex-1 h-screen overflow-y-auto transition-all duration-300">
               {/* Header - Sticky at top */}
               <ProtectedHeader />
-
               {/* Page Content */}
               {children}
             </main>
           </div>
-
           {/* Toast for foreground push notifications */}
           <ToastNotification />
         </NotificationProvider>
