@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { useRouter } from "next/navigation";
 import {
   ShoppingCart,
   ArrowLeft,
@@ -61,24 +61,8 @@ const STORE_COMPARISONS = [
   { name: "Whole Foods Market", price: 4.15, rating: 4.9, distance: "3.1 mi", stock: "In Stock" },
 ];
 
-export default function ShoppingPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-[#F9FAFB]">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-10 w-10 animate-spin text-[var(--primary)]" />
-          <p className="text-gray-500 font-medium animate-pulse">Loading your shopping session...</p>
-        </div>
-      </div>
-    }>
-      <ShoppingContent />
-    </Suspense>
-  );
-}
-
-function ShoppingContent() {
-  const searchParams = useSearchParams();
-  const sessionId = searchParams.get("id");
+export default function ShoppingRecipeSession({ params }: { params: { id: string } }) {
+  const sessionId = params.id;
   const router = useRouter();
   const { toast } = useToast();
 

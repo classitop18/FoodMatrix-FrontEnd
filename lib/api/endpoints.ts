@@ -95,6 +95,10 @@ export const API_ENDPOINTS = {
     CHECK_RECIPES_BY_DATE: "/recipes/check-by-date",
     GET_SHOPPING_LIST: (id: string) => `/recipes/${id}/shopping-list`,
     GET_MERGED_SHOPPING_LIST: `/recipes/shopping-list/merge`,
+    CREATE_SHOPPING_SESSION: "/recipes/shopping-sessions",
+    GET_SHOPPING_SESSION: (id: string) => `/recipes/shopping-sessions/${id}`,
+    UPDATE_SHOPPING_SESSION_ITEM: (itemId: string) =>
+      `/recipes/shopping-sessions/items/${itemId}`,
   },
 
   // Events

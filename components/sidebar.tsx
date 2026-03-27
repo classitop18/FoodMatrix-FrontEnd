@@ -59,7 +59,7 @@ const navigationItems = [
       { path: "/meal-planning", icon: ChefHat, label: "Meal Planning" },
       { path: "/pantry", icon: Store, label: "Pantry" },
       { path: "/recipes", icon: BookOpen, label: "Recipes" },
-      { path: "/shopping", icon: ShoppingCart, label: "Shopping" },
+      // { path: "/shopping", icon: ShoppingCart, label: "Shopping" },
       { path: "/history", icon: Receipt, label: "History" },
     ],
   },
@@ -133,9 +133,9 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
       return pathname.startsWith("/event-meal-plan");
     }
 
-    if (path === "/shopping") {
-      return pathname.startsWith("/shopping") || pathname.startsWith("/store");
-    }
+    // if (path === "/shopping") {
+    //   return pathname.startsWith("/shopping") || pathname.startsWith("/store");
+    // }
     if (path === "/meal-planning") {
       return (
         pathname === "/meal-planning" ||

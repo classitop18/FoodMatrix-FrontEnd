@@ -508,7 +508,7 @@ export default function EventDetailPage() {
                                         Launch Meal Planner
                                     </Button>
                                 </div>
-                            )}
+                            )}  
                         </div>
 
                         {/* Right Column: Context & Tools (1/3 width) */}

@@ -85,7 +85,14 @@ export default function ShoppingRecipe() {
 
   const [isHydrated, setIsHydrated] = useState(false);
   const [backendIngredients, setBackendIngredients] = useState<any[]>([]);
+  const [shoppingListData, setShoppingListData] = useState<{
+    individualLists: any[];
+    mergedList: any[];
+  }>({ individualLists: [], mergedList: [] });
+  const [activeTab, setActiveTab] = useState<"merged" | "individual">("merged");
   const [isLoadingBackend, setIsLoadingBackend] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const { toast } = useToast();
   const recipeService = useRef(new RecipeService());
 
   // Derived selections
@@ -218,8 +225,11 @@ export default function ShoppingRecipe() {
 
       setIsLoadingBackend(true);
       try {
-        const list = await recipeService.current.getMergedShoppingList(ids);
-        setBackendIngredients(list || []);
+        const response = await recipeService.current.getMergedShoppingList(ids);
+        setShoppingListData(
+          response || { individualLists: [], mergedList: [] },
+        );
+        setBackendIngredients(response?.mergedList || []);
       } catch (e) {
         console.error("Failed to fetch backend shopping list", e);
       } finally {
@@ -245,8 +255,6 @@ export default function ShoppingRecipe() {
   const [selectedItemToAdd, setSelectedItemToAdd] = useState<any>(null);
   const [addItemQuantity, setAddItemQuantity] = useState(1);
   const [addItemUnit, setAddItemUnit] = useState("kg");
-
-  const { toast } = useToast();
 
   // Combined static data for mapping
   const staticItems = [
@@ -561,6 +569,38 @@ export default function ShoppingRecipe() {
     router.push("/shopping-list");
   };
 
+  const handleSaveAndContinue = async () => {
+    try {
+      setIsSaving(true);
+      toast({
+        title: "Saving List...",
+        description: "Your shopping session is being prepared.",
+      });
+
+      const session = await recipeService.current.createShoppingSession(
+        `Shopping List - ${new Date().toLocaleDateString()}`,
+        allIngredients,
+      );
+
+      if (session?.id) {
+        toast({
+          title: "List Saved",
+          description: "Continuing to shopping interface...",
+        });
+        router.push(`/shopping?id=${session.id}`);
+      }
+    } catch (error) {
+      console.error("Failed to save shopping session", error);
+      toast({
+        title: "Error",
+        description: "Failed to save shopping list. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleRecipeSelect = (recipe: any, slotKey: string) => {
     // Parse slotKey
     const lastHyphenIndex = slotKey.lastIndexOf("-");
@@ -818,12 +858,35 @@ export default function ShoppingRecipe() {
 
         <div className="flex flex-wrap lg:flex-nowrap gap-4">
           <div className="bg-gradient-to-r from-white via-[#F3F0FD] to-white border border-[#EDE9FF] rounded-xl p-4 w-full">
-            <div className="flex gap-3 items-center font-bold mb-4 flex-wrap">
-              <ListCheck className="size-5 text-[var(--primary)]" />
-              Shopping List Preview
-              <span className="rounded-full bg-[#F2EEFF] border border-[#e7e0fc] text-[var(--primary)] text-xs h-7 flex items-center px-3">
-                {Object.values(groupedIngredients).flat().length} Items
-              </span>
+            <div className="flex flex-col md:flex-row gap-3 items-start md:items-center font-bold mb-4 justify-between">
+              <div className="flex gap-3 items-center">
+                <ListCheck className="size-5 text-[var(--primary)]" />
+                Shopping List Preview
+                <span className="rounded-full bg-[#F2EEFF] border border-[#e7e0fc] text-[var(--primary)] text-xs h-7 flex items-center px-3">
+                  {Object.values(groupedIngredients).flat().length} Items
+                </span>
+              </div>
+
+              <div className="flex bg-[#F3F0FD] p-1 rounded-lg border border-[#EDE9FF]">
+                <button
+                  onClick={() => setActiveTab("merged")}
+                  className={`px-4 py-1.5 rounded-md text-sm transition-all ${activeTab === "merged"
+                    ? "bg-white text-[var(--primary)] shadow-sm font-bold"
+                    : "text-gray-500 hover:text-gray-700 font-medium"
+                    }`}
+                >
+                  Merged View
+                </button>
+                <button
+                  onClick={() => setActiveTab("individual")}
+                  className={`px-4 py-1.5 rounded-md text-sm transition-all ${activeTab === "individual"
+                    ? "bg-white text-[var(--primary)] shadow-sm font-bold"
+                    : "text-gray-500 hover:text-gray-700 font-medium"
+                    }`}
+                >
+                  By Recipe
+                </button>
+              </div>
             </div>
 
             <div className="bg-[#fcfcfc] border border-[#f0f0f0] p-4 lg:p-6 rounded-xl min-h-[400px]">
@@ -838,253 +901,222 @@ export default function ShoppingRecipe() {
                 <>
                   <ScrollArea className="h-[600px] pr-4">
                     <div className="flex flex-col gap-6">
-                      {/* Render Categories */}
-                      {Object.entries(groupedIngredients).map(
-                        ([category, items]) => {
-                          if (items.length === 0) return null;
+                      {activeTab === "merged" ? (
+                        /* Render Merged Categories */
+                        Object.entries(groupedIngredients).map(
+                          ([category, items]) => {
+                            if (items.length === 0) return null;
 
-                          let Icon = Carrot;
-                          let label = "Vegetables";
+                            let Icon = Carrot;
+                            let label = "Vegetables";
 
-                          switch (category) {
-                            case "vegetables":
-                              Icon = Carrot;
-                              label = "Vegetables";
-                              break;
-                            case "fruits":
-                              Icon = Apple;
-                              label = "Fruits";
-                              break;
-                            case "snacks":
-                              Icon = Cookie;
-                              label = "Snacks";
-                              break;
-                            case "drinks":
-                              Icon = Wine;
-                              label = "Drinks";
-                              break;
-                            case "others":
-                              Icon = ListCheck;
-                              label = "Others";
-                              break;
-                            default:
-                              Icon = ListCheck;
-                              label = category;
-                          }
+                            switch (category) {
+                              case "vegetables":
+                                Icon = Carrot;
+                                label = "Vegetables";
+                                break;
+                              case "fruits":
+                                Icon = Apple;
+                                label = "Fruits";
+                                break;
+                              case "snacks":
+                                Icon = Cookie;
+                                label = "Snacks";
+                                break;
+                              case "drinks":
+                                Icon = Coffee;
+                                label = "Beverages";
+                                break;
+                              case "others":
+                                Icon = ListCheck;
+                                label = "Others";
+                                break;
+                              default:
+                                if (
+                                  [
+                                    "meat",
+                                    "protein",
+                                    "seafood",
+                                  ].includes(category.toLowerCase())
+                                ) {
+                                  Icon = Flame;
+                                } else if (
+                                  category.toLowerCase() === "dairy"
+                                ) {
+                                  Icon = Coffee;
+                                }
+                                label = category;
+                            }
 
-                          // Capitalize label if generic
-                          label =
-                            label.charAt(0).toUpperCase() + label.slice(1);
+                            // Capitalize label if generic
+                            label =
+                              label.charAt(0).toUpperCase() +
+                              label.slice(1);
 
-                          return (
-                            <div
-                              key={category}
-                              className="animate-in fade-in slide-in-from-bottom-2"
-                            >
-                              <div className="flex items-center justify-between mb-3 group">
-                                <div className="flex items-center gap-2">
-                                  <Icon className="size-5 text-gray-700" />
-                                  <h3 className="font-bold text-gray-800 text-lg">
-                                    {label}
-                                  </h3>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="bg-[#EFE9FF] text-[var(--primary)] text-xs font-bold px-2 py-1 rounded-full">
-                                    {items.length}{" "}
-                                    {items.length === 1 ? "item" : "items"}
-                                  </span>
-                                  <div className="flex gap-1 ml-2">
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-7 w-7 text-gray-400 hover:text-[var(--primary)]"
-                                      onClick={() =>
-                                        toggleEditCategory(category)
-                                      }
-                                    >
-                                      <Pencil className="size-4" />
-                                    </Button>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-7 w-7 text-gray-400 hover:text-red-500"
-                                      onClick={() =>
-                                        handleClearCategory(category)
-                                      }
-                                    >
-                                      <Trash2 className="size-4" />
-                                    </Button>
+                            return (
+                              <div
+                                key={category}
+                                className="animate-in fade-in slide-in-from-bottom-2"
+                              >
+                                <div className="flex items-center justify-between mb-3 group">
+                                  <div className="flex items-center gap-2">
+                                    <Icon className="size-5 text-gray-700" />
+                                    <h3 className="font-bold text-gray-800 text-lg">
+                                      {label}
+                                    </h3>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="bg-[#EFE9FF] text-[var(--primary)] text-xs font-bold px-2 py-1 rounded-full">
+                                      {items.length}{" "}
+                                      {items.length === 1
+                                        ? "item"
+                                        : "items"}
+                                    </span>
                                   </div>
                                 </div>
+                                <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                                  {items.map((item: any, i) => (
+                                    <div
+                                      key={i}
+                                      className="group/item flex items-center justify-between p-3 border-b border-gray-50 last:border-0 hover:bg-[#fafafa] transition-colors"
+                                    >
+                                      {/* ... Item rendering logic is duplicated below for now for simplicity, 
+                                          but we should ideally extract a component. 
+                                          For this task, I'll keep it focused. */}
+                                      <div className="flex items-center gap-3">
+                                        <div className="w-12 h-12 rounded-lg bg-gray-50 border border-gray-100 overflow-hidden flex-shrink-0 cursor-zoom-in relative group/image">
+                                          <img
+                                            src={item.image}
+                                            alt={item.name}
+                                            className="w-full h-full object-cover"
+                                          />
+                                        </div>
+                                        <div className="flex flex-col">
+                                          <div className="flex items-center gap-2">
+                                            <span className="font-medium text-gray-900 line-clamp-1 text-sm md:text-base">
+                                              {item.name}
+                                            </span>
+                                          </div>
+                                          <span className="text-xs text-gray-500">
+                                            {item.displayQuantity}{" "}
+                                            {item.displayUnit}
+                                          </span>
+                                        </div>
+                                      </div>
+
+                                      <div className="flex items-center gap-4 md:gap-8">
+                                        <div className="flex items-center border border-gray-200 rounded-lg bg-white h-8 overflow-hidden">
+                                          <button
+                                            className="w-8 h-full flex items-center justify-center text-gray-400 hover:text-[var(--primary)] hover:bg-gray-50 transition-colors"
+                                            onClick={() => {
+                                              const step = getStepSize(
+                                                item.displayUnit,
+                                              );
+                                              const newVal = Math.max(
+                                                0,
+                                                Number(
+                                                  (
+                                                    item.displayQuantity -
+                                                    step
+                                                  ).toFixed(3),
+                                                ),
+                                              );
+                                              handleUpdateQuantity(
+                                                item.originalIndex,
+                                                newVal,
+                                                item.displayUnit,
+                                              );
+                                            }}
+                                          >
+                                            <Minus className="size-3" />
+                                          </button>
+                                          <span className="min-w-[3rem] px-2 h-full flex items-center justify-center text-center text-sm font-medium text-gray-700 border-x border-gray-50">
+                                            {item.displayQuantity}{" "}
+                                            {item.displayUnit}
+                                          </span>
+                                          <button
+                                            className="w-8 h-full flex items-center justify-center text-gray-400 hover:text-[var(--primary)] hover:bg-gray-50 transition-colors"
+                                            onClick={() => {
+                                              const step = getStepSize(
+                                                item.displayUnit,
+                                              );
+                                              const newVal = Number(
+                                                (
+                                                  item.displayQuantity + step
+                                                ).toFixed(3),
+                                              );
+                                              handleUpdateQuantity(
+                                                item.originalIndex,
+                                                newVal,
+                                                item.displayUnit,
+                                              );
+                                            }}
+                                          >
+                                            <Plus className="size-3" />
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          },
+                        )
+                      ) : (
+                        /* Render Individual Lists */
+                        shoppingListData.individualLists.map(
+                          (recipeList) => (
+                            <div
+                              key={recipeList.recipeId}
+                              className="animate-in fade-in slide-in-from-bottom-2 mb-4"
+                            >
+                              <div className="flex items-center gap-2 mb-3">
+                                <div className="p-1.5 bg-[#F3F0FD] rounded-lg">
+                                  <ShoppingCart className="size-4 text-[var(--primary)]" />
+                                </div>
+                                <h3 className="font-bold text-gray-800 text-lg">
+                                  {recipeList.recipeName}
+                                </h3>
+                                <span className="bg-gray-100 text-gray-500 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
+                                  {recipeList.items.length} Ingredients
+                                </span>
                               </div>
                               <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                                {items.map((item: any, i) => (
-                                  <div
-                                    key={i}
-                                    className="group/item flex items-center justify-between p-3 border-b border-gray-50 last:border-0 hover:bg-[#fafafa] transition-colors"
-                                  >
-                                    <div className="flex items-center gap-3">
-                                      <Dialog>
-                                        <DialogTrigger asChild>
-                                          <div className="w-12 h-12 rounded-lg bg-gray-50 border border-gray-100 overflow-hidden flex-shrink-0 cursor-zoom-in relative group/image">
-                                            <div className="absolute inset-0 bg-black/0 group-hover/image:bg-black/10 transition-colors flex items-center justify-center">
-                                              <Search className="text-white w-4 h-4 opacity-0 group-hover/image:opacity-100 transition-opacity" />
-                                            </div>
-                                            <img
-                                              src={item.image}
-                                              alt={item.name}
-                                              className="w-full h-full object-cover"
-                                            />
-                                          </div>
-                                        </DialogTrigger>
-                                        <DialogContent className="sm:max-w-[425px] p-0 border-none bg-white overflow-hidden gap-0 shadow-2xl">
-                                          <div className="relative w-full aspect-[4/3] bg-gray-50">
-                                            <img
-                                              src={item.image}
-                                              alt={item.name}
-                                              className="w-full h-full object-cover"
-                                            />
-                                          </div>
-                                          <div className="p-6">
-                                            <div className="flex justify-between items-start mb-2">
-                                              <div>
-                                                <h3 className="text-xl font-bold text-gray-900 capitalize leading-tight">
-                                                  {item.name}
-                                                </h3>
-                                                <p className="text-sm text-gray-500 mt-1 capitalize font-medium">
-                                                  {item.category || "General"}
-                                                </p>
-                                              </div>
-                                              {item.price > 0 && (
-                                                <div className="text-right">
-                                                  <p className="text-lg font-bold text-[var(--primary)]">
-                                                    $
-                                                    {(
-                                                      (item.price || 0) *
-                                                      (item.displayQuantity || 1)
-                                                    ).toFixed(2)}
-                                                  </p>
-                                                  <p className="text-xs text-gray-400">
-                                                    ${item.price}/{item.unit}
-                                                  </p>
-                                                </div>
-                                              )}
-                                            </div>
-
-                                            <div className="flex gap-4 mt-6 pt-4 border-t border-gray-100">
-                                              <div className="flex-1 bg-gray-50 rounded-xl p-3 text-center border border-gray-100">
-                                                <span className="block text-[10px] text-gray-400 uppercase tracking-wider font-bold">
-                                                  Quantity
-                                                </span>
-                                                <span className="block text-lg font-bold text-gray-900 mt-0.5">
-                                                  {item.displayQuantity}{" "}
-                                                  {item.unit}
-                                                </span>
-                                              </div>
-                                              {item.source && (
-                                                <div className="flex-1 bg-gray-50 rounded-xl p-3 text-center border border-gray-100">
-                                                  <span className="block text-[10px] text-gray-400 uppercase tracking-wider font-bold">
-                                                    Source
-                                                  </span>
-                                                  <span className="block text-sm font-bold text-gray-900 mt-1.5 truncate max-w-[140px] mx-auto">
-                                                    {item.source === "Recipe"
-                                                      ? item.recipeName ||
-                                                      "Recipe"
-                                                      : "Manual Add"}
-                                                  </span>
-                                                </div>
-                                              )}
-                                            </div>
-                                          </div>
-                                        </DialogContent>
-                                      </Dialog>
-                                      <div className="flex flex-col">
-                                        <div className="flex items-center gap-2">
-                                          <span className="font-medium text-gray-900 line-clamp-1 text-sm md:text-base">
-                                            {item.name}
-                                          </span>
-                                          {(item.source === "Manual" || item.source === "Manual Add") && (
-                                            <span className="text-[10px] font-bold text-[var(--primary)] bg-[#F3F0FD] px-1.5 py-0.5 rounded border border-[var(--primary)]/20">
-                                              Manual
-                                            </span>
-                                          )}
+                                {recipeList.items.map(
+                                  (item: any, i: number) => (
+                                    <div
+                                      key={i}
+                                      className="flex items-center justify-between p-3 border-b border-gray-50 last:border-0"
+                                    >
+                                      <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-lg bg-gray-50 border border-gray-100 overflow-hidden flex-shrink-0">
+                                          <img
+                                            src={
+                                              getStaticData(
+                                                item.ingredientName,
+                                              )?.image || FALLBACK_IMAGE
+                                            }
+                                            alt={item.ingredientName}
+                                            className="w-full h-full object-cover"
+                                          />
                                         </div>
-                                        <span className="text-xs text-gray-500">
-                                          {item.quantity ?? 1} {item.unit}
-                                        </span>
-                                      </div>
-                                    </div>
-
-                                    <div className="flex items-center gap-4 md:gap-8">
-                                      <div className="flex items-center border border-gray-200 rounded-lg bg-white h-8">
-                                        <button
-                                          className="w-8 h-full flex items-center justify-center text-gray-400 hover:text-[var(--primary)] hover:bg-gray-50 rounded-l-lg transition-colors"
-                                          onClick={() => {
-                                            const step = getStepSize(item.displayUnit);
-                                            // Ensure we don't go below 0 with float precision issues
-
-                                            const newVal = Math.max(0, Number((item.displayQuantity - step).toFixed(3)));
-
-                                            handleUpdateQuantity(
-                                              item.originalIndex,
-                                              newVal,
-                                              item.displayUnit
-                                            );
-                                          }}
-                                        >
-                                          <Minus className="size-3" />
-                                        </button>
-                                        <span className="min-w-[3rem] px-2 h-full flex items-center justify-center text-center text-sm font-medium text-gray-700">
-                                          {item.displayQuantity} {item.displayUnit}
-                                        </span>
-                                        <button
-                                          className="w-8 h-full flex items-center justify-center text-gray-400 hover:text-[var(--primary)] hover:bg-gray-50 rounded-r-lg transition-colors"
-                                          onClick={() => {
-                                            const step = getStepSize(item.displayUnit);
-                                            const newVal = Number((item.displayQuantity + step).toFixed(3));
-                                            handleUpdateQuantity(
-                                              item.originalIndex,
-                                              newVal,
-                                              item.displayUnit
-                                            );
-                                          }}
-                                        >
-                                          <Plus className="size-3" />
-                                        </button>
-                                      </div>
-
-                                      <div className="flex items-center gap-3 min-w-[60px] justify-end">
-                                        {item.price > 0 && (
-                                          <span className="font-semibold text-gray-900 text-sm">
-                                            $
-                                            {(item.price || 0) *
-                                              (item.displayQuantity || 1)}
+                                        <div className="flex flex-col">
+                                          <span className="font-medium text-gray-900 text-sm capitalize">
+                                            {item.ingredientName}
                                           </span>
-                                        )}
+                                          <span className="text-xs text-gray-500">
+                                            {item.quantity} {item.unit}
+                                          </span>
+                                        </div>
                                       </div>
-
-                                      {/* Delete button only if editing category is active AND item is NOT from backend */}
-                                      {editingCategories.has(category) && item.source !== "Recipe" && (
-                                        <Button
-                                          variant="ghost"
-                                          size="icon"
-                                          className="h-8 w-8 text-red-500 hover:bg-red-50"
-                                          onClick={() =>
-                                            handleRemoveItemByIndex(
-                                              item.originalIndex,
-                                            )
-                                          }
-                                        >
-                                          <X className="size-4" />
-                                        </Button>
-                                      )}
                                     </div>
-                                  </div>
-                                ))}
+                                  ),
+                                )}
                               </div>
                             </div>
-                          );
-                        },
+                          ),
+                        )
                       )}
                     </div>
                   </ScrollArea>
@@ -1243,47 +1275,57 @@ export default function ShoppingRecipe() {
             </div>
 
 
-            <Button
-              variant={"outline"}
-              type="button"
-              className="border border-[var(--primary)] bg-white text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white transition-all shadow-sm"
-              onClick={async () => {
-                try {
-                  toast({
-                    title: "Generating...",
-                    description: "Preparing your shopping list...",
-                  });
+            <div className="flex gap-4">
+              <Button
+                variant={"outline"}
+                type="button"
+                className="border border-[var(--primary)] bg-white text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white transition-all shadow-sm h-12 rounded-xl"
+                onClick={async () => {
+                  try {
+                    toast({
+                      title: "Generating...",
+                      description: "Preparing your shopping list...",
+                    });
 
-                  const ingredients = allIngredients;
-                  const payload = { ingredients };
+                    const ingredients = allIngredients;
+                    const payload = { ingredients };
 
-                  // 1. Download PDF
-                  const service = new RecipeService();
-                  await service.downloadShoppingListPdf(payload);
+                    // 1. Download PDF
+                    const service = new RecipeService();
+                    await service.downloadShoppingListPdf(payload);
 
-                  toast({
-                    title: "Download Started",
-                    description: "Your shopping list PDF is downloading...",
-                  });
+                    toast({
+                      title: "Download Started",
+                      description: "Your shopping list PDF is downloading...",
+                    });
+                  } catch (error) {
+                    console.error("Download failed", error);
+                    toast({
+                      title: "Download Failed",
+                      description: "Could not generate PDF.",
+                      variant: "destructive",
+                    });
+                  }
+                }}
+              >
+                <Download className="mr-2 h-4 w-4" /> Generate Shopping List
+              </Button>
 
-                  // 2. Navigate to Shopping List Page
-                  // handleGenerateFinalList();
-
-                } catch (error) {
-                  console.error("Download failed", error);
-                  toast({
-                    title: "Download Failed",
-                    description: "Could not generate PDF. Proceeding to list...",
-                    variant: "destructive",
-                  });
-
-                  // Proceed anyway so user isn't stuck
-                  handleGenerateFinalList();
-                }
-              }}
-            >
-              <Download className="mr-2 h-4 w-4" /> Generate Shopping List
-            </Button>
+              <Button
+                className="h-12 rounded-xl bg-[var(--primary)] hover:bg-[var(--primary)]/90 text-white gap-2 shadow-lg shadow-[var(--primary)]/20 px-6 font-bold"
+                onClick={handleSaveAndContinue}
+                disabled={allIngredients.length === 0 || isSaving}
+              >
+                {isSaving ? (
+                  "Saving Session..."
+                ) : (
+                  <>
+                    <ShoppingCart className="mr-2 h-4 w-4" /> Save list and
+                    continue to shopping
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </div>

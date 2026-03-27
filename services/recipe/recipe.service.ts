@@ -159,4 +159,33 @@ export class RecipeService {
     link.click();
     link.parentNode?.removeChild(link);
   }
+
+  // Create a shopping session
+  async createShoppingSession(name: string, items: any[]): Promise<any> {
+    const response = await apiClient.post(
+      API_ENDPOINTS.RECIPE.CREATE_SHOPPING_SESSION,
+      { name, items },
+    );
+    return response.data?.data;
+  }
+
+  // Get shopping session details
+  async getShoppingSession(id: string): Promise<any> {
+    const response = await apiClient.get(
+      API_ENDPOINTS.RECIPE.GET_SHOPPING_SESSION(id),
+    );
+    return response.data?.data;
+  }
+
+  // Update item purchased status in session
+  async updateShoppingSessionItem(
+    itemId: string,
+    isPurchased: boolean,
+  ): Promise<any> {
+    const response = await apiClient.patch(
+      API_ENDPOINTS.RECIPE.UPDATE_SHOPPING_SESSION_ITEM(itemId),
+      { isPurchased },
+    );
+    return response.data?.data;
+  }
 }
