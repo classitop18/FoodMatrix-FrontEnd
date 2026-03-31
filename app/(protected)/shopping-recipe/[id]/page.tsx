@@ -306,7 +306,14 @@ export default function ShoppingRecipeSession({ params }: { params: { id: string
                               <div className="flex items-center gap-5 w-full pr-2">
                                 {/* Item Image */}
                                 <div className="relative h-16 w-16 rounded-2xl overflow-hidden bg-gray-50 flex-shrink-0 border border-gray-100 shadow-inner group-hover/item:scale-105 transition-transform duration-500">
-                                  {itemImages[item.ingredientName] ? (
+                                  {item.imageUrl ? (
+                                    <Image
+                                      src={item.imageUrl}
+                                      alt={item.ingredientName}
+                                      fill
+                                      className={`object-cover transition-all duration-500 ${item.isPurchased ? 'grayscale opacity-40 blur-[0.5px]' : 'group-hover/item:scale-110'}`}
+                                    />
+                                  ) : itemImages[item.ingredientName] ? (
                                     <Image
                                       src={itemImages[item.ingredientName]}
                                       alt={item.ingredientName}

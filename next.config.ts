@@ -41,7 +41,12 @@ const nextConfig: NextConfig = {
         hostname: "d8k560yezazuw.cloudfront.net",
         pathname: "/**",
       },
-
+      {
+        // Kroger product images
+        protocol: "https",
+        hostname: "www.kroger.com",
+        pathname: "/**",
+      },
     ],
   },
 };

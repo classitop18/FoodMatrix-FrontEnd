@@ -99,6 +99,8 @@ export const API_ENDPOINTS = {
     GET_SHOPPING_SESSION: (id: string) => `/recipes/shopping-sessions/${id}`,
     UPDATE_SHOPPING_SESSION_ITEM: (itemId: string) =>
       `/recipes/shopping-sessions/items/${itemId}`,
+    DELETE_SHOPPING_SESSION_ITEM: (itemId: string) =>
+      `/recipes/shopping-sessions/items/${itemId}`,
   },
 
   // Events

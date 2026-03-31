@@ -18,7 +18,7 @@ import {
   Plus,
   Search,
   ShoppingCart,
-
+  Check,
   Wine,
 } from "lucide-react";
 
@@ -351,9 +351,22 @@ export default function ShoppingRecipe() {
     Record<number, number>
   >({});
   const [removedIndices, setRemovedIndices] = useState<Set<number>>(new Set());
+  const [pantryIndices, setPantryIndices] = useState<Set<number>>(new Set());
   const [editingCategories, setEditingCategories] = useState<Set<string>>(
     new Set(),
   );
+
+  const togglePantryItem = (index: number) => {
+    setPantryIndices((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(index)) {
+        newSet.delete(index);
+      } else {
+        newSet.add(index);
+      }
+      return newSet;
+    });
+  };
 
   const toggleEditCategory = (cat: string) => {
     const newSet = new Set(editingCategories);
@@ -456,7 +469,7 @@ export default function ShoppingRecipe() {
     categoryOrder.forEach((c) => (groups[c] = []));
 
     allIngredients.forEach((ing, idx) => {
-      if (removedIndices.has(idx)) return;
+      if (removedIndices.has(idx) || pantryIndices.has(idx)) return;
 
       const cat = (ing.category || "others").toLowerCase();
       // Map unknown categories to others or keep?
@@ -577,9 +590,27 @@ export default function ShoppingRecipe() {
         description: "Your shopping session is being prepared.",
       });
 
+      const processedIngredients = allIngredients
+        .map((ing, idx) => {
+          if (removedIndices.has(idx) || pantryIndices.has(idx)) return null;
+          const baseQty =
+            quantityOverrides[idx] !== undefined
+              ? quantityOverrides[idx]
+              : ing.quantity;
+
+          const formatted = formatSmartQuantity(baseQty, ing.unit);
+          return {
+            ...ing,
+            quantity: baseQty,
+            displayQuantity: formatted.value,
+            displayUnit: formatted.unit,
+          };
+        })
+        .filter(Boolean);
+
       const session = await recipeService.current.createShoppingSession(
         `Shopping List - ${new Date().toLocaleDateString()}`,
-        allIngredients,
+        processedIngredients,
       );
 
       if (session?.id) {
@@ -1001,11 +1032,30 @@ export default function ShoppingRecipe() {
                                             {item.displayQuantity}{" "}
                                             {item.displayUnit}
                                           </span>
+                                          </div>
                                         </div>
-                                      </div>
 
-                                      <div className="flex items-center gap-4 md:gap-8">
-                                        <div className="flex items-center border border-gray-200 rounded-lg bg-white h-8 overflow-hidden">
+                                        <div className="flex items-center gap-2 md:gap-4">
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-8 px-2 text-[10px] font-bold text-gray-400 hover:text-[var(--primary)] hover:bg-[#F3F0FD] rounded-lg gap-1.5 border border-transparent hover:border-[#EDE9FF] transition-all"
+                                            onClick={() =>
+                                              togglePantryItem(
+                                                item.originalIndex,
+                                              )
+                                            }
+                                          >
+                                            <div className="w-4 h-4 rounded border border-gray-300 flex items-center justify-center bg-white">
+                                              {pantryIndices.has(
+                                                item.originalIndex,
+                                              ) && (
+                                                <Check className="size-3 text-[var(--primary)]" />
+                                              )}
+                                            </div>
+                                            In Pantry
+                                          </Button>
+                                          <div className="flex items-center border border-gray-200 rounded-lg bg-white h-8 overflow-hidden">
                                           <button
                                             className="w-8 h-full flex items-center justify-center text-gray-400 hover:text-[var(--primary)] hover:bg-gray-50 transition-colors"
                                             onClick={() => {
@@ -1120,6 +1170,47 @@ export default function ShoppingRecipe() {
                       )}
                     </div>
                   </ScrollArea>
+
+                  {/* Pantry Items Section */}
+                  {pantryIndices.size > 0 && (
+                    <div className="mt-8 pt-6 border-t border-dashed border-gray-200">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          <Check className="size-5 text-gray-400" />
+                          <h3 className="font-bold text-gray-500 text-lg">
+                            Already in Pantry
+                          </h3>
+                        </div>
+                        <span className="bg-gray-100 text-gray-400 text-xs font-bold px-2 py-1 rounded-full">
+                          {pantryIndices.size}{" "}
+                          {pantryIndices.size === 1 ? "item" : "items"}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {Array.from(pantryIndices).map((idx) => {
+                          const item = allIngredients[idx];
+                          if (!item) return null;
+                          return (
+                            <div
+                              key={idx}
+                              className="flex items-center gap-2 bg-gray-50 border border-gray-100 px-3 py-1.5 rounded-xl group/pantry transition-all hover:border-gray-200"
+                            >
+                              <span className="text-xs font-medium text-gray-400 line-through">
+                                {item.name}
+                              </span>
+                              <button
+                                onClick={() => togglePantryItem(idx)}
+                                className="text-gray-300 hover:text-[var(--primary)] transition-colors"
+                              >
+                                <X className="size-3" />
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
                   {Object.values(groupedIngredients)
                     .flat()
                     .reduce(
@@ -1138,7 +1229,8 @@ export default function ShoppingRecipe() {
                                 acc +
                                 (item.price || 0) * (item.displayQuantity || 1),
                               0,
-                            )}
+                            )
+                            .toFixed(2)}
                         </span>
                       </div>
                     )}
@@ -1268,7 +1360,7 @@ export default function ShoppingRecipe() {
             <div className="flex flex-col">
               <div className="text-[var(--primary)]">Ready to shop?</div>
               <span className="text-sm font-medium text-black/60">
-                You have {allIngredients.length} items from{" "}
+                You have {Object.values(groupedIngredients).flat().length} items from{" "}
                 {allIngredients.length > 0 ? Object.keys(plans).length + 1 : 0}{" "}
                 sources
               </span>
@@ -1287,7 +1379,7 @@ export default function ShoppingRecipe() {
                       description: "Preparing your shopping list...",
                     });
 
-                    const ingredients = allIngredients;
+                    const ingredients = Object.values(groupedIngredients).flat();
                     const payload = { ingredients };
 
                     // 1. Download PDF

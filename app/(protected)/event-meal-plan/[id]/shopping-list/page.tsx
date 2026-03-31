@@ -405,6 +405,7 @@ export default function EventShoppingListPage() {
                 unit: item.unit || "",
                 // We preserve the backend estimated cost (which now includes AI estimates)
                 estimatedPrice: item.estimatedPrice || 0,
+                imageUrl: item.imageUrl || null,
                 source: "Recipe", // We assume, or check
                 category: item.category || "others",
                 isRecipe: true, // simplified assumption for flow
@@ -462,7 +463,7 @@ export default function EventShoppingListPage() {
         // Map images
         return items.map((item: any) => {
             const staticData = getStaticData(item.name);
-            const image = staticData?.image || dynamicImages[item.name] || FALLBACK_IMAGE;
+            const image = item.imageUrl || staticData?.image || dynamicImages[item.name] || FALLBACK_IMAGE;
             const formatted = formatSmartQuantity(item.quantity, item.unit);
             return {
                 ...item,

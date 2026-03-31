@@ -72,9 +72,8 @@ export const ReceivedInvitations: React.FC<ReceivedInvitationsProps> = ({
           <button
             onClick={handleRefetch}
             disabled={isRefetchingCombined}
-            className={`bg-gray-200 hover:bg-gray-300 text-gray-700 p-2 rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-              isRefetchingCombined ? "animate-spin" : ""
-            }`}
+            className={`bg-gray-200 hover:bg-gray-300 text-gray-700 p-2 rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed ${isRefetchingCombined ? "animate-spin" : ""
+              }`}
             title="Refetch Received Invitations"
           >
             <RefreshCw size={16} />
@@ -126,15 +125,14 @@ export const ReceivedInvitations: React.FC<ReceivedInvitationsProps> = ({
                   Status
                 </div>
                 <Badge
-                  className={`border-0 font-bold capitalize px-2.5 py-0.5 h-6 text-[10px] ${
-                    inv.status === "pending"
-                      ? "bg-amber-100 text-amber-700"
-                      : inv.status === "user_accepted"
-                        ? "bg-blue-100 text-blue-700"
-                        : inv.status === "approved"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
-                  }`}
+                  className={`border-0 font-bold capitalize px-2.5 py-0.5 h-6 text-[10px] ${inv.status === "pending"
+                    ? "bg-amber-100 text-amber-700"
+                    : inv.status === "user_accepted"
+                      ? "bg-blue-100 text-blue-700"
+                      : inv.status === "approved"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
+                    }`}
                 >
                   {inv.status.replace("_", " ")}
                 </Badge>

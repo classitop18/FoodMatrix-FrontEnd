@@ -188,4 +188,12 @@ export class RecipeService {
     );
     return response.data?.data;
   }
+
+  // Delete / remove item from shopping list
+  async deleteShoppingSessionItem(itemId: string): Promise<any> {
+    const response = await apiClient.delete(
+      API_ENDPOINTS.RECIPE.DELETE_SHOPPING_SESSION_ITEM(itemId),
+    );
+    return response.data?.data;
+  }
 }
