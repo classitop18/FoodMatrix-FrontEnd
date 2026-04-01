@@ -334,7 +334,7 @@ export default function ShoppingRecipeSession({ params }: { params: { id: string
                                   </span>
                                   <div className="flex items-center gap-2 mt-1">
                                     <span className="text-[11px] font-black text-[var(--primary-light)] uppercase tracking-wider bg-[var(--primary-bg)] px-2 py-0.5 rounded-lg">
-                                      {item.quantity} {item.unit}
+                                      {item.quantity} {item.unit} {item.krogerPackageSize && item.priceSource === "kroger" ? ` • Buy: ${item.krogerPackageSize}` : ""}
                                     </span>
                                     {item.isPurchased && (
                                       <Badge variant="secondary" className="bg-green-50 text-green-600 border-none text-[9px] font-bold py-0 h-4">

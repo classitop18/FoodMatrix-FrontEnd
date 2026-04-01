@@ -14,6 +14,7 @@ import {
   ChevronRight,
   Printer,
   Share2,
+  Eye,
   MoreVertical,
   Loader2,
   DollarSign,
@@ -62,6 +63,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { getUnsplashImage } from "@/app/actions/unsplash";
 import Image from "next/image";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store.redux";
+import { useTodayBudgetQuery } from "@/services/budget/budget.query";
 
 // ----------------------------------------------------------------
 // Types
@@ -77,6 +81,8 @@ interface ShoppingItem {
   estimatedPrice?: number | null;
   priceUnavailable?: boolean;
   priceSource?: "kroger" | "curated_db" | "unavailable";
+  krogerPrice?: string | null;
+  krogerPackageSize?: string | null;
   retailQuantity?: number;
   retailUnit?: string;
   imageUrl?: string | null;
@@ -96,13 +102,22 @@ interface Session {
   createdAt: string;
   totalEstimatedCost?: string;
 }
-
 // Store comparison data for accordion content
-const STORE_COMPARISONS = [
-  { name: "Walmart Supercenter", price: 2.97, rating: 4.2, distance: "1.2 mi", stock: "In Stock" },
-  { name: "Kroger Marketplace", price: 3.45, rating: 4.5, distance: "0.8 mi", stock: "Low Stock" },
-  { name: "Target Grocery", price: 3.20, rating: 4.8, distance: "2.5 mi", stock: "In Stock" },
-  { name: "Whole Foods Market", price: 4.15, rating: 4.9, distance: "3.1 mi", stock: "In Stock" },
+type StoreComparison = {
+  name: string;
+  price: number;
+  rating: number;
+  distance: string;
+  stock: string;
+  domain: string;
+  searchUrl: (query: string) => string;
+};
+
+const STORE_COMPARISONS: StoreComparison[] = [
+  { name: "H-E-B", price: 2.85, rating: 4.7, distance: "1.5 mi", stock: "In Stock", domain: "heb.com", searchUrl: (q) => `https://www.heb.com/search/?q=${encodeURIComponent(q)}` },
+  { name: "Walmart Supercenter", price: 2.97, rating: 4.2, distance: "1.2 mi", stock: "In Stock", domain: "walmart.com", searchUrl: (q) => `https://www.walmart.com/search?q=${encodeURIComponent(q)}` },
+  { name: "Instacart", price: 3.45, rating: 4.5, distance: "Delivery", stock: "Available", domain: "instacart.com", searchUrl: (q) => `https://www.instacart.com/store/s?k=${encodeURIComponent(q)}` },
+  { name: "Costco", price: 3.20, rating: 4.8, distance: "2.5 mi", stock: "In Stock", domain: "costco.com", searchUrl: (q) => `https://www.costco.com/CatalogSearch?keyword=${encodeURIComponent(q)}` },
 ];
 
 // ----------------------------------------------------------------
@@ -113,7 +128,7 @@ const PriceSourceBadge = ({
 }: {
   source?: "kroger" | "curated_db" | "unavailable";
 }) => {
-  if (source === "kroger") {
+  if (source === "kroger" || !source) {
     return (
       <Badge variant="outline" className="text-[9px] font-bold border-blue-200 text-blue-600 bg-blue-50 gap-1">
         <Zap className="h-2 w-2" />
@@ -175,6 +190,9 @@ function ShoppingContent() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [itemImages, setItemImages] = useState<Record<string, string>>({});
 
+  const { activeAccountId } = useSelector((state: RootState) => state.account);
+  const { data: todayBudget, isLoading: isLoadingBudget } = useTodayBudgetQuery(activeAccountId || "");
+
   const recipeService = useRef(new RecipeService());
 
   useEffect(() => {
@@ -220,6 +238,26 @@ function ShoppingContent() {
       );
     }
     setItemImages((prev) => ({ ...prev, ...images }));
+  };
+
+  // Helper for opening a centered popup window for store previews
+  const openStorePreview = (url: string, title: string) => {
+    const w = 1100;
+    const h = 800;
+    const left = (window.screen.width / 2) - (w / 2);
+    const top = (window.screen.height / 2) - (h / 2);
+
+    toast({
+      title: "Opening Preview",
+      description: `Showing ${title} in a separate window...`,
+      duration: 2000
+    });
+
+    window.open(
+      url,
+      "storePreview",
+      `width=${w},height=${h},top=${top},left=${left},menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes`
+    );
   };
 
   // ── Remove item from shopping list
@@ -286,6 +324,8 @@ function ShoppingContent() {
     () => items.filter((i) => i.priceUnavailable || (!i.estimatedPrice && !i.price)).length,
     [items],
   );
+
+  console.log({ groupedItems })
 
   const priceSource = pricingMeta?.priceSource || "curated_db";
 
@@ -449,7 +489,7 @@ function ShoppingContent() {
                         </span>
                       </div>
 
-                      {/* Accordion items */}
+                      {/* Detailed List Items with Accordion */}
                       <Accordion type="single" collapsible className="w-full space-y-4">
                         {catItems.map((item) => {
                           const itemPrice = item.estimatedPrice ?? (item.price ? parseFloat(item.price) : null);
@@ -459,9 +499,8 @@ function ShoppingContent() {
                             <AccordionItem
                               key={item.id}
                               value={item.id}
-                              className="border-none transition-all duration-300 rounded-[28px] overflow-hidden group/item mb-4 bg-white shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_12px_30px_rgba(0,0,0,0.08)] hover:-translate-y-1"
+                              className="border-none transition-all duration-300 rounded-[28px] overflow-hidden group/item mb-4 bg-white shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_12px_30px_rgba(0,0,0,0.08)] hover:-translate-y-1 w-full"
                             >
-                              {/* Item Header */}
                               <AccordionTrigger className="flex items-center px-6 py-4 hover:no-underline transition-all [&[data-state=open]>svg]:rotate-90">
                                 <div className="flex items-center gap-5 w-full pr-2">
                                   {/* Item Image */}
@@ -494,48 +533,37 @@ function ShoppingContent() {
                                     </span>
                                     <div className="flex items-center gap-2 mt-1 flex-wrap">
                                       <span className="text-[11px] font-black text-[var(--primary-light)] uppercase tracking-wider bg-[var(--primary-bg)] px-2 py-0.5 rounded-lg">
-                                        {item.quantity} {item.unit}
+                                        {item.quantity} {item.unit} {item.krogerPackageSize && item.priceSource === "kroger" ? ` • Buy: ${item.krogerPackageSize}` : ""}
                                       </span>
-                                      {isPriced ? (
+                                      {isPriced && (
                                         <span className="text-[12px] font-black text-emerald-700">
                                           ${itemPrice!.toFixed(2)}
                                         </span>
-                                      ) : (
-                                        <PriceSourceBadge source="unavailable" />
                                       )}
                                     </div>
                                   </div>
 
-                                  {/* Right: price badge */}
-                                  <div className="flex-shrink-0 flex flex-col items-end gap-1.5">
+                                  {/* Right side: price badge and DELETE BUTTON */}
+                                  <div className="flex-shrink-0 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                                     {isPriced && <PriceSourceBadge source={item.priceSource} />}
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={(e) => { e.stopPropagation(); handleDeleteItem(item.id, item.ingredientName); }}
+                                      disabled={deletingId === item.id}
+                                      className="h-8 w-8 text-red-400 hover:text-red-500 hover:bg-red-50 rounded-full"
+                                    >
+                                      {deletingId === item.id ? (
+                                        <Loader2 className="h-4 w-4 animate-spin text-red-500" />
+                                      ) : (
+                                        <Trash2 className="h-4 w-4" />
+                                      )}
+                                    </Button>
                                   </div>
                                 </div>
                               </AccordionTrigger>
-
-                              {/* Item Details Accordion Content */}
                               <AccordionContent className="px-4 pb-4">
                                 <div className="pt-4 border-t border-gray-50 space-y-6">
-
-                                  {/* Retail unit & price info */}
-                                  {isPriced && (
-                                    <div className="bg-gray-50 p-3 rounded-xl flex items-center justify-between gap-3 text-xs">
-                                      <div className="flex items-center gap-1.5 text-gray-600">
-                                        <Tag className="h-3 w-3" />
-                                        <span className="font-medium">Retail unit:</span>
-                                        <span className="font-bold text-gray-800">
-                                          {item.retailQuantity ?? item.quantity} {item.retailUnit ?? item.unit}
-                                        </span>
-                                      </div>
-                                      <div className="flex items-center gap-1.5">
-                                        <span className="text-lg font-black text-[#1a1c1e]">
-                                          ${itemPrice!.toFixed(2)}
-                                        </span>
-                                        <PriceSourceBadge source={item.priceSource} />
-                                      </div>
-                                    </div>
-                                  )}
-
                                   {/* Price Comparison Section */}
                                   <div>
                                     <div className="flex items-center justify-between mb-4">
@@ -545,7 +573,7 @@ function ShoppingContent() {
                                       </h4>
                                       <Badge variant="outline" className="text-[9px] font-bold border-green-200 text-green-600 bg-green-50">
                                         <TrendingDown className="h-2 w-2 mr-1" />
-                                        Cheapest At Walmart
+                                        {isPriced ? "Live Kroger Price" : "Cheapest At Walmart"}
                                       </Badge>
                                     </div>
 
@@ -559,72 +587,71 @@ function ShoppingContent() {
                                             <div>
                                               <p className="text-xs font-bold text-gray-800">{store.name}</p>
                                               <div className="flex items-center gap-2 text-[10px] text-gray-400">
-                                                <span className="flex items-center gap-0.5">
-                                                  <Star className="h-2.5 w-2.5 fill-yellow-400 text-yellow-400" /> {store.rating}
-                                                </span>
-                                                <span className="flex items-center gap-0.5">
-                                                  <MapPin className="h-2.5 w-2.5" /> {store.distance}
-                                                </span>
+                                                <span className="flex items-center gap-0.5"><Star className="h-2.5 w-2.5 fill-yellow-400 text-yellow-400" /> {store.rating}</span>
+                                                <span className="flex items-center gap-0.5"><MapPin className="h-2.5 w-2.5" /> {store.distance}</span>
                                               </div>
                                             </div>
                                           </div>
-                                          <div className="text-right">
-                                            <p className="text-xs font-black text-gray-900">${store.price}</p>
-                                            <p className={`text-[9px] font-bold ${store.stock === "In Stock" ? "text-green-600" : "text-orange-600"}`}>
-                                              {store.stock}
-                                            </p>
+                                          <div className="text-right flex items-center justify-end gap-3">
+                                            <div className="text-right">
+                                              <p className="text-xs font-black text-gray-900">${isPriced && store.name.includes("Kroger") ? itemPrice?.toFixed(2) : store.price}</p>
+                                              <p className={`text-[9px] font-bold ${store.stock === 'In Stock' ? 'text-green-600' : store.stock === 'Available' ? 'text-blue-600' : 'text-orange-600'}`}>{store.stock}</p>
+                                            </div>
+                                            <div className="flex items-center justify-end gap-1 ml-1 border-l border-gray-100 pl-2 flex-shrink-0">
+                                              <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-8 px-2 text-blue-500 bg-blue-50 hover:bg-blue-100 hover:text-blue-600 rounded-lg shrink-0 flex items-center gap-1.5 transition-all duration-200"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  // Use centered popup window to bypass Iframe blocking without using Google previews
+                                                  openStorePreview(store.searchUrl(item.ingredientName), store.name);
+                                                }}
+                                                title={`Preview ${store.name} search (In separate window)`}
+                                              >
+                                                <Eye className="h-3.5 w-3.5" />
+                                                <span className="text-[10px] font-bold">Preview</span>
+                                              </Button>
+                                              <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-8 px-2 text-gray-500 bg-gray-50 hover:bg-gray-100 hover:text-gray-700 rounded-lg shrink-0 flex items-center gap-1.5 transition-all duration-200"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  window.open(store.searchUrl(item.ingredientName), "_blank");
+                                                }}
+                                                title={`Open ${store.name} natively in new tab`}
+                                              >
+                                                <ExternalLink className="h-3.5 w-3.5" />
+                                                <span className="text-[10px] font-bold">Shop</span>
+                                              </Button>
+                                            </div>
                                           </div>
                                         </div>
                                       ))}
                                     </div>
                                   </div>
 
-                                  {/* Info + Remove button row */}
-                                  <div className="flex items-start justify-between gap-3">
-                                    <div className="bg-gray-50 p-3 rounded-xl flex gap-3 items-start flex-1">
-                                      <Info className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                                      <p className="text-[10px] text-gray-500 leading-relaxed">
-                                        Prices are real estimates for <b>{item.ingredientName}</b>. Item may vary by local availability.
-                                      </p>
+                                  {/* Extra Data / Nutritional Info */}
+                                  <div className="grid grid-cols-2 gap-3">
+                                    <div className="p-3 rounded-xl bg-blue-50/50 border border-blue-100/50">
+                                      <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">Estimated Calories</p>
+                                      <p className="text-sm font-black text-blue-900">~120 kcal</p>
                                     </div>
-
-                                    {/* ── Remove item button ── */}
-                                    <AlertDialog>
-                                      <AlertDialogTrigger asChild>
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          disabled={deletingId === item.id}
-                                          className="flex-shrink-0 rounded-xl border-red-100 text-red-500 hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-all gap-1.5"
-                                        >
-                                          {deletingId === item.id ? (
-                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                          ) : (
-                                            <Trash2 className="h-4 w-4" />
-                                          )}
-                                          <span className="text-[11px] font-bold">Already have it</span>
-                                        </Button>
-                                      </AlertDialogTrigger>
-                                      <AlertDialogContent className="rounded-[28px]">
-                                        <AlertDialogHeader>
-                                          <AlertDialogTitle>Remove from list?</AlertDialogTitle>
-                                          <AlertDialogDescription>
-                                            This will remove <b>{item.ingredientName}</b> from your shopping list. Use this if you already have this item at home.
-                                          </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                          <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
-                                          <AlertDialogAction
-                                            className="rounded-xl bg-red-500 hover:bg-red-600"
-                                            onClick={() => handleDeleteItem(item.id, item.ingredientName)}
-                                          >
-                                            Remove Item
-                                          </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                      </AlertDialogContent>
-                                    </AlertDialog>
+                                    <div className="p-3 rounded-xl bg-orange-50/50 border border-orange-100/50">
+                                      <p className="text-[10px] font-bold text-orange-400 uppercase tracking-widest mb-1">Health Impact</p>
+                                      <div className="flex items-center gap-1">
+                                        <Badge className="bg-orange-500 text-white border-none py-0 text-[10px]">High Protein</Badge>
+                                      </div>
+                                    </div>
                                   </div>
 
+                                  <div className="bg-gray-50 p-3 rounded-xl flex gap-3 items-start">
+                                    <Info className="h-4 w-4 text-gray-400 mt-0.5" />
+                                    <p className="text-[10px] text-gray-500 leading-relaxed">
+                                      Prices are real-time estimates for <b>{item.ingredientName}</b>. Stock levels may vary by local availability.
+                                    </p>
+                                  </div>
                                 </div>
                               </AccordionContent>
                             </AccordionItem>
@@ -640,6 +667,91 @@ function ShoppingContent() {
 
           {/* ── Right Sidebar ─────────────────────────────────────── */}
           <div className="lg:col-span-4 space-y-6">
+            {/* Today's Budget Progress Card */}
+            <Card className="border-none shadow-[0_15px_50px_rgba(0,0,0,0.05)] bg-white overflow-hidden rounded-[40px]">
+              <div className="p-8">
+                <p className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-6">
+                  Today's Budget
+                </p>
+                {isLoadingBudget ? (
+                  <div className="flex justify-center p-4">
+                    <Loader2 className="h-6 w-6 animate-spin text-gray-300" />
+                  </div>
+                ) : todayBudget ? (() => {
+                  const allocatedAmount = todayBudget.allocatedAmount || 0;
+                  const amountSpent = todayBudget.amountSpent || 0;
+                  const availableBudget = Math.max(0, allocatedAmount - amountSpent);
+
+                  const estFit = Math.min(totalCost, availableBudget);
+                  const overOverage = totalCost > availableBudget ? totalCost - availableBudget : 0;
+
+                  const maxScale = Math.max(allocatedAmount, amountSpent + totalCost) || 1;
+                  const spentPct = (amountSpent / maxScale) * 100;
+                  const estFitPct = (estFit / maxScale) * 100;
+                  const overPct = (overOverage / maxScale) * 100;
+
+                  return (
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-end mb-2">
+                        <div>
+                          <span className="text-4xl font-black tracking-tighter">${allocatedAmount.toFixed(0)}</span>
+                          <span className="text-sm font-bold text-gray-400 ml-1 block">Daily Budget</span>
+                        </div>
+                        <div className="text-right">
+                          <span className={`text-2xl font-black ${overOverage > 0 ? 'text-red-500' : 'text-gray-900'}`}>
+                            ${(amountSpent + totalCost).toFixed(2)}
+                          </span>
+                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Total with List</span>
+                        </div>
+                      </div>
+
+                      {/* Multi-segment Progress Bar */}
+                      <div className="h-4 w-full bg-gray-100 rounded-full overflow-hidden flex relative shadow-inner">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div style={{ width: `${spentPct}%` }} className="bg-gray-300 h-full transition-all duration-500 ease-out" />
+                            </TooltipTrigger>
+                            <TooltipContent><p className="font-bold text-xs">Already Spent: ${amountSpent.toFixed(2)}</p></TooltipContent>
+                          </Tooltip>
+
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div style={{ width: `${estFitPct}%` }} className="bg-emerald-400 h-full transition-all duration-500 ease-out border-l border-white/20" />
+                            </TooltipTrigger>
+                            <TooltipContent><p className="font-bold text-xs">List Est. (In Budget): ${estFit.toFixed(2)}</p></TooltipContent>
+                          </Tooltip>
+
+                          {overOverage > 0 && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div style={{ width: `${overPct}%` }} className="bg-red-500 h-full transition-all duration-500 ease-out" />
+                              </TooltipTrigger>
+                              <TooltipContent><p className="font-bold text-xs text-red-500">Over Budget: ${overOverage.toFixed(2)}</p></TooltipContent>
+                            </Tooltip>
+                          )}
+                        </TooltipProvider>
+                      </div>
+
+                      {/* Legend */}
+                      <div className="flex items-center gap-4 text-[10px] uppercase font-bold tracking-widest pt-2">
+                        <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-gray-300" /> <span className="text-gray-500">Spent (${amountSpent.toFixed(0)})</span></div>
+                        <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-400" /> <span className="text-gray-500">Est. (${totalCost.toFixed(0)})</span></div>
+                      </div>
+                      {overOverage > 0 && (
+                        <div className="bg-red-50 text-red-600 font-bold p-3 rounded-2xl flex items-center gap-2 text-[11px] mt-4 border border-red-100">
+                          <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+                          <p>This list puts you <b>${overOverage.toFixed(2)}</b> over the remaining daily budget.</p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })() : (
+                  <p className="text-sm text-gray-500 font-medium">No budget configured for today.</p>
+                )}
+              </div>
+            </Card>
+
             <Card className="border-none shadow-[0_15px_50px_rgba(0,0,0,0.05)] bg-white overflow-hidden rounded-[40px] sticky top-28">
               {/* Cost breakdown header */}
               <div className="bg-[var(--primary)] p-8 text-white relative overflow-hidden">

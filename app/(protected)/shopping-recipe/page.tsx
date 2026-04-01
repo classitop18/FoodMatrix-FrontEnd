@@ -323,8 +323,10 @@ export default function ShoppingRecipe() {
         displayUnit: formatted.unit,
         source: "Recipe",
         image,
-        category: (staticData as any)?.category || "others",
-        price: (staticData as any)?.price || 0,
+        category: (staticData as any)?.category || item.category || "others",
+        price: item.package_price ?? ((staticData as any)?.price || 0),
+        budget_impact_price: item.budget_impact_price ?? 0,
+        recommended_package_size: item.recommended_package_size || null,
       };
     });
 
@@ -341,6 +343,9 @@ export default function ShoppingRecipe() {
           displayQuantity: formatted.value,
           displayUnit: formatted.unit,
           category: item.category || "others",
+          price: item.price || 0,
+          budget_impact_price: item.budget_impact_price || 0,
+          recommended_package_size: item.recommended_package_size || null,
         };
       }),
     ];
@@ -493,7 +498,9 @@ export default function ShoppingRecipe() {
         quantity: baseQty, // Current base qty
         displayQuantity: formatted.value, // Smart qty
         displayUnit: formatted.unit, // Smart unit
-        price: ing.price // Keep price logic
+        price: ing.price, // Keep price logic
+        budget_impact_price: ing.budget_impact_price,
+        recommended_package_size: ing.recommended_package_size,
       });
     });
 
@@ -554,7 +561,9 @@ export default function ShoppingRecipe() {
             : activeCategory,
       image: selectedItemToAdd.image,
       source: "Manual",
-      price: 0, // Default 0 for manual items
+      price: selectedItemToAdd.price || 0, // Default 0 for manual items
+      budget_impact_price: (selectedItemToAdd.price || 0) * Math.ceil(addItemQuantity),
+      recommended_package_size: null,
     };
 
     setExtraItems((prev) => [...prev, newItem]);
@@ -892,7 +901,7 @@ export default function ShoppingRecipe() {
             <div className="flex flex-col md:flex-row gap-3 items-start md:items-center font-bold mb-4 justify-between">
               <div className="flex gap-3 items-center">
                 <ListCheck className="size-5 text-[var(--primary)]" />
-                Shopping List Preview
+                Required Ingredients Preview
                 <span className="rounded-full bg-[#F2EEFF] border border-[#e7e0fc] text-[var(--primary)] text-xs h-7 flex items-center px-3">
                   {Object.values(groupedIngredients).flat().length} Items
                 </span>
@@ -1029,81 +1038,90 @@ export default function ShoppingRecipe() {
                                             </span>
                                           </div>
                                           <span className="text-xs text-gray-500">
-                                            {item.displayQuantity}{" "}
-                                            {item.displayUnit}
+                                            Req: {item.displayQuantity} {item.displayUnit}
+                                            {item.recommended_package_size ? ` • Buy: ${item.recommended_package_size}` : ''}
                                           </span>
-                                          </div>
                                         </div>
+                                      </div>
 
-                                        <div className="flex items-center gap-2 md:gap-4">
-                                          <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="h-8 px-2 text-[10px] font-bold text-gray-400 hover:text-[var(--primary)] hover:bg-[#F3F0FD] rounded-lg gap-1.5 border border-transparent hover:border-[#EDE9FF] transition-all"
-                                            onClick={() =>
-                                              togglePantryItem(
-                                                item.originalIndex,
-                                              )
-                                            }
-                                          >
-                                            <div className="w-4 h-4 rounded border border-gray-300 flex items-center justify-center bg-white">
-                                              {pantryIndices.has(
-                                                item.originalIndex,
-                                              ) && (
+                                      <div className="flex items-center gap-2 md:gap-4">
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-8 px-2 text-[10px] font-bold text-gray-400 hover:text-[var(--primary)] hover:bg-[#F3F0FD] rounded-lg gap-1.5 border border-transparent hover:border-[#EDE9FF] transition-all"
+                                          onClick={() =>
+                                            togglePantryItem(
+                                              item.originalIndex,
+                                            )
+                                          }
+                                        >
+                                          <div className="w-4 h-4 rounded border border-gray-300 flex items-center justify-center bg-white">
+                                            {pantryIndices.has(
+                                              item.originalIndex,
+                                            ) && (
                                                 <Check className="size-3 text-[var(--primary)]" />
                                               )}
-                                            </div>
-                                            In Pantry
-                                          </Button>
-                                          <div className="flex items-center border border-gray-200 rounded-lg bg-white h-8 overflow-hidden">
-                                          <button
-                                            className="w-8 h-full flex items-center justify-center text-gray-400 hover:text-[var(--primary)] hover:bg-gray-50 transition-colors"
-                                            onClick={() => {
-                                              const step = getStepSize(
-                                                item.displayUnit,
-                                              );
-                                              const newVal = Math.max(
-                                                0,
-                                                Number(
-                                                  (
-                                                    item.displayQuantity -
-                                                    step
-                                                  ).toFixed(3),
-                                                ),
-                                              );
-                                              handleUpdateQuantity(
-                                                item.originalIndex,
-                                                newVal,
-                                                item.displayUnit,
-                                              );
-                                            }}
-                                          >
-                                            <Minus className="size-3" />
-                                          </button>
-                                          <span className="min-w-[3rem] px-2 h-full flex items-center justify-center text-center text-sm font-medium text-gray-700 border-x border-gray-50">
-                                            {item.displayQuantity}{" "}
-                                            {item.displayUnit}
-                                          </span>
-                                          <button
-                                            className="w-8 h-full flex items-center justify-center text-gray-400 hover:text-[var(--primary)] hover:bg-gray-50 transition-colors"
-                                            onClick={() => {
-                                              const step = getStepSize(
-                                                item.displayUnit,
-                                              );
-                                              const newVal = Number(
-                                                (
-                                                  item.displayQuantity + step
-                                                ).toFixed(3),
-                                              );
-                                              handleUpdateQuantity(
-                                                item.originalIndex,
-                                                newVal,
-                                                item.displayUnit,
-                                              );
-                                            }}
-                                          >
-                                            <Plus className="size-3" />
-                                          </button>
+                                          </div>
+                                          In Pantry
+                                        </Button>
+                                        <div className="flex items-center border border-gray-200 rounded-lg bg-white h-8 overflow-hidden">
+                                          {item.source === "Manual" ? (
+                                            <>
+                                              <button
+                                                className="w-8 h-full flex items-center justify-center text-gray-400 hover:text-[var(--primary)] hover:bg-gray-50 transition-colors"
+                                                onClick={() => {
+                                                  const step = getStepSize(
+                                                    item.displayUnit,
+                                                  );
+                                                  const newVal = Math.max(
+                                                    0,
+                                                    Number(
+                                                      (
+                                                        item.displayQuantity -
+                                                        step
+                                                      ).toFixed(3),
+                                                    ),
+                                                  );
+                                                  handleUpdateQuantity(
+                                                    item.originalIndex,
+                                                    newVal,
+                                                    item.displayUnit,
+                                                  );
+                                                }}
+                                              >
+                                                <Minus className="size-3" />
+                                              </button>
+                                              <span className="min-w-[3rem] px-2 h-full flex items-center justify-center text-center text-sm font-medium text-gray-700 border-x border-gray-50">
+                                                {item.displayQuantity}{" "}
+                                                {item.displayUnit}
+                                              </span>
+                                              <button
+                                                className="w-8 h-full flex items-center justify-center text-gray-400 hover:text-[var(--primary)] hover:bg-gray-50 transition-colors"
+                                                onClick={() => {
+                                                  const step = getStepSize(
+                                                    item.displayUnit,
+                                                  );
+                                                  const newVal = Number(
+                                                    (
+                                                      item.displayQuantity + step
+                                                    ).toFixed(3),
+                                                  );
+                                                  handleUpdateQuantity(
+                                                    item.originalIndex,
+                                                    newVal,
+                                                    item.displayUnit,
+                                                  );
+                                                }}
+                                              >
+                                                <Plus className="size-3" />
+                                              </button>
+                                            </>
+                                          ) : (
+                                            <span className="px-3 h-full flex items-center justify-center text-center text-sm font-medium text-gray-700 bg-gray-50">
+                                              {item.displayQuantity}{" "}
+                                              {item.displayUnit}
+                                            </span>
+                                          )}
                                         </div>
                                       </div>
                                     </div>
@@ -1211,29 +1229,7 @@ export default function ShoppingRecipe() {
                     </div>
                   )}
 
-                  {Object.values(groupedIngredients)
-                    .flat()
-                    .reduce(
-                      (acc: number, item: any) =>
-                        acc + (item.price || 0) * (item.displayQuantity || 1),
-                      0,
-                    ) > 0 && (
-                      <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center text-lg font-bold">
-                        <span>Total Estimate</span>
-                        <span className="text-[var(--primary)]">
-                          $
-                          {Object.values(groupedIngredients)
-                            .flat()
-                            .reduce(
-                              (acc: number, item: any) =>
-                                acc +
-                                (item.price || 0) * (item.displayQuantity || 1),
-                              0,
-                            )
-                            .toFixed(2)}
-                        </span>
-                      </div>
-                    )}
+
                 </>
               )}
             </div>
