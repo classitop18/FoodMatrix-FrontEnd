@@ -505,7 +505,7 @@ function ShoppingContent() {
                                 <div className="flex items-center gap-5 w-full pr-2">
                                   {/* Item Image */}
                                   <div className="relative h-16 w-16 rounded-2xl overflow-hidden bg-gray-50 flex-shrink-0 border border-gray-100 shadow-inner group-hover/item:scale-105 transition-transform duration-500">
-                                  
+
                                     {item.imageUrl ? (
                                       <img
                                         src={item?.imageUrl}
@@ -588,16 +588,16 @@ function ShoppingContent() {
                                             <div>
                                               <p className="text-xs font-bold text-gray-800">{store.name}</p>
                                               <div className="flex items-center gap-2 text-[10px] text-gray-400">
-                                                <span className="flex items-center gap-0.5"><Star className="h-2.5 w-2.5 fill-yellow-400 text-yellow-400" /> {store.rating}</span>
-                                                <span className="flex items-center gap-0.5"><MapPin className="h-2.5 w-2.5" /> {store.distance}</span>
+                                                {/* <span className="flex items-center gap-0.5"><Star className="h-2.5 w-2.5 fill-yellow-400 text-yellow-400" /> {store.rating}</span> */}
+                                                {/* <span className="flex items-center gap-0.5"><MapPin className="h-2.5 w-2.5" /> {store.distance}</span> */}
                                               </div>
                                             </div>
                                           </div>
                                           <div className="text-right flex items-center justify-end gap-3">
-                                            <div className="text-right">
+                                            {/* <div className="text-right">
                                               <p className="text-xs font-black text-gray-900">${isPriced && store.name.includes("Kroger") ? itemPrice?.toFixed(2) : store.price}</p>
                                               <p className={`text-[9px] font-bold ${store.stock === 'In Stock' ? 'text-green-600' : store.stock === 'Available' ? 'text-blue-600' : 'text-orange-600'}`}>{store.stock}</p>
-                                            </div>
+                                            </div> */}
                                             <div className="flex items-center justify-end gap-1 ml-1 border-l border-gray-100 pl-2 flex-shrink-0">
                                               <Button
                                                 variant="ghost"
@@ -633,19 +633,7 @@ function ShoppingContent() {
                                     </div>
                                   </div>
 
-                                  {/* Extra Data / Nutritional Info */}
-                                  <div className="grid grid-cols-2 gap-3">
-                                    <div className="p-3 rounded-xl bg-blue-50/50 border border-blue-100/50">
-                                      <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">Estimated Calories</p>
-                                      <p className="text-sm font-black text-blue-900">~120 kcal</p>
-                                    </div>
-                                    <div className="p-3 rounded-xl bg-orange-50/50 border border-orange-100/50">
-                                      <p className="text-[10px] font-bold text-orange-400 uppercase tracking-widest mb-1">Health Impact</p>
-                                      <div className="flex items-center gap-1">
-                                        <Badge className="bg-orange-500 text-white border-none py-0 text-[10px]">High Protein</Badge>
-                                      </div>
-                                    </div>
-                                  </div>
+                              
 
                                   <div className="bg-gray-50 p-3 rounded-xl flex gap-3 items-start">
                                     <Info className="h-4 w-4 text-gray-400 mt-0.5" />
