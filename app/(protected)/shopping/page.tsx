@@ -506,10 +506,10 @@ function ShoppingContent() {
                                   {/* Item Image */}
                                   <div className="relative h-16 w-16 rounded-2xl overflow-hidden bg-gray-50 flex-shrink-0 border border-gray-100 shadow-inner group-hover/item:scale-105 transition-transform duration-500">
                                     {item.imageUrl ? (
-                                      <Image
-                                        src={item.imageUrl}
-                                        alt={item.ingredientName}
-                                        fill
+                                      <img
+                                        src={item?.imageUrl}
+                                        alt={item?.ingredientName}
+                                        // fill
                                         className="object-cover transition-all duration-500 group-hover/item:scale-110"
                                       />
                                     ) : itemImages[item.ingredientName] ? (
