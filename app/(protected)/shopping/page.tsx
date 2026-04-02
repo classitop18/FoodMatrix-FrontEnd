@@ -851,7 +851,7 @@ function ShoppingContent() {
                 </div>
 
                 {/* "Already have it?" hint */}
-                <div className="bg-red-50 rounded-2xl p-4 flex gap-3 items-start border border-red-100">
+                {/* <div className="bg-red-50 rounded-2xl p-4 flex gap-3 items-start border border-red-100">
                   <Trash2 className="h-4 w-4 text-red-400 mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="text-[11px] font-bold text-red-700">Already have an item?</p>
@@ -859,7 +859,7 @@ function ShoppingContent() {
                       Open any item card and tap <b>"Already have it"</b> to remove it from your list.
                     </p>
                   </div>
-                </div>
+                </div> */}
               </CardContent>
             </Card>
           </div>

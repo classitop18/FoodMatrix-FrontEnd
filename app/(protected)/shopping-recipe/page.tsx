@@ -1037,10 +1037,10 @@ export default function ShoppingRecipe() {
                                               {item.name}
                                             </span>
                                           </div>
-                                          <span className="text-xs text-gray-500">
+                                          {/* <span className="text-xs text-gray-500">
                                             Req: {item.displayQuantity} {item.displayUnit}
                                             {item.recommended_package_size ? ` • Buy: ${item.recommended_package_size}` : ''}
-                                          </span>
+                                          </span> */}
                                         </div>
                                       </div>
 
@@ -1065,7 +1065,7 @@ export default function ShoppingRecipe() {
                                           In Pantry
                                         </Button>
                                         <div className="flex items-center border border-gray-200 rounded-lg bg-white h-8 overflow-hidden">
-                                          {item.source === "Manual" ? (
+                                          {item.source === "Manual" && (
                                             <>
                                               <button
                                                 className="w-8 h-full flex items-center justify-center text-gray-400 hover:text-[var(--primary)] hover:bg-gray-50 transition-colors"
@@ -1116,12 +1116,10 @@ export default function ShoppingRecipe() {
                                                 <Plus className="size-3" />
                                               </button>
                                             </>
-                                          ) : (
-                                            <span className="px-3 h-full flex items-center justify-center text-center text-sm font-medium text-gray-700 bg-gray-50">
-                                              {item.displayQuantity}{" "}
-                                              {item.displayUnit}
-                                            </span>
-                                          )}
+                          
+                                          ) 
+                                        }
+                                          
                                         </div>
                                       </div>
                                     </div>
