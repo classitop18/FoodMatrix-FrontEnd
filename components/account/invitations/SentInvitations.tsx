@@ -36,6 +36,7 @@ export const SentInvitations: React.FC<SentInvitationsProps> = ({
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
   const [selectedInvitationId, setSelectedInvitationId] = useState<string | null>(null);
+  const [resendingId, setResendingId] = useState<string | null>(null);
   const [isRefetching, setIsRefetching] = useState(false);
 
   const {
@@ -213,9 +214,16 @@ export const SentInvitations: React.FC<SentInvitationsProps> = ({
                   {inv.status === "pending" && (
                     <>
                       <button
-                        onClick={() => resendInvMutation.mutateAsync(inv.id)}
+                        onClick={async () => {
+                          setResendingId(inv.id);
+                          try {
+                            await resendInvMutation.mutateAsync(inv.id);
+                          } finally {
+                            setResendingId(null);
+                          }
+                        }}
                         disabled={resendInvMutation.isPending}
-                        className={`h-8 w-8 rounded-lg bg-[#f3f0fd] text-[#7661d3] hover:bg-[#7661d3] hover:text-white flex items-center justify-center transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${resendInvMutation.isPending ? "animate-spin" : ""
+                        className={`h-8 w-8 rounded-lg bg-[#f3f0fd] text-[#7661d3] hover:bg-[#7661d3] hover:text-white flex items-center justify-center transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${resendInvMutation.isPending && resendingId === inv.id ? "animate-spin" : ""
                           }`}
                         title="Resend"
                       >

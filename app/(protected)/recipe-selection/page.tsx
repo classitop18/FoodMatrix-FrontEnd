@@ -514,6 +514,8 @@ export default function RecipeSelection() {
 
     if (!customName) return;
 
+    setSuggestions((prev) => ({ ...prev, [slotKey]: undefined as any }));
+
     setIsSlotProcessing((prev) => ({
       ...prev,
       [slotKey]: { ...prev[slotKey], isCustomRecipeLoading: true },
@@ -1519,7 +1521,7 @@ export default function RecipeSelection() {
                                                 {isSlotProcessing[slotKey]
                                                   ?.isCustomRecipeLoading
                                                   ? "Searching..."
-                                                  : "Search"}
+                                                  : "Search With AI"}
                                               </Button>
                                             </div>
                                           </PopoverAnchor>
@@ -1542,7 +1544,7 @@ export default function RecipeSelection() {
                                               ) : suggestions[slotKey]
                                                 ?.length === 0 ? (
                                                 <div className="p-3 text-sm text-gray-500 text-center">
-                                                  No matched item
+                                                  No matched item in Database, Generate With AI
                                                 </div>
                                               ) : (
                                                 suggestions[slotKey]?.map(

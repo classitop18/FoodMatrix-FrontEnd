@@ -409,30 +409,7 @@ export default function MealPlanning() {
   // Loading state for adding a date
   const [isAddingDate, setIsAddingDate] = useState(false);
 
-  const getRemoteRecipesForDate = async (
-    date: Date,
-  ): Promise<{ meal: string; exists: boolean; recipe: any | null }[]> => {
-    const iso = isoUTCDate(date);
-    const recipeService = new RecipeService();
-    const mealTypes = ["breakfast", "lunch", "dinner"];
 
-    try {
-      const checks = await Promise.all(
-        mealTypes.map(async (mealType) => {
-          const result = await recipeService.checkRecipesByDate(iso, mealType);
-          return {
-            meal: mealType,
-            exists: result.exists,
-            recipe: result.recipe,
-          };
-        }),
-      );
-      return checks;
-    } catch (error) {
-      console.error("Error checking recipes by date:", error);
-      return [];
-    }
-  };
 
   const clearRecipesForDate = (date: Date) => {
     const iso = isoUTCDate(date);
@@ -544,10 +521,6 @@ export default function MealPlanning() {
     setIsAddingDate(true);
 
     try {
-      // Check for existing recipes logic - AUTOMATICALLY LOAD IF EXISTS
-      const remoteRecipes = await getRemoteRecipesForDate(date);
-      const hasRemote = remoteRecipes.some((r) => r.exists);
-
       const label = format(date, "EEEE, MMM d");
       setSelectedDates((prev) => [
         ...prev,
@@ -559,46 +532,6 @@ export default function MealPlanning() {
         if (prev[iso]) return { ...prev, [iso]: prev[iso] };
 
         const newSlot = createEmptySlot();
-
-        // If we found remote recipes, populate them automatically
-        if (hasRemote) {
-          const newSelections = { ...recipeSelections };
-          const newSelectedRecipes = [...selectedRecipes];
-
-          remoteRecipes.forEach((item) => {
-            if (item.exists && item.recipe) {
-              // 1. Update Week Plan Type
-              // @ts-ignore
-              newSlot[item.meal].type = "cook-home";
-
-              // 2. Add to Selected Recipes List (if not already there)
-              if (!newSelectedRecipes.find((r) => r.id === item.recipe.id)) {
-                newSelectedRecipes.push(item.recipe);
-              }
-
-              // 3. Map Selection Key
-              const selectionKey = `${iso}-${item.meal}`.toUpperCase(); // Ensure uppercase for consistency
-              newSelections[selectionKey] = item.recipe.id;
-            }
-          });
-
-          // Batch update state
-          setSelectedRecipes(newSelectedRecipes);
-          setRecipeSelections(newSelections);
-
-          // Update LocalStorage explicitly here
-          localStorage.setItem(
-            LS_KEYS.SELECTED_RECIPES,
-            JSON.stringify({
-              selections: newSelections,
-              additionalRecipes: newSelectedRecipes.reduce((acc, r) => {
-                acc[r.id] = r;
-                return acc;
-              }, {}),
-            }),
-          );
-        }
-
         return { ...prev, [iso]: newSlot };
       });
 
