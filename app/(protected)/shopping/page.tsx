@@ -505,6 +505,9 @@ function ShoppingContent() {
                                 <div className="flex items-center gap-5 w-full pr-2">
                                   {/* Item Image */}
                                   <div className="relative h-16 w-16 rounded-2xl overflow-hidden bg-gray-50 flex-shrink-0 border border-gray-100 shadow-inner group-hover/item:scale-105 transition-transform duration-500">
+                                  {
+                                    item?.imageUrl
+                                  }
                                     {item.imageUrl ? (
                                       <img
                                         src={item?.imageUrl}
